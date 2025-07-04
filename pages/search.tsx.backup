@@ -1,0 +1,1296 @@
+'use client';
+
+import React, { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { GraduationCap, User, Mail, BookOpen, Award, ArrowUp, Square, Tag, Home, FileText, Search as SearchIcon, Settings, LogOut, AlertCircle, Check, Heart, Brain, PenTool, Send, Copy, Loader2, ExternalLink, MessageCircle } from 'lucide-react';
+import { getTimeBasedGreeting } from '@/lib/utils';
+import {
+  PromptInput,
+  PromptInputTextarea,
+  PromptInputActions,
+  PromptInputAction
+} from '@/components/ui/prompt-input';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
+import { cn } from '@/lib/utils';
+import axios from 'axios';
+import { ProfessorCard } from '@/components/ui/professor-card';
+import { GmailConnection } from '@/components/ui/gmail-connection';
+import { DashStyleChat } from '@/components/DashStyleChat';
+
+// Popular search tags
+const SUGGESTED_TAGS = [
+  "Machine Learning",
+  "Genetics",
+  "Climate Science",
+  "Neuroscience",
+  "Quantum Physics",
+  "Computer Vision",
+  "Biotechnology",
+  "Artificial Intelligence",
+  "Sociology",
+  "Psychology",
+  "CRISPR"
+];
+
+// Professor interface matching our data structure
+interface Professor {
+  id?: number;
+  name: string;
+  field_of_research: string;
+  university_name: string;
+  email: string;
+  official_url: string;
+  image?: string;
+  publications?: number;
+  citations?: number;
+  title?: string;
+  researchAreas?: string[];
+}
+
+// Tab types
+type TabType = 'search' | 'email' | 'assistant';
+
+export default function SearchPage() {
+  const [activeTab, setActiveTab] = useState<TabType>('search');
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filteredProfessors, setFilteredProfessors] = useState<Professor[]>([]);
+  const [hasSearched, setHasSearched] = useState(false);
+  const [userName, setUserName] = useState<string | null>(null);
+  const [greeting, setGreeting] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const dotsRef = useRef<Array<{x: number, y: number, radius: number, color: string, vx: number, vy: number}>>([]);
+  const animationFrameId = useRef<number | null>(null);
+  const mousePositionRef = useRef<{x: number | null, y: number | null}>({ x: null, y: null });
+  const [aiSuggestion, setAISuggestion] = useState<string>("");
+  const [savedProfessors, setSavedProfessors] = useState<string[]>([]);
+
+  
+  // Personalized email tab state
+  const [userFullName, setUserFullName] = useState("");
+  const [researchTitle, setResearchTitle] = useState("");
+  const [researchAbstract, setResearchAbstract] = useState("");
+  const [selectedProfessorForEmail, setSelectedProfessorForEmail] = useState<Professor | null>(null);
+  const [generatedEmail, setGeneratedEmail] = useState("");
+  const [isGeneratingEmail, setIsGeneratingEmail] = useState(false);
+  
+  // Gmail integration state
+  const [isGmailConnected, setIsGmailConnected] = useState(false);
+  const [isSendingEmail, setIsSendingEmail] = useState(false);
+  const [emailSentStatus, setEmailSentStatus] = useState<{success: boolean, message: string} | null>(null);
+
+  // Load state from localStorage on initial render
+  useEffect(() => {
+    const savedQuery = localStorage.getItem('researchConnect_searchQuery');
+    const savedProfessors = localStorage.getItem('researchConnect_professors');
+    const savedSuggestion = localStorage.getItem('researchConnect_aiSuggestion');
+    const savedHasSearched = localStorage.getItem('researchConnect_hasSearched');
+    const savedSelectedProfessor = localStorage.getItem('selectedProfessorForEmail');
+    
+    if (savedQuery) setSearchQuery(savedQuery);
+    if (savedProfessors) setFilteredProfessors(JSON.parse(savedProfessors));
+    if (savedSuggestion) setAISuggestion(savedSuggestion);
+    if (savedHasSearched === 'true') setHasSearched(true);
+    
+    // Load selected professor and switch to email tab if professor was selected
+    if (savedSelectedProfessor) {
+      const professor = JSON.parse(savedSelectedProfessor);
+      setSelectedProfessorForEmail(professor);
+      setActiveTab('email');
+    }
+
+    // Load user research data
+    const userInfo = localStorage.getItem('userInfo');
+    const researchData = localStorage.getItem('researchConnect_userResearchData');
+    
+    if (userInfo) {
+      const userData = JSON.parse(userInfo);
+      setUserFullName(userData.name || '');
+    }
+    
+    if (researchData) {
+      const research = JSON.parse(researchData);
+      setResearchTitle(research.title || '');
+      setResearchAbstract(research.abstract || '');
+    }
+
+    // Handle OAuth callback parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const oauthSuccess = urlParams.get('oauth_success');
+    const oauthError = urlParams.get('oauth_error');
+    
+    if (oauthSuccess === 'true') {
+      setEmailSentStatus({ 
+        success: true, 
+        message: '🎉 Gmail connected successfully! You can now send emails directly from the website.' 
+      });
+      // Clean up URL parameters
+      window.history.replaceState({}, document.title, window.location.pathname);
+      setActiveTab('email'); // Switch to email tab after successful connection
+    } else if (oauthError) {
+      setEmailSentStatus({ 
+        success: false, 
+        message: `OAuth Error: ${oauthError}. Please try connecting Gmail again.` 
+      });
+      // Clean up URL parameters
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, []);
+
+  // Handle scroll detection for header styling
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 10);
+    };
+    
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Canvas background effect
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const resizeCanvas = () => {
+      if (canvas) {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        initializeDots();
+      }
+    };
+
+    const initializeDots = () => {
+      const dots = [];
+      const numDots = Math.floor((canvas.width * canvas.height) / 15000);
+      
+      for (let i = 0; i < numDots; i++) {
+        dots.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          radius: Math.random() * 1.5 + 0.5,
+          color: `rgba(12, 242, 160, ${Math.random() * 0.5 + 0.1})`,
+          vx: (Math.random() - 0.5) * 0.3,
+          vy: (Math.random() - 0.5) * 0.3
+        });
+      }
+      
+      dotsRef.current = dots;
+    };
+
+    const render = () => {
+      if (!canvas || !ctx) return;
+      
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      // Draw and update dots
+      dotsRef.current.forEach(dot => {
+        dot.x += dot.vx;
+        dot.y += dot.vy;
+        
+        // Boundary check and bounce
+        if (dot.x < 0 || dot.x > canvas.width) dot.vx *= -1;
+        if (dot.y < 0 || dot.y > canvas.height) dot.vy *= -1;
+        
+        ctx.beginPath();
+        ctx.arc(dot.x, dot.y, dot.radius, 0, Math.PI * 2);
+        ctx.fillStyle = dot.color;
+        ctx.fill();
+        
+        // Mouse interaction
+        const mouseX = mousePositionRef.current.x;
+        const mouseY = mousePositionRef.current.y;
+        
+        if (mouseX !== null && mouseY !== null) {
+          const dx = mouseX - dot.x;
+          const dy = mouseY - dot.y;
+          const distance = Math.sqrt(dx * dx + dy * dy);
+          
+          if (distance < 100) {
+            // Move away from mouse
+            const angle = Math.atan2(dy, dx);
+            const repelForce = (100 - distance) / 1000;
+            dot.vx -= Math.cos(angle) * repelForce;
+            dot.vy -= Math.sin(angle) * repelForce;
+          }
+        }
+      });
+      
+      animationFrameId.current = requestAnimationFrame(render);
+    };
+
+    const handleMouseMove = (e: MouseEvent) => {
+      mousePositionRef.current = { x: e.clientX, y: e.clientY };
+    };
+
+    const handleMouseLeave = () => {
+      mousePositionRef.current = { x: null, y: null };
+    };
+
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+    window.addEventListener('mousemove', handleMouseMove);
+    document.documentElement.addEventListener('mouseleave', handleMouseLeave);
+    
+    render();
+    
+    return () => {
+      window.removeEventListener('resize', resizeCanvas);
+      window.removeEventListener('mousemove', handleMouseMove);
+      document.documentElement.removeEventListener('mouseleave', handleMouseLeave);
+      if (animationFrameId.current) {
+        cancelAnimationFrame(animationFrameId.current);
+      }
+    };
+  }, []);
+
+  // Load user name from local storage
+  useEffect(() => {
+    // In a real app, this would come from authentication
+    const storedUserName = localStorage.getItem('userName');
+    if (storedUserName) {
+      setUserName(storedUserName);
+    }
+    
+    // Set greeting based on time of day
+    setGreeting(getTimeBasedGreeting(storedUserName || undefined));
+    
+    // Update greeting every hour
+    const intervalId = setInterval(() => {
+      setGreeting(getTimeBasedGreeting(storedUserName || undefined));
+    }, 60 * 60 * 1000); // every hour
+    
+    return () => clearInterval(intervalId);
+  }, []);
+
+  // Check which professors are already saved
+  useEffect(() => {
+    const savedProfs = JSON.parse(localStorage.getItem('savedProfessors') || '[]');
+    const savedIds = savedProfs.map((p: any) => p.id.toString());
+    setSavedProfessors(savedIds);
+  }, []);
+
+  const handleSearch = async (query?: string) => {
+    const searchTerm = query || searchQuery;
+    
+    // If empty search, don't run the search
+    if (!searchTerm.trim()) {
+      return;
+    }
+    
+    setIsLoading(true);
+    setSearchQuery(searchTerm); // Update search input if tag is clicked
+    
+    // Save search query to localStorage
+    localStorage.setItem('researchConnect_searchQuery', searchTerm);
+    
+    try {
+      // Call our API endpoint
+      const response = await axios.get(`/api/professor-search?query=${encodeURIComponent(searchTerm)}`);
+      
+      // Process the professors data
+      let professors = response.data.professors;
+      
+      // Get the AI suggestion
+      const suggestion = response.data.aiSuggestion;
+      setAISuggestion(suggestion);
+      localStorage.setItem('researchConnect_aiSuggestion', suggestion);
+      
+      // Add some mock data for UI display purposes
+      professors = professors.map((prof: Professor) => ({
+        ...prof,
+        id: Math.floor(Math.random() * 10000),
+        publications: Math.floor(Math.random() * 100) + 10,
+        citations: Math.floor(Math.random() * 5000) + 500,
+        title: `Professor of ${prof.field_of_research.split(';')[0]}`,
+        image: `https://source.unsplash.com/random/256x256/?professor&${Math.random()}`,
+        researchAreas: prof.field_of_research.split(';').map(area => area.trim())
+      }));
+      
+      setFilteredProfessors(professors);
+      setHasSearched(true);
+      
+      // Save results to localStorage
+      localStorage.setItem('researchConnect_professors', JSON.stringify(professors));
+      localStorage.setItem('researchConnect_hasSearched', 'true');
+    } catch (error) {
+      console.error('Error searching professors:', error);
+      setFilteredProfessors([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSaveProfessor = (professor: Professor) => {
+    const savedProfs = JSON.parse(localStorage.getItem('savedProfessors') || '[]');
+    const professorData = {
+      id: professor.id,
+      name: professor.name,
+      email: professor.email,
+      department: professor.field_of_research.split(';')[0] || professor.field_of_research,
+      interests: professor.field_of_research,
+      savedAt: new Date().toISOString()
+    };
+    
+    // Check if already saved
+    const isAlreadySaved = savedProfs.some((p: any) => p.id === professor.id);
+    
+    if (!isAlreadySaved) {
+      savedProfs.push(professorData);
+      localStorage.setItem('savedProfessors', JSON.stringify(savedProfs));
+      setSavedProfessors([...savedProfessors, professor.id?.toString() || '']);
+      
+      // Show success message
+      alert(`${professor.name} has been saved to your professors!`);
+    } else {
+      alert(`${professor.name} is already saved!`);
+    }
+  };
+
+  const handlePersonalizedEmail = (professor: Professor) => {
+    // Store the selected professor data for the email tab
+    setSelectedProfessorForEmail(professor);
+    localStorage.setItem('selectedProfessorForEmail', JSON.stringify(professor));
+    
+    // Switch to the email tab
+    setActiveTab('email');
+    
+    // Scroll to top of the page after a small delay to ensure tab content is rendered
+    setTimeout(() => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, 100);
+  };
+
+  // ShinyText component from the home page
+  const ShinyText = ({ text, className = "" }: { text: string; className?: string }) => (
+    <div className={`relative inline-block group ${className}`}>
+      <span className="relative z-10">{text}</span>
+      <div className="absolute inset-0 w-full h-full overflow-hidden rounded-inherit opacity-0 group-hover:opacity-100 transition-opacity duration-700 z-0">
+        <div className="absolute top-0 left-0 w-[200%] h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-shine z-0" />
+      </div>
+    </div>
+  );
+
+  const navLinks = [
+    { href: "/professors", label: "Professors", icon: <GraduationCap className="h-4 w-4" /> },
+    { href: "/profile", label: "Profile", icon: <User className="h-4 w-4" /> },
+  ];
+
+  // Reset search state when component unmounts or user navigates away
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      setSearchQuery("");
+      setFilteredProfessors([]);
+      setHasSearched(false);
+      setAISuggestion("");
+      localStorage.removeItem('researchConnect_searchQuery');
+      localStorage.removeItem('researchConnect_professors');
+      localStorage.removeItem('researchConnect_aiSuggestion');
+      localStorage.removeItem('researchConnect_hasSearched');
+    };
+
+    const handleRouteChange = () => {
+      handleBeforeUnload();
+    };
+
+    // Listen for page unload
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    
+    // Listen for route changes (if using Next.js router)
+    const router = require('next/router').default;
+    router.events.on('routeChangeStart', handleRouteChange);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      router.events.off('routeChangeStart', handleRouteChange);
+    };
+  }, []);
+
+  // Add this section to render the AI suggestion
+  const renderAISuggestion = () => {
+    if (!filteredProfessors.length || !hasSearched) return null;
+    
+    return (
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.2 }}
+        className="bg-[#1a1a1a]/80 border border-[#0CF2A0]/20 rounded-xl p-6 mb-8 max-w-4xl mx-auto w-full shadow-lg"
+      >
+        <div className="flex items-start gap-4">
+          <div className="bg-[#0CF2A0]/20 rounded-full p-3 mt-1">
+            <SearchIcon className="h-6 w-6 text-[#0CF2A0]" />
+          </div>
+          <div className="flex-1">
+            <h3 className="text-lg font-medium text-white mb-3">Professor Recommendation</h3>
+            <p className="text-gray-300 text-base leading-relaxed">
+              {aiSuggestion || "Here are some professors that match your search criteria. Consider reaching out to those whose research interests align with your goals."}
+            </p>
+          </div>
+        </div>
+      </motion.div>
+    );
+  };
+
+  // Generate personalized email
+  const generatePersonalizedEmail = async () => {
+    if (!selectedProfessorForEmail || !researchTitle.trim() || !researchAbstract.trim()) {
+      return;
+    }
+
+    setIsGeneratingEmail(true);
+    
+    try {
+      // Save research data to localStorage
+      localStorage.setItem('researchConnect_userResearchData', JSON.stringify({
+        title: researchTitle,
+        abstract: researchAbstract
+      }));
+
+      // Generate email content
+      const emailContent = `Subject: Research Collaboration Opportunity - ${researchTitle}
+
+Dear Professor ${selectedProfessorForEmail.name},
+
+I hope this email finds you well. My name is ${userFullName}, and I am writing to express my interest in potential research collaboration opportunities in your field of ${selectedProfessorForEmail.field_of_research}.
+
+I have been following your work at ${selectedProfessorForEmail.university_name} and am particularly impressed by your research contributions. Your expertise aligns perfectly with my research interests.
+
+Research Overview:
+Title: "${researchTitle}"
+
+Abstract: ${researchAbstract}
+
+I believe there could be valuable synergies between your ongoing research in ${selectedProfessorForEmail.field_of_research} and my work. I would be honored to discuss potential collaboration opportunities, whether through research partnerships, mentorship, or guidance on my current project.
+
+I have attached my research proposal for your review and would welcome the opportunity to discuss this further at your convenience. Please let me know if you would be interested in a brief meeting or phone call to explore potential collaboration.
+
+Thank you for your time and consideration. I look forward to your response.
+
+Best regards,
+${userFullName}
+
+---
+Research Focus: ${researchTitle}
+Contact: [Your Email]
+[Your Institution/Affiliation]`;
+
+      setGeneratedEmail(emailContent);
+    } catch (error) {
+      console.error('Error generating email:', error);
+    } finally {
+      setIsGeneratingEmail(false);
+    }
+  };
+
+  // Copy email to clipboard
+  const copyEmailToClipboard = async () => {
+    try {
+      await navigator.clipboard.writeText(generatedEmail);
+      // You could add a toast notification here
+      alert('Email copied to clipboard!');
+    } catch (error) {
+      console.error('Failed to copy email:', error);
+    }
+  };
+
+  // Send email via Gmail (actual implementation)
+  const sendEmailViaGmail = async () => {
+    if (!selectedProfessorForEmail || !generatedEmail.trim()) {
+      return;
+    }
+
+    setIsSendingEmail(true);
+    setEmailSentStatus(null);
+
+    try {
+      // Extract subject from generated email
+      const lines = generatedEmail.split('\n');
+      const subjectLine = lines.find(line => line.startsWith('Subject:'));
+      const subject = subjectLine ? subjectLine.replace('Subject:', '').trim() : `Research Collaboration Opportunity - ${researchTitle}`;
+      
+      // Extract body (everything after the subject line)
+      const subjectIndex = lines.findIndex(line => line.startsWith('Subject:'));
+      const body = lines.slice(subjectIndex + 1).join('\n').trim();
+
+      // Call the send-email API
+      const response = await fetch('/api/composio/send-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          to: selectedProfessorForEmail.email,
+          subject: subject,
+          body: body
+        }),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        setEmailSentStatus({
+          success: true,
+          message: `✅ ${result.message} via ${result.service}`
+        });
+        
+        // Show additional info if tools are ready but not sent
+        if (result.status === 'tools_ready' && result.availableTools) {
+          setEmailSentStatus(prev => ({
+            ...prev!,
+            message: prev!.message + `\n🔧 Available tools: ${result.availableTools.join(', ')}`
+          }));
+        }
+      } else {
+        // Handle specific error cases
+        if (result.error === 'Gmail not authenticated') {
+          throw new Error(`Gmail not authenticated: ${result.authInstructions}`);
+        } else if (response.status === 429) {
+          throw new Error(`Rate limit reached: ${result.message}`);
+        } else if (response.status === 400) {
+          throw new Error(`Configuration error: ${result.message || result.error}`);
+        } else {
+          throw new Error(result.message || result.error || `HTTP ${response.status}: Failed to send email`);
+        }
+      }
+
+    } catch (error) {
+      console.error('Error sending email:', error);
+      
+      setEmailSentStatus({
+        success: false,
+        message: `❌ Failed to send email. ${error instanceof Error ? error.message : 'Please check your email service configuration.'}`
+      });
+    } finally {
+      setIsSendingEmail(false);
+    }
+  };
+
+  // Handle Gmail connection status change
+  const handleGmailConnectionChange = (isConnected: boolean) => {
+    setIsGmailConnected(isConnected);
+  };
+
+  // Scroll to top when switching to email tab
+  useEffect(() => {
+    if (activeTab === 'email') {
+      // Use a longer delay to ensure all content is fully rendered
+      setTimeout(() => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }, 200);
+    }
+  }, [activeTab]);
+
+  return (
+    <div className="relative min-h-screen bg-[#111111] text-gray-300 flex flex-col overflow-x-hidden">
+      {/* Interactive Background */}
+      <canvas ref={canvasRef} className="absolute inset-0 z-0 pointer-events-none opacity-80" />
+      <div className="absolute inset-0 z-1 pointer-events-none" style={{
+            background: 'linear-gradient(to bottom, transparent 0%, #111111 90%), radial-gradient(ellipse at center, transparent 40%, #111111 95%)'
+      }}></div>
+      
+      {/* Combined Navigation */}
+      <motion.div 
+        className="sticky top-0 z-30 bg-[#111111]/90 backdrop-blur-md border-b border-gray-800/50 shadow-md"
+        initial={{ y: -100 }}
+        animate={{ y: 0 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+      >
+        <div className="container mx-auto px-4">
+          <div className="flex items-center justify-center h-20">
+            <motion.div 
+              className="bg-[#1a1a1a]/80 backdrop-blur-xl rounded-2xl p-2 border border-gray-700/50 shadow-lg"
+              whileHover={{ 
+                scale: 1.02,
+                boxShadow: "0 8px 32px rgba(12, 242, 160, 0.15)"
+              }}
+              transition={{ duration: 0.3, ease: "easeOut" }}
+            >
+              <div className="flex space-x-2">
+                {/* Main Navigation Links */}
+                {navLinks.map((link) => (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className={cn(
+                      "px-4 py-3 rounded-xl text-sm font-medium transition-all duration-300 flex items-center gap-2 hover:scale-105",
+                      link.href === "/search" 
+                        ? "bg-[#0CF2A0]/15 text-[#0CF2A0]" 
+                        : "text-gray-300 hover:text-white hover:bg-white/5"
+                    )}
+                  >
+                    {link.icon}
+                    <span>{link.label}</span>
+                  </Link>
+                ))}
+                
+                {/* Animated Divider */}
+                <div className="flex items-center px-2">
+                  <div className="w-px bg-gradient-to-b from-transparent via-gray-600 to-transparent h-8" />
+                </div>
+                
+                {/* Tab Navigation for Search Page */}
+                <motion.button
+                  onClick={() => setActiveTab('search')}
+                  className={`px-6 py-3 rounded-xl text-sm font-medium transition-all duration-300 flex items-center gap-2 ${
+                    activeTab === 'search'
+                      ? 'bg-[#0CF2A0] text-black shadow-lg'
+                      : 'text-gray-300 hover:text-white hover:bg-white/5'
+                  }`}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <SearchIcon className="h-4 w-4" />
+                  Search Professors
+                </motion.button>
+                <motion.button
+                  onClick={() => setActiveTab('email')}
+                  className={`px-6 py-3 rounded-xl text-sm font-medium transition-all duration-300 flex items-center gap-2 ${
+                    activeTab === 'email'
+                      ? 'bg-[#0CF2A0] text-black shadow-lg'
+                      : 'text-gray-300 hover:text-white hover:bg-white/5'
+                  }`}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <PenTool className="h-4 w-4" />
+                  Personalized Email
+                </motion.button>
+                <motion.button
+                  onClick={() => setActiveTab('assistant')}
+                  className={`px-6 py-3 rounded-xl text-sm font-medium transition-all duration-300 flex items-center gap-2 ${
+                    activeTab === 'assistant'
+                      ? 'bg-[#0CF2A0] text-black shadow-lg'
+                      : 'text-gray-300 hover:text-white hover:bg-white/5'
+                  }`}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <MessageCircle className="h-4 w-4" />
+                  AI Assistant
+                </motion.button>
+              </div>
+            </motion.div>
+            
+            {/* Mobile menu button */}
+            <div className="md:hidden absolute right-4 flex items-center">
+              <motion.button 
+                className="text-gray-300 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-[#0CF2A0] p-2 rounded-lg"
+                onClick={() => alert('Mobile menu placeholder')}
+                whileHover={{ scale: 1.1, rotate: 90 }}
+                whileTap={{ scale: 0.9 }}
+                transition={{ duration: 0.2 }}
+              >
+                <svg className="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              </motion.button>
+            </div>
+          </div>
+        </div>
+      </motion.div>
+
+      <main className="flex-grow flex flex-col items-center justify-center text-center px-4 pt-12 pb-16 relative z-10">
+        {/* Tab Content */}
+        <AnimatePresence mode="wait">
+          {activeTab === 'search' ? (
+            <motion.div
+              key="search-tab"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+              className="w-full max-w-6xl mx-auto"
+            >
+              {/* Hero Section with Search */}
+              <section className="w-full">
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.5 }}
+                  className="mb-6"
+                >
+                  <ShinyText text="Find Academic Excellence" className="bg-[#1a1a1a] border border-gray-700 text-[#0CF2A0] px-4 py-1 rounded-full text-xs sm:text-sm font-medium cursor-pointer hover:border-[#0CF2A0]/50 transition-colors" />
+                </motion.div>
+              
+                <motion.h1 
+                  className="text-4xl md:text-5xl lg:text-[60px] font-bold mb-6 text-white leading-tight"
+                  initial={{ opacity: 0, y: -20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.1 }}
+                >
+                  Find Professors for Your <span className="text-[#0CF2A0]">Research</span>
+                </motion.h1>
+                
+                <motion.p 
+                  className="text-base md:text-lg text-gray-400 max-w-3xl mx-auto mb-10"
+                  initial={{ opacity: 0, y: -20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.2 }}
+                >
+                  Connect with leading professors in your field of interest. Enter a research topic to find experts who can mentor or collaborate with you.
+                </motion.p>
+                
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.5, delay: 0.3 }}
+                  className="flex justify-center w-full max-w-4xl mx-auto"
+                >
+                  <PromptInput
+                    value={searchQuery}
+                    onValueChange={setSearchQuery}
+                    isLoading={isLoading}
+                    onSubmit={handleSearch}
+                    className="w-full border-gray-700 hover:border-[#0CF2A0]/50 focus:border-[#0CF2A0] bg-[#1a1a1a]/80 backdrop-blur relative"
+                  >
+                    <PromptInputTextarea 
+                      placeholder="Search research topics, professors, or universities..." 
+                      className="text-white placeholder:text-gray-400 text-lg text-center"
+                    />
+                    
+                    {/* Loading animation overlay */}
+                    <AnimatePresence>
+                      {isLoading && (
+                        <motion.div 
+                          className="absolute inset-0 flex items-center justify-center bg-black/30 backdrop-blur-sm rounded-3xl z-10"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                          transition={{ duration: 0.2 }}
+                        >
+                          <motion.div 
+                            className="flex items-center space-x-3"
+                            animate={{ scale: [0.95, 1.05, 0.95] }}
+                            transition={{ 
+                              repeat: Infinity, 
+                              duration: 1.5,
+                              ease: "easeInOut" 
+                            }}
+                          >
+                            <motion.div 
+                              className="w-3 h-3 bg-[#0CF2A0] rounded-full"
+                              animate={{ 
+                                opacity: [0.5, 1, 0.5],
+                                scale: [0.8, 1.2, 0.8]
+                              }}
+                              transition={{ 
+                                repeat: Infinity, 
+                                duration: 1, 
+                                delay: 0,
+                                ease: "easeInOut"
+                              }}
+                            />
+                            <motion.div 
+                              className="w-3 h-3 bg-[#0CF2A0] rounded-full"
+                              animate={{ 
+                                opacity: [0.5, 1, 0.5],
+                                scale: [0.8, 1.2, 0.8]
+                              }}
+                              transition={{ 
+                                repeat: Infinity, 
+                                duration: 1, 
+                                delay: 0.2,
+                                ease: "easeInOut"
+                              }}
+                            />
+                            <motion.div 
+                              className="w-3 h-3 bg-[#0CF2A0] rounded-full"
+                              animate={{ 
+                                opacity: [0.5, 1, 0.5],
+                                scale: [0.8, 1.2, 0.8]
+                              }}
+                              transition={{ 
+                                repeat: Infinity, 
+                                duration: 1, 
+                                delay: 0.4,
+                                ease: "easeInOut"
+                              }}
+                            />
+                          </motion.div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                    
+                    <PromptInputActions className="justify-end pt-2">
+                      <PromptInputAction
+                        tooltip={isLoading ? "Searching..." : "Search now"}
+                      >
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-12 w-12 rounded-full bg-[#0CF2A0] text-black hover:bg-[#0CF2A0]/90 hover:text-black touch-manipulation mobile-touch-target"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleSearch();
+                          }}
+                          onTouchEnd={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                          }}
+                          disabled={isLoading}
+                          type="button"
+                        >
+                          {isLoading ? (
+                            <Square className="h-5 w-5" />
+                          ) : (
+                            <ArrowUp className="h-5 w-5" />
+                          )}
+                        </Button>
+                      </PromptInputAction>
+                    </PromptInputActions>
+                  </PromptInput>
+                </motion.div>
+                
+                {/* Suggested Tags */}
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.4 }}
+                  className="flex justify-center flex-wrap gap-3 mt-8 max-w-4xl mx-auto px-2 text-center"
+                >
+                  <div className="w-full flex justify-center items-center mb-3">
+                    <Tag className="h-5 w-5 text-[#0CF2A0] mr-2" />
+                    <span className="text-base text-gray-300">Popular Topics</span>
+                  </div>
+                  <div className="flex flex-wrap justify-center gap-3 w-full">
+                    {SUGGESTED_TAGS.map((tag, index) => (
+                      <motion.button
+                        key={tag}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          handleSearch(tag);
+                        }}
+                        onTouchEnd={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                        }}
+                        className="text-base font-medium text-gray-300 bg-[#1a1a1a] border border-gray-700/50 px-4 py-3 rounded-full hover:border-[#0CF2A0]/50 hover:text-[#0CF2A0] hover:bg-[#0CF2A0]/10 transition-all touch-manipulation mobile-touch-target"
+                        whileHover={{ scale: 1.05, y: -2 }}
+                        whileTap={{ scale: 0.95 }}
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ 
+                          duration: 0.3,
+                          delay: 0.45 + (index * 0.03),
+                          type: "spring",
+                          stiffness: 400
+                        }}
+                      >
+                        {tag}
+                      </motion.button>
+                    ))}
+                  </div>
+                </motion.div>
+              </section>
+
+              {/* Results Section */}
+              <AnimatePresence mode="wait">
+                {hasSearched && (
+                  <motion.section 
+                    key="results"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    transition={{ duration: 0.5 }}
+                    className="py-12 px-6 max-w-6xl mx-auto w-full"
+                  >
+                    <h2 className="text-2xl font-bold mb-6 text-white">{
+                      filteredProfessors.length > 0 
+                        ? searchQuery.trim() 
+                          ? `Found ${filteredProfessors.length} professors for "${searchQuery}"`
+                          : `Found ${filteredProfessors.length} professors`
+                        : `No professors found${searchQuery.trim() ? ` for "${searchQuery}"` : ''}`
+                    }</h2>
+                    
+                    {/* AI Suggestion */}
+                    {renderAISuggestion()}
+                    
+                    {/* Professor Cards */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+                      {filteredProfessors.map((professor, index) => {
+                        const isSaved = savedProfessors.includes(professor.id?.toString() || '');
+                        
+                        return (
+                          <ProfessorCard
+                            key={professor.id}
+                            professor={professor}
+                            index={index}
+                            isSaved={isSaved}
+                            onSave={handleSaveProfessor}
+                            onPersonalizedEmail={handlePersonalizedEmail}
+                          />
+                        );
+                      })}
+                    </div>
+                    
+                    {/* More Professors Coming Soon Message */}
+                    {hasSearched && (
+                      <motion.div 
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5, delay: 0.5 }}
+                        className="mt-10 bg-[#1a1a1a]/50 border border-gray-800 rounded-lg p-6 text-center"
+                      >
+                        <div className="flex flex-col items-center justify-center">
+                          <AlertCircle className="h-8 w-8 text-[#0CF2A0]/70 mb-3" />
+                          <h3 className="text-xl text-white mb-2">More Professors Coming Soon</h3>
+                          <p className="text-gray-400 max-w-lg mx-auto">
+                            We're continuously adding more professors to our database. Check back soon for an expanded selection of research experts in your field of interest.
+                          </p>
+                        </div>
+                      </motion.div>
+                    )}
+                  </motion.section>
+                )}
+              </AnimatePresence>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="email-tab"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+              className="w-full max-w-4xl mx-auto"
+            >
+              {/* Personalized Email Section */}
+              <section className="w-full">
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.5 }}
+                  className="mb-6"
+                >
+                  <ShinyText text="AI-Powered Email Generation" className="bg-[#1a1a1a] border border-gray-700 text-[#0CF2A0] px-4 py-1 rounded-full text-xs sm:text-sm font-medium cursor-pointer hover:border-[#0CF2A0]/50 transition-colors" />
+                </motion.div>
+
+                {/* Gmail Connection Status */}
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.1 }}
+                >
+                  <GmailConnection onConnectionStatusChange={handleGmailConnectionChange} />
+                </motion.div>
+              
+                <motion.h1 
+                  className="text-4xl md:text-5xl lg:text-[60px] font-bold mb-6 text-white leading-tight"
+                  initial={{ opacity: 0, y: -20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.1 }}
+                >
+                  {selectedProfessorForEmail ? (
+                    <>Send an Email to <span className="text-[#0CF2A0]">{selectedProfessorForEmail.name}</span></>
+                  ) : (
+                    <>Write <span className="text-[#0CF2A0]">Personalized</span> Emails</>
+                  )}
+                </motion.h1>
+                
+                <motion.p 
+                  className="text-base md:text-lg text-gray-400 max-w-3xl mx-auto mb-10"
+                  initial={{ opacity: 0, y: -20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.2 }}
+                >
+                  {selectedProfessorForEmail ? (
+                    <>
+                      Craft a personalized research collaboration email to <span className="text-[#0CF2A0] font-medium">{selectedProfessorForEmail.name}</span> from <span className="text-[#0CF2A0] font-medium">{selectedProfessorForEmail.university_name}</span>. Share your research details to create a compelling outreach message tailored to their expertise in {selectedProfessorForEmail.field_of_research.split(';')[0]}.
+                    </>
+                  ) : (
+                    "Provide your research details and we'll generate personalized emails to professors. Share your research title and abstract to create compelling outreach messages."
+                  )}
+                </motion.p>
+
+                {/* Selected Professor Info Card */}
+                {selectedProfessorForEmail && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 0.3 }}
+                    className="bg-[#1a1a1a]/90 border border-[#0CF2A0]/40 rounded-2xl p-8 mb-8 shadow-lg"
+                  >
+                    <div className="flex items-center gap-3 mb-6">
+                      <div className="w-3 h-3 bg-[#0CF2A0] rounded-full"></div>
+                      <h3 className="text-xl font-bold text-white">Selected Professor</h3>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                      {/* Professor Info */}
+                      <div className="lg:col-span-2 space-y-4">
+                        <div>
+                          <h4 className="text-2xl font-bold text-[#0CF2A0] mb-2">{selectedProfessorForEmail.name}</h4>
+                          <div className="flex items-center gap-2 mb-3">
+                            <GraduationCap className="h-5 w-5 text-[#0CF2A0]" />
+                            <span className="text-lg font-medium text-gray-300">{selectedProfessorForEmail.university_name}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Mail className="h-4 w-4 text-[#0CF2A0]" />
+                            <a 
+                              href={`mailto:${selectedProfessorForEmail.email}`}
+                              className="text-gray-400 hover:text-[#0CF2A0] transition-colors text-sm"
+                            >
+                              {selectedProfessorForEmail.email}
+                            </a>
+                          </div>
+                        </div>
+                        
+                        <div>
+                          <div className="flex items-center gap-2 mb-3">
+                            <Brain className="h-5 w-5 text-[#0CF2A0]" />
+                            <span className="text-[#0CF2A0] font-semibold text-lg">Research Focus</span>
+                          </div>
+                          <p className="text-gray-300 leading-relaxed">
+                            {selectedProfessorForEmail.field_of_research}
+                          </p>
+                        </div>
+                      </div>
+                      
+                      {/* Stats */}
+                      <div className="lg:col-span-1">
+                        <h5 className="text-lg font-semibold text-white mb-4">Academic Metrics</h5>
+                        <div className="space-y-4">
+                          <div className="bg-black/30 rounded-xl p-4 border border-gray-700/50">
+                            <div className="flex items-center gap-3">
+                              <BookOpen className="h-6 w-6 text-[#0CF2A0]" />
+                              <div>
+                                <div className="text-2xl font-bold text-[#0CF2A0]">{selectedProfessorForEmail.publications}</div>
+                                <div className="text-gray-400 text-sm">Publications</div>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div className="bg-black/30 rounded-xl p-4 border border-gray-700/50">
+                            <div className="flex items-center gap-3">
+                              <Award className="h-6 w-6 text-[#0CF2A0]" />
+                              <div>
+                                <div className="text-2xl font-bold text-[#0CF2A0]">{selectedProfessorForEmail.citations}</div>
+                                <div className="text-gray-400 text-sm">Citations</div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+
+                {/* Research Information Form */}
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.5, delay: 0.3 }}
+                  className="space-y-6 mb-8"
+                >
+                  {/* User Name Input */}
+                  <div className="space-y-2">
+                    <label className="text-white text-sm font-medium block text-left">Your Full Name</label>
+                    <input
+                      type="text"
+                      value={userFullName}
+                      onChange={(e) => setUserFullName(e.target.value)}
+                      placeholder="Enter your full name"
+                      className="w-full bg-[#1a1a1a]/80 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder:text-gray-400 focus:border-[#0CF2A0] focus:outline-none transition-colors"
+                    />
+                  </div>
+
+                  {/* Research Title Input */}
+                  <div className="space-y-2">
+                    <label className="text-white text-sm font-medium block text-left">Research Paper Title</label>
+                    <input
+                      type="text"
+                      value={researchTitle}
+                      onChange={(e) => setResearchTitle(e.target.value)}
+                      placeholder="Enter your research paper title"
+                      className="w-full bg-[#1a1a1a]/80 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder:text-gray-400 focus:border-[#0CF2A0] focus:outline-none transition-colors"
+                    />
+                  </div>
+
+                  {/* Research Abstract Input */}
+                  <div className="space-y-2">
+                    <label className="text-white text-sm font-medium block text-left">Research Abstract</label>
+                    <textarea
+                      value={researchAbstract}
+                      onChange={(e) => setResearchAbstract(e.target.value)}
+                      placeholder="Enter your research abstract or a detailed description of your research focus"
+                      rows={6}
+                      className="w-full bg-[#1a1a1a]/80 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder:text-gray-400 focus:border-[#0CF2A0] focus:outline-none transition-colors resize-none"
+                    />
+                  </div>
+                </motion.div>
+
+                {/* Generate Email Button */}
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.5 }}
+                  className="flex justify-center mb-8"
+                >
+                  <button
+                    onClick={generatePersonalizedEmail}
+                    disabled={!researchTitle.trim() || !researchAbstract.trim() || !selectedProfessorForEmail || isGeneratingEmail}
+                    className="bg-[#0CF2A0] text-black px-8 py-3 rounded-lg font-medium hover:bg-[#0CF2A0]/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                  >
+                    {isGeneratingEmail ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-black/70 border-t-transparent rounded-full animate-spin" />
+                        Generating...
+                      </>
+                    ) : (
+                      <>
+                        <PenTool className="h-4 w-4" />
+                        {selectedProfessorForEmail 
+                          ? `Generate Email to ${selectedProfessorForEmail.name}`
+                          : 'Generate Personalized Email'
+                        }
+                      </>
+                    )}
+                  </button>
+                </motion.div>
+
+                {/* Generated Email Display */}
+                {generatedEmail && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5 }}
+                    className="space-y-4"
+                  >
+                    <div className="flex justify-between items-center">
+                      <h3 className="text-xl font-semibold text-white text-left">Generated Email</h3>
+                      <div className="flex flex-wrap gap-2">
+                        <button
+                          onClick={copyEmailToClipboard}
+                          className="bg-gray-700 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors flex items-center gap-2 text-sm touch-manipulation mobile-button"
+                        >
+                          <Copy className="h-4 w-4" />
+                          Copy
+                        </button>
+                        
+                        {isGmailConnected && (
+                          <button
+                            onClick={sendEmailViaGmail}
+                            disabled={isSendingEmail}
+                            className="bg-[#0CF2A0] text-black px-4 py-2 rounded-lg hover:bg-[#0CF2A0]/90 transition-colors flex items-center gap-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation mobile-button"
+                          >
+                            {isSendingEmail ? (
+                              <>
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                                Sending...
+                              </>
+                            ) : (
+                              <>
+                                <Send className="h-4 w-4" />
+                                Send via Gmail
+                              </>
+                            )}
+                          </button>
+                        )}
+                        
+                        <button
+                          onClick={() => window.open(`mailto:${selectedProfessorForEmail?.email}?subject=${encodeURIComponent(`Research Collaboration Opportunity - ${researchTitle}`)}&body=${encodeURIComponent(generatedEmail)}`)}
+                          className={`px-4 py-2 rounded-lg transition-colors flex items-center gap-2 text-sm touch-manipulation mobile-button ${
+                            isGmailConnected 
+                              ? 'bg-gray-700 text-white hover:bg-gray-600' 
+                              : 'bg-[#0CF2A0] text-black hover:bg-[#0CF2A0]/90'
+                          }`}
+                        >
+                          <ExternalLink className="h-4 w-4" />
+                          Open in Email Client
+                        </button>
+                      </div>
+                    </div>
+                    
+                    {/* Email Status Message */}
+                    {emailSentStatus && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className={`p-4 rounded-lg border ${
+                          emailSentStatus.success 
+                            ? 'bg-green-900/20 border-green-500/30 text-green-400' 
+                            : 'bg-yellow-900/20 border-yellow-500/30 text-yellow-400'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2">
+                          {emailSentStatus.success ? (
+                            <Check className="h-5 w-5" />
+                          ) : (
+                            <AlertCircle className="h-5 w-5" />
+                          )}
+                          <span>{emailSentStatus.message}</span>
+                        </div>
+                      </motion.div>
+                    )}
+                    <div className="bg-[#1a1a1a]/80 border border-gray-700 rounded-lg p-6">
+                      <pre className="text-white text-sm whitespace-pre-wrap font-mono">{generatedEmail}</pre>
+                    </div>
+                  </motion.div>
+                )}
+              </section>
+            </motion.div>
+          ) : activeTab === 'assistant' ? (
+            <motion.div
+              key="assistant-tab"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+              className="w-full max-w-6xl mx-auto h-[calc(100vh-200px)]"
+            >
+              {/* AI Assistant Chat Interface - Dash Style */}
+              <section className="w-full h-full">
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.5 }}
+                  className="mb-6"
+                >
+                  <ShinyText text="Dash-Style AI Assistant" className="bg-[#1a1a1a] border border-gray-700 text-[#0CF2A0] px-4 py-1 rounded-full text-xs sm:text-sm font-medium cursor-pointer hover:border-[#0CF2A0]/50 transition-colors" />
+                </motion.div>
+              
+                <motion.h1 
+                  className="text-4xl md:text-5xl lg:text-[60px] font-bold mb-6 text-white leading-tight"
+                  initial={{ opacity: 0, y: -20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.1 }}
+                >
+                  AI Assistant for <span className="text-[#0CF2A0]">Research</span>
+                </motion.h1>
+                
+                <motion.p 
+                  className="text-base md:text-lg text-gray-400 max-w-3xl mx-auto mb-10"
+                  initial={{ opacity: 0, y: -20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.2 }}
+                >
+                  Chat with our AI assistant to manage your Gmail, scan emails, schedule meetings, and get research insights. Just like Dash, you can use natural language to perform complex tasks.
+                </motion.p>
+
+                {/* Dash-Style Chat Interface */}
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.5, delay: 0.3 }}
+                  className="h-[600px]"
+                >
+                  <DashStyleChat userId={userName || 'user'} className="h-full" />
+                </motion.div>
+              </section>
+            </motion.div>
+          ) : null}
+        </AnimatePresence>
+      </main>
+    </div>
+  );
+} 

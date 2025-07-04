@@ -1,0 +1,43 @@
+name,field_of_research,university_name,email,official_url
+Dr. Maria Apostolaki,"Design and construction of networked systems; security, blockchain and machine learning",Princeton University,apostolaki@princeton.edu,https://engineering.princeton.edu/faculty/maria-apostolaki
+Dr. Craig Arnold,Laser processing and transport in materials with particular emphasis on shaping laser-material interactions,Princeton University,arnold@princeton.edu,https://engineering.princeton.edu/faculty/craig-arnold
+Dr. Sanjeev Arora,Theoretical computer science and theoretical machine learning; computational complexity; data science,Princeton University,arora@princeton.edu,https://engineering.princeton.edu/faculty/sanjeev-arora
+Dr. Clifford Brangwynne,RNA and protein organization in living cells; Biomolecular Condensates; Gene Expression; Aggregation Diseases,Princeton University,cbrangwy@princeton.edu,https://engineering.princeton.edu/faculty/clifford-brangwynne
+Dr. Pulkit Agrawal,Artificial Intelligence and Machine Learning; Robotics,Massachusetts Institute of Technology,pulkitag@mit.edu,https://www.eecs.mit.edu/people/pulkit-agrawal/
+Dr. YuFeng (Kevin) Chen,"Robotics; Systems Theory, Control, and Autonomy",Massachusetts Institute of Technology,yufengc@mit.edu,https://www.eecs.mit.edu/people/yufeng-kevin-chen/
+Dr. Dylan Hadfield-Menell,Artificial Intelligence; Human-AI Interaction,Massachusetts Institute of Technology,dylanhm@mit.edu,https://www.eecs.mit.edu/people/dylan-hadfield-menell/
+Dr. Phillip Isola,Artificial Intelligence and Machine Learning; Computer Vision,Massachusetts Institute of Technology,phillipi@mit.edu,https://www.eecs.mit.edu/people/phillip-isola/
+Dr. Joanna Aizenberg,Materials Science; Chemistry; Chemical Biology,Harvard University,jaiz@seas.harvard.edu,https://seas.harvard.edu/person/joanna-aizenberg
+Dr. Nada Amin,Computer Science; Programming Languages,Harvard University,namin@seas.harvard.edu,https://seas.harvard.edu/person/nada-amin
+Dr. James G. Anderson,Atmospheric Chemistry; Environmental Science,Harvard University,anderson@seas.harvard.edu,https://seas.harvard.edu/person/james-g-anderson
+Dr. Monther Abu-Remaileh,Chemical Engineering; Genetics; Cellular and Organismal Adaptation; Metabolic Stress,Stanford University,monther@stanford.edu,https://engineering.stanford.edu/people/monther-abu-remaileh
+Dr. Sara Achour,Computer Science; Electrical Engineering,Stanford University,sachour@stanford.edu,https://engineering.stanford.edu/people/sara-achour
+Dr. Maneesh Agrawala,Computer Science; Computer Graphics; Human-Computer Interaction; Visualization,Stanford University,maneesh@cs.stanford.edu,https://engineering.stanford.edu/people/maneesh-agrawala
+Dr. Ian Abraham,Robotics; Optimal Control; Machine Learning; Artificial Intelligence,Yale University,ian.abraham@yale.edu,https://engineering.yale.edu/research-and-faculty/faculty-directory/ian-abraham
+Dr. Charles Ahn,Applied Physics; Materials Science,Yale University,charles.ahn@yale.edu,https://engineering.yale.edu/research-and-faculty/faculty-directory/charles-ahn
+Dr. Eric I. Altman,Chemical & Environmental Engineering,Yale University,eric.altman@yale.edu,https://engineering.yale.edu/research-and-faculty/faculty-directory/eric-i-altman
+Dr. James Aspnes,Computer Science,Yale University,james.aspnes@yale.edu,https://engineering.yale.edu/research-and-faculty/faculty-directory/james-aspnes
+Dr. Yaser S. Abu-Mostafa,Artificial Intelligence (AI) and Machine Learning (ML); Medical Applications,California Institute of Technology,sdeleon@caltech.edu,https://www.eas.caltech.edu/people/yaser
+Dr. Animashree (Anima) Anandkumar,Large-scale Machine Learning; Non-convex Optimization; High-dimensional Statistics; Tensor Algorithms,California Institute of Technology,arangelf@caltech.edu,https://www.eas.caltech.edu/people/anima
+Dr. Yair Amir,Critical infrastructure; Large-scale survivable and secure distributed systems; Cloud networking; Overlay and wireless mesh networks,Johns Hopkins University,yairamir@jhu.edu,https://engineering.jhu.edu/faculty/yair-amir/
+Dr. Raman Arora,Machine learning; Statistical signal processing; Stochastic approximation algorithms; Applications to speech and language processing,Johns Hopkins University,rarora8@jhu.edu,https://engineering.jhu.edu/faculty/raman-arora/
+Dr. Vladimir Braverman,Machine learning; Algorithms; Health care applications,Johns Hopkins University,vbraver1@jhu.edu,https://engineering.jhu.edu/faculty/vladimir-braverman/
+Dr. Randall Berry,Electrical and Computer Engineering; Wireless Networks; Game Theory; Information Theory,Northwestern University,rberry@northwestern.edu,https://www.mccormick.northwestern.edu/electrical-computer/people/faculty/
+Dr. Nivedita Arora,Electrical and Computer Engineering; Computer Science; Design,Northwestern University,nivedita.arora@northwestern.edu,https://www.mccormick.northwestern.edu/electrical-computer/people/faculty/
+Dr. Koray Aydin,Electrical and Computer Engineering; Nanophotonics; Metamaterials; Plasmonics,Northwestern University,aydin@northwestern.edu,https://www.mccormick.northwestern.edu/electrical-computer/people/faculty/
+Dr. Firooz Aflatouni,Electrical and Systems Engineering; Electronic Photonic Microsystems; Integrated Electronic-Photonic Co-Design,University of Pennsylvania,firooz@seas.upenn.edu,https://directory.seas.upenn.edu/firooz-aflatouni/
+Dr. Nicholas L. Abbott,Chemical Engineering; Colloids and Interfacial Science; Materials Science and Engineering,Cornell University,nla34@cornell.edu,https://www.engineering.cornell.edu/people/nicholas-l-abbott/
+Dr. Mohamed Abdelfattah,Computer Architecture; Deep Learning Systems; Automated Machine Learning; Reconfigurable Computing; FPGA Architecture,Cornell University,mohamed@cornell.edu,https://www.engineering.cornell.edu/people/mohamed-abdelfattah/
+Dr. Paul Alivisatos,Nanotechnology; Nanocrystals; Biomedicine; Renewable Energy; Quantum Information Systems,University of Chicago,president@uchicago.edu,https://pme.uchicago.edu/faculty/paul-alivisatos
+Dr. Linda M. Abriola,Groundwater hydrology; Soil and groundwater remediation; Mathematical modeling of multiphase flow and transport in porous media; Engineered nanoparticle transport and reactivity,Brown University,Linda_Abriola@brown.edu,https://engineering.brown.edu/people/linda-m-abriola
+Dr. Nora Ayanian,Robotics; Multi-robot and multi-agent systems; Aerial robotics; Multi-robot mapping; Heterogeneous robots; Social computation for robotics; Mixed reality for robotics,Brown University,Nora_Ayanian@brown.edu,https://engineering.brown.edu/people/nora-ayanian
+Dr. Margie Ackerman,Protein engineering; Biotherapeutics; Vaccine technology; Engineering immune responses,Dartmouth College,margaret.e.ackerman@dartmouth.edu,https://engineering.dartmouth.edu/community/faculty/margie-ackerman
+Dr. Todd Millstein,Computer Science; Programming Languages; Software Engineering; Program Analysis,"University of California, Los Angeles",todd@cs.ucla.edu,https://samueli.ucla.edu/search-faculty/#cs
+Dr. Miryung Kim,Computer Science; Software Engineering; Program Analysis; Mining Software Repositories,"University of California, Los Angeles",miryung@cs.ucla.edu,https://samueli.ucla.edu/search-faculty/#cs
+Dr. Glenn Reinman,Computer Science; Computer Architecture; Hardware-Software Co-design,"University of California, Los Angeles",reinman@cs.ucla.edu,https://samueli.ucla.edu/search-faculty/#cs
+Dr. Amit Sahai,Computer Science; Cryptography; Security; Theoretical Computer Science,"University of California, Los Angeles",sahai@cs.ucla.edu,https://samueli.ucla.edu/search-faculty/#cs
+Dr. Yizhou Sun,Computer Science; Data Mining; Machine Learning; Network Analysis,"University of California, Los Angeles",yzsun@cs.ucla.edu,https://samueli.ucla.edu/search-faculty/#cs
+Dr. Pieter Abbeel,"Artificial Intelligence; Control, Intelligent Systems, and Robotics","University of California, Berkeley",pabbeel@cs.berkeley.edu,https://www2.eecs.berkeley.edu/Faculty/Homepages/abbeel.html
+Dr. Ahmed Alaa,Machine Learning; Artificial Intelligence; Healthcare Applications,"University of California, Berkeley",amalaa@berkeley.edu,https://www2.eecs.berkeley.edu/Faculty/Lists/faculty.html
+Dr. Elad Alon,"Integrated Circuits; Design, Modeling and Analysis; Information, Data, Network, and Communication Sciences; Computer Architecture & Engineering","University of California, Berkeley",elad@eecs.berkeley.edu,https://www2.eecs.berkeley.edu/Faculty/Lists/faculty.html
+Dr. Alexey Fedorov,Earth Sciences; Ocean Sciences; Atmospheric Sciences,Yale University,alexey.fedorov@yale.edu,https://earth.yale.edu/faculty 

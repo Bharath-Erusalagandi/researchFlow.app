@@ -1,0 +1,22 @@
+{
+  "hosting": {
+    "public": "uniFlow-research",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ]
+  },
+  "apphosting": {
+    "source": {
+      "projectId": "uniflow-research",
+      "location": "us-central1"
+    },
+    "build": {
+      "commands": [
+        "npm ci",
+        "npm run build"
+      ]
+    }
+  }
+}

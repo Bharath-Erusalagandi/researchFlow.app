@@ -1,0 +1,60 @@
+# Settings for Backend (on Cloud Run).
+# See https://firebase.google.com/docs/app-hosting/configure#cloud-run
+runConfig:
+  minInstances: 0
+  maxInstances: 10
+  concurrency: 80
+  cpu: 1
+  memoryMiB: 512
+
+# Environment variables
+env:
+  # Supabase Configuration
+  - variable: NEXT_PUBLIC_SUPABASE_URL
+    value: "https://vutajjxzfbiocaxmscbz.supabase.co"
+    availability:
+      - BUILD
+      - RUNTIME
+  
+  - variable: NEXT_PUBLIC_SUPABASE_ANON_KEY
+    value: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ1dGFqanh6ZmJpb2NheG1zY2J6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc1OTgwNjgsImV4cCI6MjA2MzE3NDA2OH0.oouUhiQC8Zpb1eTnX5cj7wwjZfLE_ZzhYKxMpp1GEmI"
+    availability:
+      - BUILD
+      - RUNTIME
+  
+  - variable: NEXT_PUBLIC_GOOGLE_CLIENT_ID
+    value: "52260082776-t645l465pv40h5b5mpkocrqerd5c1ao5.apps.googleusercontent.com"
+    availability:
+      - BUILD
+      - RUNTIME
+
+# Environment variables and secrets.
+# env:
+  # Configure environment variables.
+  # See https://firebase.google.com/docs/app-hosting/configure#user-defined-environment
+  # - variable: MESSAGE
+  #   value: Hello world!
+  #   availability:
+  #     - BUILD
+  #     - RUNTIME
+
+  # Grant access to secrets in Cloud Secret Manager.
+  # See https://firebase.google.com/docs/app-hosting/configure#secret-parameters
+  # - variable: MY_SECRET
+  #   secret: mySecretRef
+
+# Server-only environment variables (these should be configured in your deployment platform)
+# - variable: GROQ_API_KEY
+#   secret: groq_api_key_secret
+#   availability:
+#     - RUNTIME
+#   
+# - variable: JWT_SECRET
+#   secret: jwt_secret
+#   availability:
+#     - RUNTIME
+#   
+# - variable: MONGODB_URI
+#   secret: mongodb_uri_secret
+#   availability:
+#     - RUNTIME
