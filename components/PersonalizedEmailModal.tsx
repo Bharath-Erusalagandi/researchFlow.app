@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Send, Loader2, FileText, User, Brain, Sparkles, Edit3, Clock, Trash2, Link, Upload } from 'lucide-react';
+import { X, Send, Loader2, FileText, User, Brain, Sparkles, Edit3, Clock, Trash2, Link, Upload, ChevronRight, ChevronLeft, CheckCircle } from 'lucide-react';
 import { GmailConnectionButton } from './GmailConnectionButton';
 
 interface Professor {
@@ -41,6 +41,8 @@ interface ScheduledEmail {
   status: 'scheduled' | 'sent' | 'cancelled';
 }
 
+type WizardStep = 'personal' | 'research' | 'links' | 'generated' | 'editing';
+
 export const PersonalizedEmailModal: React.FC<PersonalizedEmailModalProps> = ({
   isOpen,
   onClose,
@@ -60,7 +62,7 @@ export const PersonalizedEmailModal: React.FC<PersonalizedEmailModalProps> = ({
   const [generatedEmail, setGeneratedEmail] = useState('');
   const [editableEmail, setEditableEmail] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
-  const [step, setStep] = useState<'input' | 'generated' | 'editing'>('input');
+  const [currentStep, setCurrentStep] = useState<WizardStep>('personal');
   const [isLoading, setIsLoading] = useState(false);
   const [emailStatus, setEmailStatus] = useState('');
   const [isGmailConnected, setIsGmailConnected] = useState(false);
@@ -194,25 +196,34 @@ P.S. I am particularly interested in how your work on ${professorField} could co
 
     setGeneratedEmail(emailTemplate);
     setEditableEmail(emailTemplate);
-    setStep('generated');
+    setCurrentStep('generated');
     setIsGenerating(false);
   };
 
   const handleEditEmail = () => {
-    setStep('editing');
+    setCurrentStep('editing');
   };
 
   const handleSaveEdits = () => {
     setGeneratedEmail(editableEmail);
-    setStep('generated');
+    setCurrentStep('generated');
   };
 
   const scheduleEmail = async (email: string, delayMinutes: number = 4) => {
-    const lines = email.split('\n');
-    const subjectLine = lines.find(line => line.startsWith('Subject:'));
-    const subject = subjectLine ? subjectLine.replace('Subject:', '').trim() : `Research Collaboration Opportunity - ${userInfo.title}`;
-    const body = lines.slice(lines.findIndex(line => line.startsWith('Subject:')) + 1).join('\n').trim();
+    const scheduledTime = new Date(Date.now() + delayMinutes * 60000);
+    const emailId = Date.now().toString();
     
+    const scheduledEmail: ScheduledEmail = {
+      id: emailId,
+      professorEmail: professor.email,
+      subject: `Research Collaboration Opportunity - ${userInfo.title}`,
+      body: email,
+      scheduledTime: scheduledTime,
+      status: 'scheduled'
+    };
+
+    setScheduledEmails(prev => [...prev, scheduledEmail]);
+
     try {
       const response = await fetch('/api/composio/schedule-email', {
         method: 'POST',
@@ -220,87 +231,98 @@ P.S. I am particularly interested in how your work on ${professorField} could co
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          action: 'schedule',
+          entityId: connectedAccountId,
           to: professor.email,
-          subject,
-          body,
-          delayMinutes
+          subject: `Research Collaboration Opportunity - ${userInfo.title}`,
+          body: email,
+          scheduledTime: scheduledTime.toISOString()
         }),
       });
 
       const result = await response.json();
-
+      
       if (result.success) {
-        const scheduledTime = new Date(result.scheduledTime);
-        const scheduledEmail: ScheduledEmail = {
-          id: result.emailId,
-          professorEmail: professor.email,
-          subject,
-          body,
-          scheduledTime,
-          status: 'scheduled'
-        };
-        
-        setScheduledEmails(prev => [...prev, scheduledEmail]);
-        setEmailStatus(`Email scheduled to send in ${delayMinutes} minutes at ${scheduledTime.toLocaleTimeString()}. You can cancel it before then.`);
+        setEmailStatus(`Email scheduled successfully! It will be sent at ${scheduledTime.toLocaleString()}.`);
       } else {
-        setEmailStatus(`Failed to schedule email: ${result.error}`);
+        setEmailStatus(`Error scheduling email: ${result.error}`);
+        // Remove from scheduled emails if API call failed
+        setScheduledEmails(prev => prev.filter(e => e.id !== emailId));
       }
     } catch (error) {
-      console.error('Error scheduling email:', error);
-      setEmailStatus('Network error. Failed to schedule email.');
+      setEmailStatus(`Error scheduling email: ${error}`);
+      // Remove from scheduled emails if API call failed
+      setScheduledEmails(prev => prev.filter(e => e.id !== emailId));
     }
   };
 
   const cancelScheduledEmail = async (scheduledEmailId: string) => {
     try {
-      const response = await fetch('/api/composio/schedule-email', {
+      const response = await fetch('/api/composio/cancel-email', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          action: 'cancel',
-          id: scheduledEmailId
+          emailId: scheduledEmailId
         }),
       });
 
       const result = await response.json();
-
+      
       if (result.success) {
-        setScheduledEmails(prev => prev.map(e => 
-          e.id === scheduledEmailId ? { ...e, status: 'cancelled' } : e
-        ));
-        setEmailStatus(prev => prev + `\n🚫 Scheduled email cancelled`);
+        setScheduledEmails(prev => prev.filter(email => email.id !== scheduledEmailId));
+        setEmailStatus('Email cancelled successfully.');
       } else {
-        setEmailStatus(prev => prev + `\n❌ Failed to cancel email: ${result.error}`);
+        setEmailStatus(`Error cancelling email: ${result.error}`);
       }
     } catch (error) {
-      console.error('Error cancelling email:', error);
-      setEmailStatus(prev => prev + `\n❌ Network error cancelling email`);
+      setEmailStatus(`Error cancelling email: ${error}`);
     }
   };
 
   const handleSendEmail = async () => {
-    if (!editableEmail && !generatedEmail) {
-      alert('Please generate an email first');
-      return;
-    }
-
-    const emailToSend = editableEmail || generatedEmail;
-    
     setIsLoading(true);
     setEmailStatus('');
     
-    // Schedule the email with a 4-minute delay
-    await scheduleEmail(emailToSend, 4);
+    await scheduleEmail(generatedEmail);
+    
     setIsLoading(false);
   };
 
   const resetModal = () => {
-    setStep('input');
+    setCurrentStep('personal');
     setGeneratedEmail('');
     setEditableEmail('');
+    setEmailStatus('');
+  };
+
+  const nextStep = () => {
+    if (currentStep === 'personal') setCurrentStep('research');
+    else if (currentStep === 'research') setCurrentStep('links');
+  };
+
+  const previousStep = () => {
+    if (currentStep === 'research') setCurrentStep('personal');
+    else if (currentStep === 'links') setCurrentStep('research');
+  };
+
+  const canProceedFromPersonal = () => {
+    return userInfo.name.trim() !== '';
+  };
+
+  const canProceedFromResearch = () => {
+    return userInfo.title.trim() !== '' && userInfo.abstract.trim() !== '';
+  };
+
+  const canGenerateEmail = () => {
+    return userInfo.resumeUrl.trim() !== '';
+  };
+
+  const getStepStatus = (step: WizardStep) => {
+    if (step === 'personal') return canProceedFromPersonal() ? 'completed' : 'current';
+    if (step === 'research') return canProceedFromResearch() ? 'completed' : 'current';
+    if (step === 'links') return canGenerateEmail() ? 'completed' : 'current';
+    return 'pending';
   };
 
   if (!isOpen) return null;
@@ -319,11 +341,11 @@ P.S. I am particularly interested in how your work on ${professorField} could co
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.9, opacity: 0 }}
           transition={{ duration: 0.2 }}
-          className="bg-[#1a1a1a] border border-gray-800 rounded-xl p-6 w-full max-w-5xl max-h-[90vh] overflow-y-auto"
+          className="bg-[#1a1a1a] border border-gray-800 rounded-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center justify-between p-6 border-b border-gray-800">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-[#0CF2A0]/20 rounded-lg">
                 <Brain className="h-6 w-6 text-[#0CF2A0]" />
@@ -341,182 +363,49 @@ P.S. I am particularly interested in how your work on ${professorField} could co
             </button>
           </div>
 
-          {/* Gmail Connection Status */}
-          <div className="mb-6">
-            <GmailConnectionButton 
-              userId={userInfo.name || 'default_user'}
-              onConnectionChange={(connected: boolean, accountId?: string) => {
-                setIsGmailConnected(connected);
-                setConnectedAccountId(accountId || null);
-              }}
-            />
-            {isGmailConnected && connectedAccountEmail && (
-              <div className="mt-2 p-3 bg-blue-900/20 border border-blue-500/30 rounded-lg">
-                <p className="text-sm text-blue-300">
-                  📧 Connected Account: <span className="font-mono font-medium">{connectedAccountEmail}</span>
-                </p>
+          {/* Progress Steps */}
+          {(currentStep === 'personal' || currentStep === 'research' || currentStep === 'links') && (
+            <div className="p-6 border-b border-gray-800">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-4">
+                  <div className={`flex items-center gap-2 ${getStepStatus('personal') === 'completed' ? 'text-[#0CF2A0]' : currentStep === 'personal' ? 'text-white' : 'text-gray-500'}`}>
+                    {getStepStatus('personal') === 'completed' ? <CheckCircle className="h-5 w-5" /> : <div className="h-5 w-5 border-2 border-current rounded-full" />}
+                    <span className="text-sm font-medium">Personal Info</span>
+                  </div>
+                  <ChevronRight className="h-4 w-4 text-gray-500" />
+                  <div className={`flex items-center gap-2 ${getStepStatus('research') === 'completed' ? 'text-[#0CF2A0]' : currentStep === 'research' ? 'text-white' : 'text-gray-500'}`}>
+                    {getStepStatus('research') === 'completed' ? <CheckCircle className="h-5 w-5" /> : <div className="h-5 w-5 border-2 border-current rounded-full" />}
+                    <span className="text-sm font-medium">Research Details</span>
+                  </div>
+                  <ChevronRight className="h-4 w-4 text-gray-500" />
+                  <div className={`flex items-center gap-2 ${getStepStatus('links') === 'completed' ? 'text-[#0CF2A0]' : currentStep === 'links' ? 'text-white' : 'text-gray-500'}`}>
+                    {getStepStatus('links') === 'completed' ? <CheckCircle className="h-5 w-5" /> : <div className="h-5 w-5 border-2 border-current rounded-full" />}
+                    <span className="text-sm font-medium">Links & Generate</span>
+                  </div>
+                </div>
               </div>
-            )}
-          </div>
-
-          {step === 'input' && (
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="space-y-6"
-            >
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Left Column */}
-                <div className="space-y-4">
-                  {/* User Name */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
-                      <User className="h-4 w-4 inline mr-2" />
-                      Your Full Name *
-                    </label>
-                    <input
-                      type="text"
-                      value={userInfo.name}
-                      onChange={(e) => setUserInfo(prev => ({ ...prev, name: e.target.value }))}
-                      placeholder="Enter your full name"
-                      className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:border-[#0CF2A0] focus:outline-none transition-colors"
-                    />
-                  </div>
-
-                  {/* Current University */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
-                      <FileText className="h-4 w-4 inline mr-2" />
-                      Current University
-                    </label>
-                    <input
-                      type="text"
-                      value={userInfo.currentUniversity}
-                      onChange={(e) => setUserInfo(prev => ({ ...prev, currentUniversity: e.target.value }))}
-                      placeholder="e.g., MIT, Stanford University"
-                      className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:border-[#0CF2A0] focus:outline-none transition-colors"
-                    />
-                  </div>
-
-                  {/* Year of Study */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
-                      <FileText className="h-4 w-4 inline mr-2" />
-                      Year of Study/Position
-                    </label>
-                    <input
-                      type="text"
-                      value={userInfo.yearOfStudy}
-                      onChange={(e) => setUserInfo(prev => ({ ...prev, yearOfStudy: e.target.value }))}
-                      placeholder="e.g., PhD student, Senior, Graduate student"
-                      className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:border-[#0CF2A0] focus:outline-none transition-colors"
-                    />
-                  </div>
-
-                  {/* Resume URL */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
-                      <Upload className="h-4 w-4 inline mr-2" />
-                      Resume/CV Link *
-                    </label>
-                    <input
-                      type="url"
-                      value={userInfo.resumeUrl}
-                      onChange={(e) => setUserInfo(prev => ({ ...prev, resumeUrl: e.target.value }))}
-                      placeholder="https://drive.google.com/file/d/... or your website link"
-                      className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:border-[#0CF2A0] focus:outline-none transition-colors"
-                    />
-                    <p className="text-xs text-gray-500 mt-1">
-                      Please provide a link to your resume (Google Drive, Dropbox, personal website, etc.)
+              
+              {/* Gmail Connection */}
+              <div className="mb-4">
+                <GmailConnectionButton 
+                  userId={userInfo.name || 'default_user'}
+                  onConnectionChange={(connected: boolean, accountId?: string) => {
+                    setIsGmailConnected(connected);
+                    setConnectedAccountId(accountId || null);
+                  }}
+                />
+                {isGmailConnected && connectedAccountEmail && (
+                  <div className="mt-2 p-3 bg-blue-900/20 border border-blue-500/30 rounded-lg">
+                    <p className="text-sm text-blue-300">
+                      Connected: <span className="font-medium">{connectedAccountEmail}</span>
                     </p>
                   </div>
-                </div>
-
-                {/* Right Column */}
-                <div className="space-y-4">
-                  {/* Research Title */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
-                      <FileText className="h-4 w-4 inline mr-2" />
-                      Research Paper/Project Title *
-                    </label>
-                    <input
-                      type="text"
-                      value={userInfo.title}
-                      onChange={(e) => setUserInfo(prev => ({ ...prev, title: e.target.value }))}
-                      placeholder="Enter your research title"
-                      className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:border-[#0CF2A0] focus:outline-none transition-colors"
-                    />
-                  </div>
-
-                  {/* Specific Interest */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
-                      <Brain className="h-4 w-4 inline mr-2" />
-                      Specific Interest in Professor&apos;s Work
-                    </label>
-                    <input
-                      type="text"
-                      value={userInfo.specificInterest}
-                      onChange={(e) => setUserInfo(prev => ({ ...prev, specificInterest: e.target.value }))}
-                      placeholder="What specifically interests you about their research?"
-                      className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:border-[#0CF2A0] focus:outline-none transition-colors"
-                    />
-                  </div>
-
-                  {/* LinkedIn URL */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
-                      <Link className="h-4 w-4 inline mr-2" />
-                      LinkedIn Profile
-                    </label>
-                    <input
-                      type="url"
-                      value={userInfo.linkedinUrl}
-                      onChange={(e) => setUserInfo(prev => ({ ...prev, linkedinUrl: e.target.value }))}
-                      placeholder="https://linkedin.com/in/your-profile"
-                      className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:border-[#0CF2A0] focus:outline-none transition-colors"
-                    />
-                  </div>
-
-                  {/* Portfolio URL */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
-                      <Link className="h-4 w-4 inline mr-2" />
-                      Portfolio/Website
-                    </label>
-                    <input
-                      type="url"
-                      value={userInfo.portfolioUrl}
-                      onChange={(e) => setUserInfo(prev => ({ ...prev, portfolioUrl: e.target.value }))}
-                      placeholder="https://your-portfolio.com"
-                      className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:border-[#0CF2A0] focus:outline-none transition-colors"
-                    />
-                  </div>
-                </div>
+                )}
               </div>
 
-              {/* Research Abstract */}
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  <FileText className="h-4 w-4 inline mr-2" />
-                  Research Abstract/Summary *
-                </label>
-                <textarea
-                  value={userInfo.abstract}
-                  onChange={(e) => setUserInfo(prev => ({ ...prev, abstract: e.target.value }))}
-                  placeholder="Provide a brief abstract or summary of your research work, methodology, and key findings..."
-                  rows={6}
-                  className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:border-[#0CF2A0] focus:outline-none transition-colors resize-none"
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  Provide a detailed description to generate a more personalized email
-                </p>
-              </div>
-
-              {/* Professor Info Display */}
+              {/* Professor Info */}
               <div className="bg-gray-900/50 rounded-lg p-4 border border-gray-700">
-                <h3 className="text-lg font-semibold text-white mb-2">Email will be sent to:</h3>
+                <h3 className="text-sm font-medium text-gray-300 mb-2">Email Recipient</h3>
                 <div className="space-y-1">
                   <p className="text-[#0CF2A0] font-medium">{professor.name}</p>
                   <p className="text-gray-300 text-sm">{professor.email}</p>
@@ -528,177 +417,404 @@ P.S. I am particularly interested in how your work on ${professorField} could co
                   )}
                 </div>
               </div>
-
-              {/* Generate Button */}
-              <div className="flex justify-end gap-3">
-                <button
-                  onClick={onClose}
-                  className="px-6 py-3 border border-gray-600 text-gray-300 rounded-lg hover:bg-gray-800 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={generatePersonalizedEmail}
-                  disabled={!userInfo.name || !userInfo.title || !userInfo.abstract || !userInfo.resumeUrl || isGenerating}
-                  className="px-6 py-3 bg-[#0CF2A0] text-black rounded-lg hover:bg-[#0CF2A0]/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                >
-                  {isGenerating ? (
-                    <>
-                      <Loader2 className="h-5 w-5 animate-spin" />
-                      Generating...
-                    </>
-                  ) : (
-                    <>
-                      <Sparkles className="h-5 w-5" />
-                      Generate Email
-                    </>
-                  )}
-                </button>
-              </div>
-            </motion.div>
+            </div>
           )}
 
-          {step === 'generated' && (
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="space-y-6"
-            >
-              {/* Generated Email */}
-              <div>
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-semibold text-white">Generated Email</h3>
+          {/* Step Content */}
+          <div className="p-6">
+            {currentStep === 'personal' && (
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="space-y-6"
+              >
+                <div>
+                  <h3 className="text-xl font-semibold text-white mb-2">Personal Information</h3>
+                  <p className="text-gray-400 text-sm mb-6">Let's start with your basic information.</p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Full Name <span className="text-red-400">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={userInfo.name}
+                      onChange={(e) => setUserInfo(prev => ({ ...prev, name: e.target.value }))}
+                      placeholder="Enter your full name"
+                      className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:border-[#0CF2A0] focus:outline-none transition-colors"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Current University
+                    </label>
+                    <input
+                      type="text"
+                      value={userInfo.currentUniversity}
+                      onChange={(e) => setUserInfo(prev => ({ ...prev, currentUniversity: e.target.value }))}
+                      placeholder="e.g., MIT, Stanford University"
+                      className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:border-[#0CF2A0] focus:outline-none transition-colors"
+                    />
+                  </div>
+                  
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Academic Status
+                    </label>
+                    <input
+                      type="text"
+                      value={userInfo.yearOfStudy}
+                      onChange={(e) => setUserInfo(prev => ({ ...prev, yearOfStudy: e.target.value }))}
+                      placeholder="e.g., PhD student, Senior, Graduate student, Research Associate"
+                      className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:border-[#0CF2A0] focus:outline-none transition-colors"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex justify-end">
+                  <button
+                    onClick={nextStep}
+                    disabled={!canProceedFromPersonal()}
+                    className="px-6 py-3 bg-[#0CF2A0] text-black rounded-lg hover:bg-[#0CF2A0]/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                  >
+                    Continue
+                    <ChevronRight className="h-5 w-5" />
+                  </button>
+                </div>
+              </motion.div>
+            )}
+
+            {currentStep === 'research' && (
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="space-y-6"
+              >
+                <div>
+                  <h3 className="text-xl font-semibold text-white mb-2">Research Details</h3>
+                  <p className="text-gray-400 text-sm mb-6">Tell us about your research work.</p>
+                </div>
+
+                <div className="space-y-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Research Title <span className="text-red-400">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={userInfo.title}
+                      onChange={(e) => setUserInfo(prev => ({ ...prev, title: e.target.value }))}
+                      placeholder="Enter your research project or paper title"
+                      className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:border-[#0CF2A0] focus:outline-none transition-colors"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Research Abstract/Summary <span className="text-red-400">*</span>
+                    </label>
+                    <textarea
+                      value={userInfo.abstract}
+                      onChange={(e) => setUserInfo(prev => ({ ...prev, abstract: e.target.value }))}
+                      placeholder="Provide a clear summary of your research work, methodology, and key findings. This will help generate a more personalized email."
+                      rows={8}
+                      className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:border-[#0CF2A0] focus:outline-none transition-colors resize-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Specific Interest in Professor's Work
+                    </label>
+                    <input
+                      type="text"
+                      value={userInfo.specificInterest}
+                      onChange={(e) => setUserInfo(prev => ({ ...prev, specificInterest: e.target.value }))}
+                      placeholder="What specifically interests you about their research?"
+                      className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:border-[#0CF2A0] focus:outline-none transition-colors"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex justify-between">
+                  <button
+                    onClick={previousStep}
+                    className="px-6 py-3 border border-gray-600 text-gray-300 rounded-lg hover:bg-gray-800 transition-colors flex items-center gap-2"
+                  >
+                    <ChevronLeft className="h-5 w-5" />
+                    Back
+                  </button>
+                  <button
+                    onClick={nextStep}
+                    disabled={!canProceedFromResearch()}
+                    className="px-6 py-3 bg-[#0CF2A0] text-black rounded-lg hover:bg-[#0CF2A0]/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                  >
+                    Continue
+                    <ChevronRight className="h-5 w-5" />
+                  </button>
+                </div>
+              </motion.div>
+            )}
+
+            {currentStep === 'links' && (
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="space-y-6"
+              >
+                <div>
+                  <h3 className="text-xl font-semibold text-white mb-2">Professional Links</h3>
+                  <p className="text-gray-400 text-sm mb-6">Add your professional materials (at least resume is required).</p>
+                </div>
+
+                <div className="space-y-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      Resume/CV Link <span className="text-red-400">*</span>
+                    </label>
+                    <input
+                      type="url"
+                      value={userInfo.resumeUrl}
+                      onChange={(e) => setUserInfo(prev => ({ ...prev, resumeUrl: e.target.value }))}
+                      placeholder="https://drive.google.com/file/d/... or your website link"
+                      className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:border-[#0CF2A0] focus:outline-none transition-colors"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Google Drive, Dropbox, personal website, or any public link
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                        LinkedIn Profile
+                      </label>
+                      <input
+                        type="url"
+                        value={userInfo.linkedinUrl}
+                        onChange={(e) => setUserInfo(prev => ({ ...prev, linkedinUrl: e.target.value }))}
+                        placeholder="https://linkedin.com/in/your-profile"
+                        className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:border-[#0CF2A0] focus:outline-none transition-colors"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                        Portfolio/Website
+                      </label>
+                      <input
+                        type="url"
+                        value={userInfo.portfolioUrl}
+                        onChange={(e) => setUserInfo(prev => ({ ...prev, portfolioUrl: e.target.value }))}
+                        placeholder="https://your-portfolio.com"
+                        className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:border-[#0CF2A0] focus:outline-none transition-colors"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex justify-between">
+                  <button
+                    onClick={previousStep}
+                    className="px-6 py-3 border border-gray-600 text-gray-300 rounded-lg hover:bg-gray-800 transition-colors flex items-center gap-2"
+                  >
+                    <ChevronLeft className="h-5 w-5" />
+                    Back
+                  </button>
+                  <button
+                    onClick={generatePersonalizedEmail}
+                    disabled={!canGenerateEmail() || isGenerating}
+                    className="px-6 py-3 bg-[#0CF2A0] text-black rounded-lg hover:bg-[#0CF2A0]/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                  >
+                    {isGenerating ? (
+                      <>
+                        <Loader2 className="h-5 w-5 animate-spin" />
+                        Generating...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="h-5 w-5" />
+                        Generate Email
+                      </>
+                    )}
+                  </button>
+                </div>
+              </motion.div>
+            )}
+
+            {currentStep === 'generated' && (
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="space-y-6"
+              >
+                <div className="flex items-center justify-between">
+                  <h3 className="text-xl font-semibold text-white">Generated Email</h3>
                   <div className="flex gap-2">
                     <button
                       onClick={handleEditEmail}
                       className="text-sm text-[#0CF2A0] hover:text-[#0CF2A0]/80 transition-colors flex items-center gap-1"
                     >
                       <Edit3 className="h-4 w-4" />
-                      Edit Email
+                      Edit
                     </button>
                     <button
                       onClick={resetModal}
                       className="text-sm text-gray-400 hover:text-gray-300 transition-colors"
                     >
-                      Edit Details
+                      Start Over
                     </button>
                   </div>
                 </div>
-                <div className="bg-gray-900 border border-gray-700 rounded-lg p-4 max-h-96 overflow-y-auto">
+
+                <div className="bg-gray-900 border border-gray-700 rounded-lg p-4 max-h-96 overflow-y-auto relative">
                   <pre className="text-gray-300 whitespace-pre-wrap text-sm leading-relaxed">
                     {generatedEmail}
                   </pre>
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(generatedEmail);
+                      // You could add a toast notification here
+                    }}
+                    className="absolute top-4 right-4 p-2 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors opacity-70 hover:opacity-100"
+                    title="Copy to clipboard"
+                  >
+                    <svg className="h-4 w-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                    </svg>
+                  </button>
                 </div>
-              </div>
 
-              {/* Scheduled Emails */}
-              {scheduledEmails.length > 0 && (
-                <div className="bg-gray-900/50 border border-gray-700 rounded-lg p-4">
-                  <h4 className="text-md font-semibold text-white mb-3 flex items-center gap-2">
-                    <Clock className="h-4 w-4" />
-                    Scheduled Emails
-                  </h4>
-                  <div className="space-y-2">
-                    {scheduledEmails.map((email) => (
-                      <div key={email.id} className="flex items-center justify-between p-2 bg-gray-800 rounded">
-                        <div className="text-sm">
-                          <p className="text-gray-300">To: {email.professorEmail}</p>
-                          <p className="text-gray-400">
-                            {email.status === 'scheduled' ? 
-                              `Sends at: ${email.scheduledTime.toLocaleString()}` :
-                              `Status: ${email.status}`
-                            }
-                          </p>
+                {/* Scheduled Emails */}
+                {scheduledEmails.length > 0 && (
+                  <div className="bg-gray-900/50 border border-gray-700 rounded-lg p-4">
+                    <h4 className="text-md font-semibold text-white mb-3 flex items-center gap-2">
+                      <Clock className="h-4 w-4" />
+                      Scheduled Emails
+                    </h4>
+                    <div className="space-y-2">
+                      {scheduledEmails.map((email) => (
+                        <div key={email.id} className="flex items-center justify-between p-2 bg-gray-800 rounded">
+                          <div className="text-sm">
+                            <p className="text-gray-300">To: {email.professorEmail}</p>
+                            <p className="text-gray-400">
+                              {email.status === 'scheduled' ? 
+                                `Sends at: ${email.scheduledTime.toLocaleString()}` :
+                                `Status: ${email.status}`
+                              }
+                            </p>
+                          </div>
+                          {email.status === 'scheduled' && (
+                            <button
+                              onClick={() => cancelScheduledEmail(email.id)}
+                              className="text-red-400 hover:text-red-300 transition-colors"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                          )}
                         </div>
-                        {email.status === 'scheduled' && (
-                          <button
-                            onClick={() => cancelScheduledEmail(email.id)}
-                            className="text-red-400 hover:text-red-300 transition-colors"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Email Status */}
+                {emailStatus && (
+                  <div className="bg-gray-900/50 border border-gray-700 rounded-lg p-4">
+                    <p className="text-sm text-gray-300">{emailStatus}</p>
+                  </div>
+                )}
+
+                {/* Action Buttons */}
+                <div className="border-t border-gray-700 pt-6">
+                  <div className="flex items-center justify-between">
+                    <div className="text-sm text-gray-400">
+                      {isGmailConnected ? (
+                        <span className="flex items-center gap-2 text-green-400">
+                          <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+                          Gmail Connected
+                        </span>
+                      ) : (
+                        <span className="flex items-center gap-2 text-yellow-400">
+                          <div className="w-2 h-2 bg-yellow-400 rounded-full"></div>
+                          Connect Gmail to send
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex gap-3">
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText(generatedEmail);
+                        }}
+                        className="px-4 py-2 border border-gray-600 text-gray-300 rounded-lg hover:bg-gray-800 transition-colors flex items-center gap-2"
+                      >
+                        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                        </svg>
+                        Copy
+                      </button>
+                      <button
+                        onClick={handleSendEmail}
+                        disabled={isLoading || !isGmailConnected}
+                        className="px-6 py-2 bg-[#0CF2A0] text-black rounded-lg hover:bg-[#0CF2A0]/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 font-medium"
+                      >
+                        {isLoading ? (
+                          <>
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                            Scheduling...
+                          </>
+                        ) : (
+                          <>
+                            <Clock className="h-4 w-4" />
+                            Schedule Email
+                          </>
                         )}
-                      </div>
-                    ))}
+                      </button>
+                    </div>
                   </div>
                 </div>
-              )}
+              </motion.div>
+            )}
 
-              {/* Email Status */}
-              {emailStatus && (
-                <div className="bg-gray-900/50 border border-gray-700 rounded-lg p-4">
-                  <pre className="text-sm whitespace-pre-wrap text-gray-300">
-                    {emailStatus}
-                  </pre>
-                </div>
-              )}
-
-              {/* Action Buttons */}
-              <div className="flex justify-end gap-3">
-                <button
-                  onClick={resetModal}
-                  className="px-6 py-3 border border-gray-600 text-gray-300 rounded-lg hover:bg-gray-800 transition-colors"
-                >
-                  Start Over
-                </button>
-                <button
-                  onClick={handleSendEmail}
-                  disabled={isLoading || !isGmailConnected}
-                  className="px-6 py-3 bg-[#0CF2A0] text-black rounded-lg hover:bg-[#0CF2A0]/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                >
-                  {isLoading ? (
-                    <>
-                      <Loader2 className="h-5 w-5 animate-spin" />
-                      Scheduling...
-                    </>
-                  ) : (
-                    <>
-                      <Clock className="h-5 w-5" />
-                      Schedule Email (4 min delay)
-                    </>
-                  )}
-                </button>
-              </div>
-            </motion.div>
-          )}
-
-          {step === 'editing' && (
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="space-y-6"
-            >
-              <div>
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-semibold text-white">Edit Email</h3>
+            {currentStep === 'editing' && (
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="space-y-6"
+              >
+                <div className="flex items-center justify-between">
+                  <h3 className="text-xl font-semibold text-white">Edit Email</h3>
                   <p className="text-sm text-gray-400">Make any changes to personalize further</p>
                 </div>
+                
                 <textarea
                   value={editableEmail}
                   onChange={(e) => setEditableEmail(e.target.value)}
                   rows={20}
                   className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:border-[#0CF2A0] focus:outline-none transition-colors resize-none font-mono text-sm"
                 />
-              </div>
 
-              {/* Action Buttons */}
-              <div className="flex justify-end gap-3">
-                <button
-                  onClick={() => setStep('generated')}
-                  className="px-6 py-3 border border-gray-600 text-gray-300 rounded-lg hover:bg-gray-800 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleSaveEdits}
-                  className="px-6 py-3 bg-[#0CF2A0] text-black rounded-lg hover:bg-[#0CF2A0]/90 transition-colors flex items-center gap-2"
-                >
-                  <FileText className="h-5 w-5" />
-                  Save Changes
-                </button>
-              </div>
-            </motion.div>
-          )}
+                <div className="flex justify-end gap-3">
+                  <button
+                    onClick={() => setCurrentStep('generated')}
+                    className="px-6 py-3 border border-gray-600 text-gray-300 rounded-lg hover:bg-gray-800 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleSaveEdits}
+                    className="px-6 py-3 bg-[#0CF2A0] text-black rounded-lg hover:bg-[#0CF2A0]/90 transition-colors flex items-center gap-2"
+                  >
+                    <FileText className="h-5 w-5" />
+                    Save Changes
+                  </button>
+                </div>
+              </motion.div>
+            )}
+          </div>
         </motion.div>
       </motion.div>
     </AnimatePresence>
