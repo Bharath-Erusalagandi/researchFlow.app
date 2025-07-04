@@ -52,33 +52,53 @@ export function CustomGoogleButton({
       return;
     }
 
-    window.google.accounts.id.initialize({
-      client_id: clientId,
-      callback: (response: any) => {
-        if (response.credential) {
-          onSuccess(response);
-        } else {
-          onError?.();
-        }
-      },
-    });
+    try {
+      window.google.accounts.id.initialize({
+        client_id: clientId,
+        callback: (response: any) => {
+          if (response.credential) {
+            onSuccess(response);
+          } else {
+            onError?.();
+          }
+        },
+        auto_select: false,
+        cancel_on_tap_outside: false
+      });
 
-    window.google.accounts.id.prompt((notification: any) => {
-      if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-        // Fallback to popup if one-tap doesn't work
-        window.google.accounts.oauth2.initTokenClient({
-          client_id: clientId,
-          scope: 'openid email profile',
-          callback: (response: any) => {
-            if (response.access_token) {
-              onSuccess({ credential: response.access_token });
-            } else {
-              onError?.();
-            }
-          },
-        }).requestAccessToken();
+      // Create a temporary container for the Google button
+      const tempContainer = document.createElement('div');
+      tempContainer.style.position = 'absolute';
+      tempContainer.style.top = '-9999px';
+      tempContainer.style.left = '-9999px';
+      document.body.appendChild(tempContainer);
+
+      window.google.accounts.id.renderButton(tempContainer, {
+        theme: 'outline',
+        size: 'large',
+        type: 'standard',
+        shape: 'rectangular',
+        width: 280
+      });
+
+      // Trigger click on the hidden Google button
+      const googleButton = tempContainer.querySelector('div[role="button"]') as HTMLElement;
+      if (googleButton) {
+        googleButton.click();
+      } else {
+        // Fallback to prompt
+        window.google.accounts.id.prompt();
       }
-    });
+
+      // Clean up the temporary container
+      setTimeout(() => {
+        document.body.removeChild(tempContainer);
+      }, 1000);
+
+    } catch (error) {
+      console.error('Google Sign-In error:', error);
+      onError?.();
+    }
   };
 
   return (

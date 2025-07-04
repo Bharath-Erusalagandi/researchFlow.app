@@ -249,6 +249,25 @@ a {
     --ring: 221.2 83.2% 53.3%;
 
     --radius: 0.5rem;
+    
+    /* Custom gradient properties */
+    --pos-x: 11.14%;
+    --pos-y: 140%;
+    --spread-x: 150%;
+    --spread-y: 180.06%;
+    --color-1: #000;
+    --color-2: #08012c;
+    --color-3: #4e1e40;
+    --color-4: #70464e;
+    --color-5: #88394c;
+    --border-angle: 20deg;
+    --border-color-1: hsla(340, 75%, 60%, 0.2);
+    --border-color-2: hsla(340, 75%, 40%, 0.75);
+    --stop-1: 37.35%;
+    --stop-2: 61.36%;
+    --stop-3: 78.42%;
+    --stop-4: 89.52%;
+    --stop-5: 100%;
   }
 
   .dark {
@@ -281,130 +300,25 @@ a {
     --ring: 224.3 76.5% 48%;
   }
 
-  @property --pos-x {
-    syntax: '<percentage>';
-    initial-value: 11.14%;
-    inherits: false;
-  }
-
-  @property --pos-y {
-    syntax: '<percentage>';
-    initial-value: 140%;
-    inherits: false;
-  }
-
-  @property --spread-x {
-    syntax: '<percentage>';
-    initial-value: 150%;
-    inherits: false;
-  }
-
-  @property --spread-y {
-    syntax: '<percentage>';
-    initial-value: 180.06%;
-    inherits: false;
-  }
-
-  @property --color-1 {
-    syntax: '<color>';
-    initial-value: #000;
-    inherits: false;
-  }
-
-  @property --color-2 {
-    syntax: '<color>';
-    initial-value: #08012c;
-    inherits: false;
-  }
-
-  @property --color-3 {
-    syntax: '<color>';
-    initial-value: #4e1e40;
-    inherits: false;
-  }
-
-  @property --color-4 {
-    syntax: '<color>';
-    initial-value: #70464e;
-    inherits: false;
-  }
-
-  @property --color-5 {
-    syntax: '<color>';
-    initial-value: #88394c;
-    inherits: false;
-  }
-
-  @property --border-angle {
-    syntax: '<angle>';
-    initial-value: 20deg;
-    inherits: true;
-  }
-
-  @property --border-color-1 {
-    syntax: '<color>';
-    initial-value: hsla(340, 75%, 60%, 0.2);
-    inherits: true;
-  }
-
-  @property --border-color-2 {
-    syntax: '<color>';
-    initial-value: hsla(340, 75%, 40%, 0.75);
-    inherits: true;
-  }
-
-  @property --stop-1 {
-    syntax: '<percentage>';
-    initial-value: 37.35%;
-    inherits: false;
-  }
-
-  @property --stop-2 {
-    syntax: '<percentage>';
-    initial-value: 61.36%;
-    inherits: false;
-  }
-
-  @property --stop-3 {
-    syntax: '<percentage>';
-    initial-value: 78.42%;
-    inherits: false;
-  }
-
-  @property --stop-4 {
-    syntax: '<percentage>';
-    initial-value: 89.52%;
-    inherits: false;
-  }
-
-  @property --stop-5 {
-    syntax: '<percentage>';
-    initial-value: 100%;
-    inherits: false;
-  }
-}
-
-@layer base {
   * {
-    @apply border-border;
+    border-color: hsl(var(--border));
   }
   
-  html, body {
-    @apply bg-black;
+  html, 
+  body {
+    background-color: #000000;
     margin: 0;
     padding: 0;
     min-height: 100vh;
     width: 100%;
     overflow-x: hidden;
-    /* Improve mobile performance */
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    /* Prevent zoom on iOS when focusing inputs */
     -webkit-text-size-adjust: 100%;
   }
   
   body {
-    @apply text-foreground;
+    color: hsl(var(--foreground));
   }
   
   #__next {
@@ -416,7 +330,9 @@ a {
 
 @layer components {
   .gradient-button {
-    @apply relative appearance-none cursor-pointer;
+    position: relative;
+    appearance: none;
+    cursor: pointer;
     background: radial-gradient(
       var(--spread-x) var(--spread-y) at var(--pos-x) var(--pos-y),
       var(--color-1) var(--stop-1),
