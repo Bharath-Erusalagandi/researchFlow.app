@@ -5,6 +5,210 @@ import { parse } from 'csv-parse/sync';
 import axios from 'axios';
 import { withRateLimit } from '../../lib/rateLimit';
 
+// Smart query validation system
+interface QueryValidationResult {
+  isValid: boolean;
+  confidence: number;
+  suggestion?: string;
+  reason?: string;
+}
+
+// List of common academic/research keywords for validation
+const ACADEMIC_KEYWORDS = [
+  // Research fields
+  'machine learning', 'artificial intelligence', 'data science', 'computer science', 'biology', 'chemistry', 'physics',
+  'neuroscience', 'psychology', 'sociology', 'anthropology', 'linguistics', 'literature', 'history', 'philosophy',
+  'mathematics', 'statistics', 'engineering', 'medicine', 'genetics', 'biochemistry', 'molecular biology',
+  'environmental science', 'climate science', 'economics', 'political science', 'education', 'law', 'business',
+  'architecture', 'art', 'music', 'theater', 'film', 'journalism', 'communications', 'public health',
+  'biotechnology', 'nanotechnology', 'robotics', 'quantum', 'renewable energy', 'sustainability',
+  
+  // Research methods and topics
+  'research', 'study', 'analysis', 'theory', 'methodology', 'experiment', 'clinical', 'laboratory', 'computational',
+  'modeling', 'simulation', 'algorithm', 'optimization', 'innovation', 'development', 'application',
+  'treatment', 'diagnosis', 'therapy', 'drug', 'vaccine', 'protein', 'gene', 'DNA', 'RNA', 'cell',
+  'cancer', 'diabetes', 'alzheimer', 'autism', 'depression', 'anxiety', 'brain', 'cognitive', 'behavior',
+  'learning', 'memory', 'perception', 'consciousness', 'emotion', 'social', 'cultural', 'linguistic',
+  
+  // Academic terms
+  'professor', 'research', 'university', 'college', 'academic', 'scholar', 'scientist', 'doctor', 'phd',
+  'postdoc', 'faculty', 'department', 'institute', 'laboratory', 'lab', 'center', 'program', 'curriculum',
+  'thesis', 'dissertation', 'publication', 'journal', 'conference', 'symposium', 'seminar', 'lecture',
+  'collaboration', 'grant', 'funding', 'project', 'fellowship', 'internship', 'mentorship',
+  
+  // Common academic abbreviations and terms
+  'ai', 'ml', 'cs', 'bio', 'chem', 'phys', 'math', 'stats', 'eng', 'med', 'psych', 'neuro', 'comp',
+  'tech', 'science', 'studies', 'field', 'area', 'topic', 'subject', 'discipline', 'major', 'minor',
+  'undergraduate', 'graduate', 'masters', 'doctoral', 'bachelor', 'degree', 'course', 'class'
+];
+
+// Advanced academic topics and emerging fields
+const ADVANCED_KEYWORDS = [
+  'crispr', 'gene editing', 'stem cells', 'immunotherapy', 'precision medicine', 'personalized medicine',
+  'deep learning', 'neural networks', 'computer vision', 'natural language processing', 'nlp',
+  'blockchain', 'cryptocurrency', 'cybersecurity', 'quantum computing', 'quantum mechanics',
+  'climate change', 'global warming', 'renewable energy', 'solar', 'wind energy', 'battery technology',
+  'space exploration', 'astrophysics', 'cosmology', 'exoplanets', 'mars', 'satellite',
+  'virtual reality', 'augmented reality', 'mixed reality', 'metaverse', 'human-computer interaction',
+  'bioengineering', 'tissue engineering', 'synthetic biology', 'bioinformatics', 'genomics', 'proteomics',
+  'epidemiology', 'public health', 'pandemic', 'infectious disease', 'vaccine development',
+  'cognitive science', 'behavioral economics', 'game theory', 'decision making', 'risk assessment'
+];
+
+// Common research methodologies and techniques
+const METHODOLOGY_KEYWORDS = [
+  'statistical analysis', 'data mining', 'big data', 'machine learning', 'regression analysis',
+  'randomized controlled trial', 'longitudinal study', 'cross-sectional study', 'meta-analysis',
+  'systematic review', 'qualitative research', 'quantitative research', 'mixed methods',
+  'survey research', 'interview', 'focus group', 'ethnography', 'case study', 'experimental design',
+  'molecular dynamics', 'x-ray crystallography', 'mass spectrometry', 'chromatography',
+  'microscopy', 'imaging', 'spectroscopy', 'computational modeling', 'simulation'
+];
+
+// Combine all academic keywords
+const ALL_ACADEMIC_KEYWORDS = [...ACADEMIC_KEYWORDS, ...ADVANCED_KEYWORDS, ...METHODOLOGY_KEYWORDS];
+
+// Function to check if a word looks like a real English word - more permissive
+function isValidWord(word: string): boolean {
+  // Check minimum length
+  if (word.length < 2) return false;
+  
+  // Very basic validation - just check for valid characters and reasonable length
+  const reasonableLength = word.length >= 2 && word.length <= 25;
+  const validChars = /^[a-zA-Z\s\-']+$/.test(word);
+  const noExcessiveRepeats = !/(.)\1{4,}/.test(word); // No more than 4 repeated chars
+  
+  // Allow common abbreviations and acronyms
+  const isAcronym = word.length <= 5 && /^[A-Z]+$/.test(word);
+  
+  // Most academic terms have vowels, but allow some flexibility
+  const hasVowels = /[aeiouAEIOU]/i.test(word);
+  const hasConsonants = /[bcdfghjklmnpqrstvwxyzBCDFGHJKLMNPQRSTVWXYZ]/i.test(word);
+  
+  return reasonableLength && validChars && noExcessiveRepeats && 
+         (isAcronym || (hasVowels && hasConsonants) || word.length <= 3);
+}
+
+// Function to calculate semantic similarity between query and academic topics
+function calculateAcademicRelevance(query: string): number {
+  const queryLower = query.toLowerCase();
+  const words = queryLower.split(/[\s\-,\.]+/).filter(word => word.length > 2);
+  
+  let relevanceScore = 0;
+  let totalWords = words.length;
+  
+  if (totalWords === 0) return 0;
+  
+  words.forEach(word => {
+    // Direct match with academic keywords
+    if (ALL_ACADEMIC_KEYWORDS.some(keyword => keyword.includes(word) || word.includes(keyword))) {
+      relevanceScore += 3;
+    }
+    
+    // Partial match with academic terms
+    if (ALL_ACADEMIC_KEYWORDS.some(keyword => 
+      keyword.split(' ').some(keywordPart => 
+        keywordPart.includes(word) && keywordPart.length > 3
+      )
+    )) {
+      relevanceScore += 2;
+    }
+    
+    // Common academic suffixes/prefixes
+    if (word.match(/(ology|graphy|metry|istry|ics|tion|sion|ment|ance|ence|ing|ed)$/)) {
+      relevanceScore += 1;
+    }
+  });
+  
+  return Math.min(relevanceScore / totalWords, 3); // Normalize to 0-3 scale
+}
+
+// Main validation function
+async function validateSearchQuery(query: string): Promise<QueryValidationResult> {
+  const trimmedQuery = query.trim();
+  
+  // Basic validation
+  if (trimmedQuery.length < 2) {
+    return {
+      isValid: false,
+      confidence: 0,
+      reason: 'Query too short',
+      suggestion: 'Please enter at least 2 characters. Try searching for research topics like "machine learning" or "cancer research".'
+    };
+  }
+  
+  if (trimmedQuery.length > 100) {
+    return {
+      isValid: false,
+      confidence: 0,
+      reason: 'Query too long',
+      suggestion: 'Please shorten your search to focus on key research topics or professor names.'
+    };
+  }
+  
+  // Check for valid words
+  const words = trimmedQuery.toLowerCase().split(/[\s\-,\.]+/).filter(word => word.length > 0);
+  const validWords = words.filter(isValidWord);
+  const wordValidityRatio = validWords.length / words.length;
+  
+  // More permissive validation - only reject obviously invalid queries
+  if (wordValidityRatio < 0.3) {
+    return {
+      isValid: false,
+      confidence: 0.2,
+      reason: 'Invalid or nonsensical words',
+      suggestion: 'Please use real words related to research topics. Try searching for fields like "biology", "computer science", or "psychology".'
+    };
+  }
+  
+  // Allow queries that look like names (common pattern for professor searches)
+  const looksLikeName = /^[A-Za-z\s\-'\.]+$/.test(trimmedQuery) && words.length <= 4;
+  if (looksLikeName) {
+    return {
+      isValid: true,
+      confidence: 0.8,
+      suggestion: undefined
+    };
+  }
+  
+  // Check academic relevance - make it more permissive
+  const academicRelevance = calculateAcademicRelevance(trimmedQuery);
+  
+  // Only reject if completely irrelevant (very low threshold)
+  if (academicRelevance < 0.1 && wordValidityRatio < 0.8) {
+    // Try to suggest better terms
+    const suggestions = [];
+    if (trimmedQuery.toLowerCase().includes('ai')) suggestions.push('artificial intelligence');
+    if (trimmedQuery.toLowerCase().includes('ml')) suggestions.push('machine learning');
+    if (trimmedQuery.toLowerCase().includes('bio')) suggestions.push('biology', 'biotechnology');
+    if (trimmedQuery.toLowerCase().includes('psych')) suggestions.push('psychology');
+    if (trimmedQuery.toLowerCase().includes('comp')) suggestions.push('computer science');
+    
+    return {
+      isValid: false,
+      confidence: 0.3,
+      reason: 'Not research-related',
+      suggestion: suggestions.length > 0 
+        ? `Did you mean: ${suggestions.slice(0, 2).join(' or ')}? Try searching for specific research fields or academic topics.`
+        : 'Please search for academic topics, research fields, or professor names. Examples: "neuroscience", "climate change", "machine learning".'
+    };
+  }
+  
+  // Calculate overall confidence - more permissive
+  const confidence = Math.min(
+    (wordValidityRatio * 0.3) + 
+    (academicRelevance * 0.4) + 
+    0.4, // Base confidence boost
+    1.0
+  );
+  
+  return {
+    isValid: confidence > 0.4, // Much lower threshold
+    confidence,
+    suggestion: confidence < 0.6 ? 'Try being more specific about the research area you\'re interested in.' : undefined
+  };
+}
+
 // Define interface for Professor data
 interface Professor {
   name: string;
@@ -259,8 +463,16 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     // Sanitize query input
     const sanitizedQuery = query.trim().slice(0, 200); // Limit length
     
-    if (sanitizedQuery.length < 2) {
-      return res.status(400).json({ message: 'Query must be at least 2 characters long' });
+    // Smart validation - this is the key improvement!
+    const validationResult = await validateSearchQuery(sanitizedQuery);
+    
+    if (!validationResult.isValid) {
+      return res.status(400).json({ 
+        message: 'Invalid search query',
+        suggestion: validationResult.suggestion,
+        reason: validationResult.reason,
+        confidence: validationResult.confidence
+      });
     }
 
     // Get all professors data
@@ -282,6 +494,21 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
       relevantProfessors = enhancedBasicSearch(sanitizedQuery, allProfessors);
     }
     
+    // If no results found, provide helpful suggestions
+    if (relevantProfessors.length === 0) {
+      return res.status(200).json({
+        professors: [],
+        aiSuggestion: `No professors found for "${sanitizedQuery}". Try broader terms like "computer science", "biology", or "psychology". You can also search for specific research areas like "machine learning" or "cancer research".`,
+        total: 0,
+        searchSuggestions: [
+          'Try more general terms (e.g., "AI" → "artificial intelligence")',
+          'Search for broader research fields (e.g., "biology", "chemistry")',
+          'Look for specific methodologies (e.g., "machine learning", "gene therapy")',
+          'Search by university name if looking for specific institutions'
+        ]
+      });
+    }
+    
     // Add mock enhanced data for better UI display
     const enhancedProfessors = relevantProfessors.map((prof, index) => ({
       ...prof,
@@ -297,7 +524,11 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     return res.status(200).json({ 
       professors: enhancedProfessors,
       aiSuggestion,
-      total: enhancedProfessors.length
+      total: enhancedProfessors.length,
+      queryValidation: {
+        confidence: validationResult.confidence,
+        suggestion: validationResult.suggestion
+      }
     });
   } catch (error) {
     console.error('Error in professor search API:', error);

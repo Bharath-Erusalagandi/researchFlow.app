@@ -425,24 +425,8 @@ a {
       var(--color-4) var(--stop-4),
       var(--color-5) var(--stop-5)
     );
-    transition:
-      --pos-x 0.5s,
-      --pos-y 0.5s,
-      --spread-x 0.5s,
-      --spread-y 0.5s,
-      --color-1 0.5s,
-      --color-2 0.5s,
-      --color-3 0.5s,
-      --color-4 0.5s,
-      --color-5 0.5s,
-      --border-angle 0.5s,
-      --border-color-1 0.5s,
-      --border-color-2 0.5s,
-      --stop-1 0.5s,
-      --stop-2 0.5s,
-      --stop-3 0.5s,
-      --stop-4 0.5s,
-      --stop-5 0.5s;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: background, border;
   }
 
   .gradient-button::before {
@@ -457,8 +441,11 @@ a {
       var(--border-color-2)
     );
     mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
     mask-composite: exclude;
+    -webkit-mask-composite: xor;
     pointer-events: none;
+    will-change: background;
   }
 
   .gradient-button:hover {
@@ -509,6 +496,37 @@ a {
     --border-angle: 210deg;
     --border-color-1: hsla(320, 75%, 90%, 0.2);
     --border-color-2: hsla(320, 50%, 90%, 0.75);
+  }
+
+  .gradient-button-red {
+    --color-1: #4a0000;
+    --color-2: #8b0000;
+    --color-3: #dc143c;
+    --color-4: #ff4500;
+    --color-5: #ff6b6b;
+    --border-angle: 45deg;
+    --border-color-1: hsla(0, 75%, 60%, 0.4);
+    --border-color-2: hsla(0, 60%, 70%, 0.8);
+  }
+
+  .gradient-button-red:hover {
+    --pos-x: 10%;
+    --pos-y: 80%;
+    --spread-x: 130%;
+    --spread-y: 120%;
+    --color-1: #8b0000;
+    --color-2: #dc143c;
+    --color-3: #ff4500;
+    --color-4: #ff6b6b;
+    --color-5: #ff8a8a;
+    --stop-1: 0%;
+    --stop-2: 15%;
+    --stop-3: 40%;
+    --stop-4: 75%;
+    --stop-5: 100%;
+    --border-angle: 135deg;
+    --border-color-1: hsla(0, 80%, 70%, 0.6);
+    --border-color-2: hsla(0, 70%, 80%, 0.9);
   }
 }
 
@@ -562,6 +580,7 @@ a {
     display: -webkit-box;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
+    line-clamp: 2;
   }
   
   .line-clamp-3 {
@@ -569,6 +588,7 @@ a {
     display: -webkit-box;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 3;
+    line-clamp: 3;
   }
 }
 

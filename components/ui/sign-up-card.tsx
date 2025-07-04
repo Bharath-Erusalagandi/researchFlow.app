@@ -7,14 +7,10 @@ import { useRouter } from 'next/router';
 import { supabase } from '@/lib/supabase';
 import { cn } from "@/lib/utils"
 import { GradientButton } from '@/components/ui/gradient-button';
+import { CustomGoogleButton } from '@/components/ui/custom-google-button';
 import Image from 'next/image';
 
-// For client-side only rendering
-import dynamic from 'next/dynamic';
-const GoogleLogin = dynamic(
-  () => import('@react-oauth/google').then((mod) => mod.GoogleLogin),
-  { ssr: false }
-);
+// Dynamic import no longer needed as we're using custom Google button
 
 function Input({ className, type, ...props }: React.ComponentProps<"input">) {
   return (
@@ -114,7 +110,6 @@ export function SignUpCard() {
       
       if (!supabaseConfigured) {
         // In development without proper Supabase config, simulate success
-        console.log('Google sign-up simulated (no Supabase config)');
         setTimeout(() => {
           router.push('/search');
         }, 1000);
@@ -191,9 +186,6 @@ export function SignUpCard() {
       
       if (!supabaseConfigured) {
         // In development without proper Supabase config, simulate success
-        console.log('Email sign-up simulated (no Supabase config)');
-        console.log('User data:', { fullName, email, role });
-        
         // Store user info in localStorage for development
         localStorage.setItem('userInfo', JSON.stringify({
           name: fullName,
@@ -245,7 +237,6 @@ export function SignUpCard() {
         
         // For development, allow user to continue after a delay
         setTimeout(() => {
-          console.log('Development mode: Continuing without email confirmation');
           // Store user info in localStorage for development
           localStorage.setItem('userInfo', JSON.stringify({
             name: fullName,
@@ -377,46 +368,24 @@ export function SignUpCard() {
                 </motion.p>
               </div>
 
-              {/* Google Sign-Up Button - improved mobile implementation */}
+              {/* Custom Google Sign-Up Button */}
               <div className="mb-4">
-                <div className="relative w-full overflow-hidden">
+                <div className="relative w-full">
                   {!isMounted ? (
                     // Show a placeholder during server-side rendering
-                    <div className="bg-gray-800 text-white p-3 text-center text-sm rounded-lg border border-gray-700 h-10 flex items-center justify-center">
+                    <div className="bg-gray-800 text-white p-3 text-center text-sm rounded-lg border border-gray-700 h-14 flex items-center justify-center">
                       Loading sign-up options...
                     </div>
                   ) : isGoogleConfigured ? (
-                    <div className="w-full">
-                      {/* Mobile-optimized Google Sign-Up - direct implementation */}
-                      <div className="w-full bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 touch-manipulation">
-                        <GoogleLogin
-                          onSuccess={handleGoogleSuccess}
-                          onError={() => {
-                            console.log('Signup Failed');
-                            setAuthError('Google sign-up failed. Please try again.');
-                          }}
-                          useOneTap={false}
-                          shape="rectangular"
-                          logo_alignment="center"
-                          type="standard"
-                          theme="filled_blue"
-                          text="signup_with"
-                          size="large"
-                          width="100%"
-                          containerProps={{
-                            className: "w-full",
-                            style: {
-                              width: '100%',
-                              height: '48px',
-                              borderRadius: '12px',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center'
-                            }
-                          }}
-                        />
-                      </div>
-                    </div>
+                    <CustomGoogleButton
+                      onSuccess={handleGoogleSuccess}
+                      onError={() => {
+                        setAuthError('Google sign-up failed. Please try again.');
+                      }}
+                      isLoading={isLoading}
+                      text="signup"
+                      className="w-full"
+                    />
                   ) : (
                     <div className="bg-gray-800 text-white p-3 text-center text-sm rounded-lg border border-gray-700">
                       <p className="mb-1">⚠️ Google Sign-Up not configured</p>
@@ -718,61 +687,37 @@ export function SignUpCard() {
                 </div>
 
                 {/* Sign up button */}
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
+                <GradientButton
                   type="submit"
                   disabled={isLoading || !termsAgreed}
-                  className={`w-full relative group/button mt-5 ${!termsAgreed ? 'opacity-70 cursor-not-allowed' : ''}`}
+                  className="w-full mt-5 py-4 rounded-xl touch-manipulation min-h-[48px]"
+                  variant="default"
                 >
-                  {/* Button glow effect */}
-                  <div className={`absolute inset-0 bg-[#0CF2A0]/10 rounded-lg blur-lg opacity-0 ${termsAgreed ? 'group-hover/button:opacity-70' : ''} transition-opacity duration-300`} />
-                  
-                  <div className="relative overflow-hidden bg-[#0CF2A0] text-black font-medium h-10 rounded-lg transition-all duration-300 flex items-center justify-center">
-                    {/* Button background animation */}
-                    <motion.div 
-                      className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/30 to-white/0 -z-10"
-                      animate={{ 
-                        x: ['-100%', '100%'],
-                      }}
-                      transition={{ 
-                        duration: 1.5, 
-                        ease: "easeInOut", 
-                        repeat: Infinity,
-                        repeatDelay: 1
-                      }}
-                      style={{ 
-                        opacity: isLoading ? 1 : 0,
-                        transition: 'opacity 0.3s ease'
-                      }}
-                    />
-                    
-                    <AnimatePresence mode="wait">
-                      {isLoading ? (
-                        <motion.div
-                          key="loading"
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          exit={{ opacity: 0 }}
-                          className="flex items-center justify-center"
-                        >
-                          <div className="w-4 h-4 border-2 border-black/70 border-t-transparent rounded-full animate-spin" />
-                        </motion.div>
-                      ) : (
-                        <motion.span
-                          key="button-text"
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          exit={{ opacity: 0 }}
-                          className="flex items-center justify-center gap-1 text-sm font-medium"
-                        >
-                          Create Account
-                          <ArrowRight className="w-3 h-3 group-hover/button:translate-x-1 transition-transform duration-300" />
-                        </motion.span>
-                      )}
-                    </AnimatePresence>
-                  </div>
-                </motion.button>
+                  <AnimatePresence mode="wait">
+                    {isLoading ? (
+                      <motion.div
+                        key="loading"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="flex items-center justify-center"
+                      >
+                        <div className="w-5 h-5 border-2 border-white/70 border-t-transparent rounded-full animate-spin" />
+                      </motion.div>
+                    ) : (
+                      <motion.span
+                        key="button-text"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="flex items-center justify-center gap-2 text-base font-medium"
+                      >
+                        Create Account
+                        <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" />
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
+                </GradientButton>
 
                 {/* Sign in link */}
                 <motion.p 

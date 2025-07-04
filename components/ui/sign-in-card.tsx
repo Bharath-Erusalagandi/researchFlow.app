@@ -7,14 +7,10 @@ import { useRouter } from 'next/router';
 import { supabase } from '@/lib/supabase';
 import { cn } from "@/lib/utils"
 import { GradientButton } from '@/components/ui/gradient-button';
+import { CustomGoogleButton } from '@/components/ui/custom-google-button';
 import Image from 'next/image';
 
-// For client-side only rendering
-import dynamic from 'next/dynamic';
-const GoogleLogin = dynamic(
-  () => import('@react-oauth/google').then((mod) => mod.GoogleLogin),
-  { ssr: false }
-);
+// Dynamic import no longer needed as we're using custom Google button
 
 function Input({ className, type, ...props }: React.ComponentProps<"input">) {
   return (
@@ -269,46 +265,24 @@ export function SignInCard() {
                 </motion.p>
               </div>
 
-              {/* Google Sign-In Button - improved mobile implementation */}
+              {/* Custom Google Sign-In Button */}
               <div className="mb-6">
-                <div className="relative w-full overflow-hidden">
+                <div className="relative w-full">
                   {!isMounted ? (
                     // Show a placeholder during server-side rendering
-                    <div className="bg-gray-800 text-white p-4 text-center text-sm rounded-lg border border-gray-700 h-12 flex items-center justify-center">
+                    <div className="bg-gray-800 text-white p-4 text-center text-sm rounded-lg border border-gray-700 h-14 flex items-center justify-center">
                       Loading sign-in options...
                     </div>
                   ) : isGoogleConfigured ? (
-                    <div className="w-full">
-                      {/* Mobile-optimized Google Sign-In - direct implementation */}
-                      <div className="w-full bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 touch-manipulation">
-                        <GoogleLogin
-                          onSuccess={handleGoogleSuccess}
-                          onError={() => {
-                            console.log('Login Failed');
-                            setAuthError('Google sign-in failed. Please try again.');
-                          }}
-                          useOneTap={false}
-                          shape="rectangular"
-                          logo_alignment="center"
-                          type="standard"
-                          theme="filled_blue"
-                          text="signin_with"
-                          size="large"
-                          width="100%"
-                          containerProps={{
-                            className: "w-full",
-                            style: {
-                              width: '100%',
-                              height: '56px',
-                              borderRadius: '12px',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center'
-                            }
-                          }}
-                        />
-                      </div>
-                    </div>
+                    <CustomGoogleButton
+                      onSuccess={handleGoogleSuccess}
+                      onError={() => {
+                        setAuthError('Google sign-in failed. Please try again.');
+                      }}
+                      isLoading={isLoading}
+                      text="signin"
+                      className="w-full"
+                    />
                   ) : (
                     <div className="bg-gray-800 text-white p-4 text-center text-sm rounded-lg border border-gray-700">
                       <p className="mb-1">⚠️ Google Sign-In not configured</p>
@@ -490,7 +464,7 @@ export function SignInCard() {
                   type="submit"
                   disabled={isLoading}
                   className="w-full mt-6 py-4 sm:py-5 rounded-xl touch-manipulation min-h-[48px]"
-                  variant="variant"
+                  variant="default"
                   onTouchEnd={(e) => {
                     e.stopPropagation();
                   }}

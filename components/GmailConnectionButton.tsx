@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Mail, CheckCircle, Loader2, AlertCircle } from 'lucide-react';
+import { GradientButton } from '@/components/ui/gradient-button';
 
 interface GmailConnectionButtonProps {
   userId?: string;
@@ -30,12 +31,7 @@ export const GmailConnectionButton: React.FC<GmailConnectionButtonProps> = ({
     const connectedAccountId = urlParams.get('connected_account_id');
     const oauthPending = urlParams.get('oauth_pending');
     
-    console.log('GmailConnectionButton - checking URL params:', {
-      oauthSuccess, oauthError, connectedAccountId, oauthPending
-    });
-    
     if (oauthSuccess === 'true') {
-      console.log('✅ OAuth success detected');
       setIsConnected(true);
       setIsLoading(false); // Clear any loading state
       setError(null); // Clear any errors
@@ -47,7 +43,6 @@ export const GmailConnectionButton: React.FC<GmailConnectionButtonProps> = ({
       const newUrl = window.location.pathname + window.location.hash;
       window.history.replaceState({}, document.title, newUrl);
     } else if (oauthPending === 'true') {
-      console.log('⏳ OAuth pending detected');
       setIsLoading(true);
       setError('Connection in progress... Please wait.');
       if (connectedAccountId) {
@@ -56,7 +51,6 @@ export const GmailConnectionButton: React.FC<GmailConnectionButtonProps> = ({
         setTimeout(() => checkConnectionStatus(), 3000);
       }
     } else if (oauthError) {
-      console.log('❌ OAuth error detected:', oauthError);
       setError(decodeURIComponent(oauthError));
       setIsConnected(false);
       setIsLoading(false); // Clear any loading state
@@ -117,8 +111,6 @@ export const GmailConnectionButton: React.FC<GmailConnectionButtonProps> = ({
       const result = await response.json();
 
       if (result.success && result.redirectUrl) {
-        console.log('Redirecting to OAuth URL:', result.redirectUrl);
-        
         // Set a timeout to clear loading state if user doesn't complete OAuth
         setTimeout(() => {
           if (document.visibilityState === 'visible') {
@@ -214,20 +206,27 @@ export const GmailConnectionButton: React.FC<GmailConnectionButtonProps> = ({
 
   return (
     <div className="space-y-3">
-      <motion.button
-        onClick={handleConnect}
-        disabled={isLoading}
-        className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-[#0CF2A0] hover:bg-[#0CF2A0]/90 disabled:bg-[#0CF2A0]/50 text-black font-medium rounded-lg transition-colors disabled:cursor-not-allowed"
-        whileHover={{ scale: 1.02 }}
-        whileTap={{ scale: 0.98 }}
+      <motion.div
+        whileHover={{ scale: isLoading ? 1 : 1.02 }}
+        whileTap={{ scale: isLoading ? 1 : 0.98 }}
+        className="w-full"
       >
-        {isLoading ? (
-          <Loader2 className="h-5 w-5 animate-spin" />
-        ) : (
-          <Mail className="h-5 w-5" />
-        )}
-        {isLoading ? 'Connecting...' : 'Connect Gmail'}
-      </motion.button>
+        <GradientButton
+          onClick={handleConnect}
+          disabled={isLoading}
+          variant="default"
+          className="w-full min-h-[56px] gap-3 touch-manipulation select-none focus:outline-none focus:ring-2 focus:ring-[#0CF2A0]/50 focus:ring-offset-2 focus:ring-offset-black"
+        >
+          {isLoading ? (
+            <Loader2 className="h-5 w-5 animate-spin text-white" />
+          ) : (
+            <Mail className="h-5 w-5 text-white" />
+          )}
+          <span className="text-white font-bold text-base">
+            {isLoading ? 'Connecting...' : 'Connect Gmail'}
+          </span>
+        </GradientButton>
+      </motion.div>
 
       {error && (
         <motion.div

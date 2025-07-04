@@ -20,6 +20,7 @@ const gradientButtonVariants = cva(
       variant: {
         default: "",
         variant: "gradient-button-variant",
+        red: "gradient-button-red",
       },
     },
     defaultVariants: {

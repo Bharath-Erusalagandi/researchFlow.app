@@ -5,18 +5,15 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { GraduationCap, User, Mail, BookOpen, Award, ArrowUp, Square, Tag, Home, FileText, Search as SearchIcon, Settings, LogOut, AlertCircle, Check, Heart, Brain, PenTool, Send, Copy, Loader2, ExternalLink, Upload, Link as LinkIcon, Edit3, Clock, Trash2 } from 'lucide-react';
 import { IconSend, IconMail, IconLoader2 as TablerLoader2 } from '@tabler/icons-react';
 import { getTimeBasedGreeting } from '@/lib/utils';
-import {
-  PromptInput,
-  PromptInputTextarea,
-  PromptInputActions,
-  PromptInputAction
-} from '@/components/ui/prompt-input';
+// Removed PromptInput components - now using AIInputWithLoading
 import { Button as RegularButton } from '@/components/ui/button';
 import { Button as Button3D } from '@/components/ui/3d-button';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import axios from 'axios';
 import { ProfessorCard } from '@/components/ui/professor-card';
+import { TextShimmer } from '@/components/ui/text-shimmer';
+import { AIInputWithLoading } from '@/components/ui/ai-input-with-loading';
 
 
 
@@ -56,6 +53,7 @@ type TabType = 'search' | 'email';
 export default function SearchPage() {
   const [activeTab, setActiveTab] = useState<TabType>('search');
   const [searchQuery, setSearchQuery] = useState("");
+  const [lastSearchedTerm, setLastSearchedTerm] = useState(""); // Track the actual searched term
   const [filteredProfessors, setFilteredProfessors] = useState<Professor[]>([]);
   const [hasSearched, setHasSearched] = useState(false);
   const [userName, setUserName] = useState<string | null>(null);
@@ -103,12 +101,14 @@ export default function SearchPage() {
   // Load state from localStorage on initial render
   useEffect(() => {
     const savedQuery = localStorage.getItem('researchConnect_searchQuery');
+    const savedLastSearchedTerm = localStorage.getItem('researchConnect_lastSearchedTerm');
     const savedProfessors = localStorage.getItem('researchConnect_professors');
     const savedSuggestion = localStorage.getItem('researchConnect_aiSuggestion');
     const savedHasSearched = localStorage.getItem('researchConnect_hasSearched');
     const savedSelectedProfessor = localStorage.getItem('selectedProfessorForEmail');
     
     if (savedQuery) setSearchQuery(savedQuery);
+    if (savedLastSearchedTerm) setLastSearchedTerm(savedLastSearchedTerm);
     if (savedProfessors) setFilteredProfessors(JSON.parse(savedProfessors));
     if (savedSuggestion) setAISuggestion(savedSuggestion);
     if (savedHasSearched === 'true') setHasSearched(true);
@@ -361,9 +361,11 @@ export default function SearchPage() {
     
     setIsLoading(true);
     setSearchQuery(searchTerm); // Update search input if tag is clicked
+    setLastSearchedTerm(searchTerm); // Store the actual searched term
     
     // Save search query to localStorage
     localStorage.setItem('researchConnect_searchQuery', searchTerm);
+    localStorage.setItem('researchConnect_lastSearchedTerm', searchTerm);
     
     try {
       // Call our API endpoint
@@ -394,9 +396,21 @@ export default function SearchPage() {
       // Save results to localStorage
       localStorage.setItem('researchConnect_professors', JSON.stringify(professors));
       localStorage.setItem('researchConnect_hasSearched', 'true');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error searching professors:', error);
-      setFilteredProfessors([]);
+      
+      // Handle smart validation errors
+      if (error.response?.status === 400 && error.response?.data?.suggestion) {
+        // Display helpful validation message
+        setAISuggestion(error.response.data.suggestion);
+        setFilteredProfessors([]);
+        setHasSearched(true);
+      } else {
+        // Handle other errors
+        setAISuggestion(`Sorry, I couldn't search for "${searchTerm}". Please try again with a different research topic or check your internet connection.`);
+        setFilteredProfessors([]);
+        setHasSearched(true);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -461,10 +475,12 @@ export default function SearchPage() {
   useEffect(() => {
     const handleBeforeUnload = () => {
       setSearchQuery("");
+      setLastSearchedTerm("");
       setFilteredProfessors([]);
       setHasSearched(false);
       setAISuggestion("");
       localStorage.removeItem('researchConnect_searchQuery');
+      localStorage.removeItem('researchConnect_lastSearchedTerm');
       localStorage.removeItem('researchConnect_professors');
       localStorage.removeItem('researchConnect_aiSuggestion');
       localStorage.removeItem('researchConnect_hasSearched');
@@ -1025,112 +1041,19 @@ ${userFullName}`;
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.5, delay: 0.3 }}
-                  className="flex justify-center w-full max-w-4xl mx-auto"
+                  className="flex justify-center w-full max-w-4xl mx-auto relative"
                 >
-                  <PromptInput
+                  <AIInputWithLoading
                     value={searchQuery}
-                    onValueChange={setSearchQuery}
-                    isLoading={isLoading}
+                    onChange={setSearchQuery}
                     onSubmit={handleSearch}
-                    className="w-full border-gray-700 hover:border-[#0CF2A0]/50 focus:border-[#0CF2A0] bg-[#1a1a1a]/80 backdrop-blur relative"
-                  >
-                    <PromptInputTextarea 
-                      placeholder="Search research topics, professors, or universities..." 
-                      className="text-white placeholder:text-gray-400 text-lg text-center"
-                    />
-                    
-                    {/* Loading animation overlay */}
-                    <AnimatePresence>
-                      {isLoading && (
-                        <motion.div 
-                          className="absolute inset-0 flex items-center justify-center bg-black/30 backdrop-blur-sm rounded-3xl z-10"
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          exit={{ opacity: 0 }}
-                          transition={{ duration: 0.2 }}
-                        >
-                          <motion.div 
-                            className="flex items-center space-x-3"
-                            animate={{ scale: [0.95, 1.05, 0.95] }}
-                            transition={{ 
-                              repeat: Infinity, 
-                              duration: 1.5,
-                              ease: "easeInOut" 
-                            }}
-                          >
-                            <motion.div 
-                              className="w-3 h-3 bg-[#0CF2A0] rounded-full"
-                              animate={{ 
-                                opacity: [0.5, 1, 0.5],
-                                scale: [0.8, 1.2, 0.8]
-                              }}
-                              transition={{ 
-                                repeat: Infinity, 
-                                duration: 1, 
-                                delay: 0,
-                                ease: "easeInOut"
-                              }}
-                            />
-                            <motion.div 
-                              className="w-3 h-3 bg-[#0CF2A0] rounded-full"
-                              animate={{ 
-                                opacity: [0.5, 1, 0.5],
-                                scale: [0.8, 1.2, 0.8]
-                              }}
-                              transition={{ 
-                                repeat: Infinity, 
-                                duration: 1, 
-                                delay: 0.2,
-                                ease: "easeInOut"
-                              }}
-                            />
-                            <motion.div 
-                              className="w-3 h-3 bg-[#0CF2A0] rounded-full"
-                              animate={{ 
-                                opacity: [0.5, 1, 0.5],
-                                scale: [0.8, 1.2, 0.8]
-                              }}
-                              transition={{ 
-                                repeat: Infinity, 
-                                duration: 1, 
-                                delay: 0.4,
-                                ease: "easeInOut"
-                              }}
-                            />
-                          </motion.div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                    
-                    <PromptInputActions className="justify-end pt-2">
-                      <PromptInputAction
-                        tooltip={isLoading ? "Searching..." : "Search now"}
-                      >
-                        <RegularButton
-                          variant="ghost"
-                          size="icon"
-                          className="h-12 w-12 rounded-full bg-[#0CF2A0] text-black hover:bg-[#0CF2A0]/90 hover:text-black touch-manipulation mobile-touch-target"
-                          onClick={(e: React.MouseEvent) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            handleSearch();
-                          }}
-                          onTouchEnd={(e: React.TouchEvent) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                          }}
-                          disabled={isLoading}
-                          type="button"
-                        >
-                          {isLoading ? (
-                            <Square className="h-5 w-5" />
-                          ) : (
-                            <ArrowUp className="h-5 w-5" />
-                          )}
-                        </RegularButton>
-                      </PromptInputAction>
-                    </PromptInputActions>
-                  </PromptInput>
+                    disabled={isLoading}
+                    isLoading={isLoading}
+                    placeholder="Search research topics, professors, or universities..."
+                    className="w-full"
+                    minHeight={60}
+                    maxHeight={120}
+                  />
                 </motion.div>
                 
                 {/* Suggested Tags */}
@@ -1189,10 +1112,10 @@ ${userFullName}`;
                   >
                     <h2 className="text-2xl font-bold mb-6 text-white">{
                       filteredProfessors.length > 0 
-                        ? searchQuery.trim() 
-                          ? `Found ${filteredProfessors.length} professors for "${searchQuery}"`
+                        ? lastSearchedTerm.trim() 
+                          ? `Found ${filteredProfessors.length} professors for "${lastSearchedTerm}"`
                           : `Found ${filteredProfessors.length} professors`
-                        : `No professors found${searchQuery.trim() ? ` for "${searchQuery}"` : ''}`
+                        : `No professors found${lastSearchedTerm.trim() ? ` for "${lastSearchedTerm}"` : ''}`
                     }</h2>
                     
                     {/* AI Suggestion */}
