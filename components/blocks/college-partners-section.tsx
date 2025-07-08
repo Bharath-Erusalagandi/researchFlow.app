@@ -4,7 +4,7 @@ import UniversityCarousel from '@/components/ui/modified-3d-carousel';
 
 export default function CollegePartnersSection() {
   return (
-    <section className="py-24 md:py-32 bg-[#111111] relative z-10">
+    <section id="partner-institutions-section" className="py-24 md:py-32 bg-[#111111] relative z-10">
       <div className="absolute inset-0 z-0 pointer-events-none bg-dot-pattern opacity-50"></div>
       
       <div className="mx-auto w-full max-w-6xl px-6">

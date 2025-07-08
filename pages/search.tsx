@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { GraduationCap, User, Mail, BookOpen, Award, ArrowUp, Square, Tag, Home, FileText, Search as SearchIcon, Settings, LogOut, AlertCircle, Check, Heart, Brain, PenTool, Send, Copy, Loader2, ExternalLink, Upload, Link as LinkIcon, Edit3, Clock, Trash2 } from 'lucide-react';
+import { GraduationCap, User, Mail, BookOpen, Award, ArrowUp, Square, Tag, Home, FileText, Search as SearchIcon, Settings, LogOut, AlertCircle, Check, Heart, Brain, PenTool, Send, Copy, Loader2, ExternalLink, Upload, Link as LinkIcon, Edit3, Clock, Trash2, ChevronRight, ChevronLeft, Shuffle } from 'lucide-react';
 import { IconSend, IconMail, IconLoader2 as TablerLoader2 } from '@tabler/icons-react';
 import { getTimeBasedGreeting } from '@/lib/utils';
 // Removed PromptInput components - now using AIInputWithLoading
@@ -14,6 +14,7 @@ import axios from 'axios';
 import { ProfessorCard } from '@/components/ui/professor-card';
 import { TextShimmer } from '@/components/ui/text-shimmer';
 import { AIInputWithLoading } from '@/components/ui/ai-input-with-loading';
+import { Progress } from '@/components/ui/progress';
 
 
 
@@ -97,15 +98,24 @@ export default function SearchPage() {
   
   // Email composer state
 
+  // Card-based question system state
+  const [currentCardIndex, setCurrentCardIndex] = useState(0);
+  const [completedCards, setCompletedCards] = useState<Set<number>>(new Set());
+  const [showCardSystem, setShowCardSystem] = useState(true); // Default to true
 
   // Load state from localStorage on initial render
   useEffect(() => {
+    // First, check URL parameters to determine intended tab
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlTab = urlParams.get('tab');
+    
     const savedQuery = localStorage.getItem('researchConnect_searchQuery');
     const savedLastSearchedTerm = localStorage.getItem('researchConnect_lastSearchedTerm');
     const savedProfessors = localStorage.getItem('researchConnect_professors');
     const savedSuggestion = localStorage.getItem('researchConnect_aiSuggestion');
     const savedHasSearched = localStorage.getItem('researchConnect_hasSearched');
     const savedSelectedProfessor = localStorage.getItem('selectedProfessorForEmail');
+    const savedActiveTab = localStorage.getItem('researchConnect_activeTab');
     
     if (savedQuery) setSearchQuery(savedQuery);
     if (savedLastSearchedTerm) setLastSearchedTerm(savedLastSearchedTerm);
@@ -113,12 +123,21 @@ export default function SearchPage() {
     if (savedSuggestion) setAISuggestion(savedSuggestion);
     if (savedHasSearched === 'true') setHasSearched(true);
     
-    // Load selected professor and switch to email tab if professor was selected
+    // Load selected professor but DON'T force tab switch
     if (savedSelectedProfessor) {
       const professor = JSON.parse(savedSelectedProfessor);
       setSelectedProfessorForEmail(professor);
-      setActiveTab('email');
     }
+
+    // Determine which tab to show (priority: URL > saved tab > default)
+    let targetTab: TabType = 'search'; // Default
+    if (urlTab === 'email' || urlTab === 'search') {
+      targetTab = urlTab;
+    } else if (savedActiveTab === 'email' || savedActiveTab === 'search') {
+      targetTab = savedActiveTab as TabType;
+    }
+    
+    setActiveTab(targetTab);
 
     // Load user research data
     const userInfo = localStorage.getItem('userInfo');
@@ -148,7 +167,6 @@ export default function SearchPage() {
     }
 
     // Handle OAuth callback parameters
-    const urlParams = new URLSearchParams(window.location.search);
     const oauthSuccess = urlParams.get('oauth_success');
     const oauthError = urlParams.get('oauth_error');
     const connectedAccountIdFromUrl = urlParams.get('connected_account_id');
@@ -190,9 +208,10 @@ export default function SearchPage() {
         message: successMessage
       });
       
-      // Clean up URL parameters
-      window.history.replaceState({}, document.title, window.location.pathname + '?tab=email');
-      setActiveTab('email'); // Switch to email tab after successful connection
+      // Clean up URL parameters but preserve the current tab
+      const currentTabParam = targetTab ? `?tab=${targetTab}` : '';
+      window.history.replaceState({}, document.title, window.location.pathname + currentTabParam);
+      // DON'T force tab switch - respect user's current location
     } else if (oauthError) {
       setIsGmailConnected(false);
       setIsConnectingGmail(false); // Reset loading state
@@ -200,8 +219,9 @@ export default function SearchPage() {
         success: false, 
         message: `OAuth Error: ${oauthError}. Please try connecting Gmail again.` 
       });
-      // Clean up URL parameters
-      window.history.replaceState({}, document.title, window.location.pathname + '?tab=email');
+      // Clean up URL parameters but preserve the current tab
+      const currentTabParam = targetTab ? `?tab=${targetTab}` : '';
+      window.history.replaceState({}, document.title, window.location.pathname + currentTabParam);
     }
 
     // Check for existing connection on page load
@@ -447,13 +467,39 @@ export default function SearchPage() {
     setSelectedProfessorForEmail(professor);
     localStorage.setItem('selectedProfessorForEmail', JSON.stringify(professor));
     
-    // Switch to the email tab
-    setActiveTab('email');
+    // Show a user-friendly notification
+    const notification = document.createElement('div');
+    notification.className = 'fixed top-4 right-4 bg-[#0CF2A0] text-black px-6 py-3 rounded-lg shadow-lg z-50 flex items-center gap-2';
+    notification.innerHTML = `
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+      </svg>
+      <span class="font-medium">Professor ${professor.name} selected!</span>
+      <button onclick="this.parentElement.remove()" class="ml-2 hover:bg-black/10 rounded p-1">×</button>
+    `;
     
-    // Scroll to top of the page after a small delay to ensure tab content is rendered
+    document.body.appendChild(notification);
+    
+    // Auto-remove notification after 5 seconds
     setTimeout(() => {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }, 100);
+      if (notification.parentElement) {
+        notification.remove();
+      }
+    }, 5000);
+    
+    // Ask if user wants to switch tabs (less intrusive)
+    setTimeout(() => {
+      const confirmSwitch = window.confirm(
+        `Would you like to switch to the Email tab to compose a message to ${professor.name}?`
+      );
+      
+      if (confirmSwitch) {
+        setActiveTab('email');
+        setTimeout(() => {
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }, 100);
+      }
+    }, 1000);
   };
 
   // ShinyText component from the home page
@@ -466,63 +512,428 @@ export default function SearchPage() {
     </div>
   );
 
+  // Card-based question system
+  const questionCards = [
+    {
+      id: 'name',
+      title: 'What\'s your full name?',
+      subtitle: 'This will be used in your email signature',
+      icon: <User className="h-6 w-6" />,
+      value: userFullName,
+      setValue: setUserFullName,
+      type: 'text',
+      placeholder: 'Enter your full name',
+      required: true
+    },
+    {
+      id: 'research-title',
+      title: 'What\'s your research interest?',
+      subtitle: 'This should align with the professor\'s work area',
+      icon: <Brain className="h-6 w-6" />,
+      value: researchTitle,
+      setValue: setResearchTitle,
+      type: 'text',
+      placeholder: 'e.g., Machine Learning in Healthcare, Climate Change Research',
+      required: true,
+      tip: 'Search the professor on Google Scholar and find their recent papers for inspiration!'
+    },
+    {
+      id: 'research-abstract',
+      title: 'Describe your research interest',
+      subtitle: 'What specifically interests you about this area?',
+      icon: <FileText className="h-6 w-6" />,
+      value: researchAbstract,
+      setValue: setResearchAbstract,
+      type: 'textarea',
+      placeholder: 'Describe what fascinates you about this research area...',
+      required: true,
+      tip: 'Pro tip: Copy an abstract from their recent paper and explain what questions you have!'
+    },
+    {
+      id: 'university',
+      title: 'What university do you attend?',
+      subtitle: 'Your current educational institution',
+      icon: <GraduationCap className="h-6 w-6" />,
+      value: currentUniversity,
+      setValue: setCurrentUniversity,
+      type: 'text',
+      placeholder: 'e.g., Stanford University, Austin High School',
+      required: true
+    },
+    {
+      id: 'year',
+      title: 'What\'s your academic level?',
+      subtitle: 'This helps professors understand your background',
+      icon: <BookOpen className="h-6 w-6" />,
+      value: yearOfStudy,
+      setValue: setYearOfStudy,
+      type: 'select',
+      options: ['High School Student', 'Freshman', 'Sophomore', 'Junior', 'Senior', 'Graduate Student', 'PhD Student'],
+      required: true
+    },
+    {
+      id: 'location',
+      title: 'Where are you located?',
+      subtitle: 'This helps with collaboration logistics',
+      icon: <Tag className="h-6 w-6" />,
+      value: opportunityType,
+      setValue: setOpportunityType,
+      type: 'text',
+      placeholder: 'e.g., Austin, TX or Boston, MA',
+      required: true
+    },
+    {
+      id: 'resume',
+      title: 'Share your resume',
+      subtitle: 'Upload a file or provide a link to your portfolio',
+      icon: <Upload className="h-6 w-6" />,
+      value: resumeUrl,
+      setValue: setResumeUrl,
+      type: 'file-or-url',
+      placeholder: 'https://your-portfolio.com or upload file',
+      required: true
+    }
+  ];
+
+  const calculateProgress = () => {
+    return Math.round((completedCards.size / questionCards.length) * 100);
+  };
+
+  const isCardComplete = (card: any) => {
+    if (card.type === 'file-or-url') {
+      return card.value.trim() || resumeFile;
+    }
+    return card.value.trim();
+  };
+
+  const handleCardNext = () => {
+    const currentCard = questionCards[currentCardIndex];
+    if (isCardComplete(currentCard)) {
+      setCompletedCards(prev => {
+        const newSet = new Set(prev);
+        newSet.add(currentCardIndex);
+        return newSet;
+      });
+    }
+    
+    if (currentCardIndex < questionCards.length - 1) {
+      setCurrentCardIndex(currentCardIndex + 1);
+    } else {
+      // All cards completed!
+      setShowCardSystem(false);
+      // Clear saved progress since setup is complete
+      localStorage.removeItem('cardSystemProgress');
+      // Show success message
+      setTimeout(() => {
+        alert('🎉 Setup complete! Your information has been saved and you can now generate personalized emails.');
+      }, 500);
+    }
+  };
+
+  const handleCardPrevious = () => {
+    if (currentCardIndex > 0) {
+      setCurrentCardIndex(currentCardIndex - 1);
+    }
+  };
+
+  const handleCardSkip = () => {
+    if (currentCardIndex < questionCards.length - 1) {
+      setCurrentCardIndex(currentCardIndex + 1);
+    } else {
+      setShowCardSystem(false);
+    }
+  };
+
+  const startCardFlow = () => {
+    setCurrentCardIndex(0);
+    setCompletedCards(new Set());
+    setShowCardSystem(true);
+    // Clear any saved progress when starting fresh
+    localStorage.removeItem('cardSystemProgress');
+  };
+
+  // Keyboard navigation for cards
+  useEffect(() => {
+    if (!showCardSystem) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowRight' || e.key === 'Enter') {
+        e.preventDefault();
+        const currentCard = questionCards[currentCardIndex];
+        if (!currentCard.required || isCardComplete(currentCard)) {
+          handleCardNext();
+        }
+      } else if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        handleCardPrevious();
+      } else if (e.key === 'Escape') {
+        e.preventDefault();
+        setShowCardSystem(false);
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [showCardSystem, currentCardIndex, questionCards]);
+
+  // Auto-save progress to localStorage
+  useEffect(() => {
+    if (showCardSystem) {
+      localStorage.setItem('cardSystemProgress', JSON.stringify({
+        currentCardIndex,
+        completedCards: Array.from(completedCards),
+        showCardSystem
+      }));
+    }
+  }, [currentCardIndex, completedCards, showCardSystem]);
+
+  // Load card progress on component mount
+  useEffect(() => {
+    const savedProgress = localStorage.getItem('cardSystemProgress');
+    if (savedProgress) {
+      const { currentCardIndex: savedIndex, completedCards: savedCompleted, showCardSystem: savedShow } = JSON.parse(savedProgress);
+      if (savedShow && savedIndex !== undefined) {
+        setCurrentCardIndex(savedIndex);
+        setCompletedCards(new Set(savedCompleted));
+        // Don't auto-restore showCardSystem to avoid interrupting user
+      }
+    }
+  }, []);
+
+  const QuestionCard = ({ card, isActive }: { card: any; isActive: boolean }) => {
+    if (!isActive) return null;
+    
+    return (
+      <motion.div
+        key={card.id}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.3, ease: "easeInOut" }}
+        className="w-full max-w-2xl mx-auto"
+      >
+        <div className="relative">
+          {/* Static background */}
+          <div className="absolute -inset-1 bg-gradient-to-r from-[#0CF2A0]/10 via-blue-500/10 to-purple-500/10 rounded-2xl blur-sm"></div>
+          
+          <div className="relative bg-gradient-to-br from-[#1a1a1a]/95 to-[#0a0a0a]/95 border border-[#0CF2A0]/30 rounded-2xl p-8 backdrop-blur-xl">
+            {/* Card header */}
+            <div className="flex items-center gap-4 mb-6">
+              <div className="p-3 bg-[#0CF2A0]/20 rounded-xl text-[#0CF2A0]">
+                {card.icon}
+              </div>
+              <div className="flex-1">
+                <h3 className="text-2xl font-bold text-white mb-2">{card.title}</h3>
+                <p className="text-gray-400">{card.subtitle}</p>
+              </div>
+              <div className="flex items-center gap-2">
+                {completedCards.has(currentCardIndex) && (
+                  <motion.div
+                    initial={{ scale: 0, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    className="bg-[#0CF2A0]/20 text-[#0CF2A0] px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1"
+                  >
+                    <Check className="h-3 w-3" />
+                    Complete
+                  </motion.div>
+                )}
+                <div className="text-sm text-gray-500 bg-gray-800/50 px-3 py-1 rounded-full">
+                  {currentCardIndex + 1} / {questionCards.length}
+                </div>
+              </div>
+            </div>
+
+            {/* Tip section */}
+            {card.tip && (
+              <div className="mb-6 p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl">
+                <p className="text-blue-300 text-sm">💡 {card.tip}</p>
+              </div>
+            )}
+
+            {/* Input field */}
+            <div className="mb-8">
+              {card.type === 'text' && (
+                <input
+                  type="text"
+                  value={card.value}
+                  onChange={(e) => card.setValue(e.target.value)}
+                  placeholder={card.placeholder}
+                  className="w-full bg-[#0a0a0a]/80 border border-gray-600/50 rounded-xl px-6 py-4 text-white text-lg placeholder:text-gray-500 focus:border-[#0CF2A0]/50 focus:outline-none focus:ring-2 focus:ring-[#0CF2A0]/20 transition-all duration-200"
+                  autoFocus
+                />
+              )}
+              
+              {card.type === 'textarea' && (
+                <textarea
+                  value={card.value}
+                  onChange={(e) => card.setValue(e.target.value)}
+                  placeholder={card.placeholder}
+                  rows={6}
+                  className="w-full bg-[#0a0a0a]/80 border border-gray-600/50 rounded-xl px-6 py-4 text-white text-lg placeholder:text-gray-500 focus:border-[#0CF2A0]/50 focus:outline-none focus:ring-2 focus:ring-[#0CF2A0]/20 transition-all duration-200 resize-none"
+                  autoFocus
+                />
+              )}
+              
+              {card.type === 'select' && (
+                <select
+                  value={card.value}
+                  onChange={(e) => card.setValue(e.target.value)}
+                  className="w-full bg-[#0a0a0a]/80 border border-gray-600/50 rounded-xl px-6 py-4 text-white text-lg focus:border-[#0CF2A0]/50 focus:outline-none focus:ring-2 focus:ring-[#0CF2A0]/20 transition-all duration-200"
+                  autoFocus
+                >
+                  <option value="">Select your level...</option>
+                  {card.options?.map((option: string) => (
+                    <option key={option} value={option} className="bg-[#1a1a1a]">
+                      {option}
+                    </option>
+                  ))}
+                </select>
+              )}
+              
+              {card.type === 'file-or-url' && (
+                <div className="space-y-4">
+                  <input
+                    type="url"
+                    value={card.value}
+                    onChange={(e) => card.setValue(e.target.value)}
+                    placeholder={card.placeholder}
+                    className="w-full bg-[#0a0a0a]/80 border border-gray-600/50 rounded-xl px-6 py-4 text-white text-lg placeholder:text-gray-500 focus:border-[#0CF2A0]/50 focus:outline-none focus:ring-2 focus:ring-[#0CF2A0]/20 transition-all duration-200"
+                  />
+                  <div className="text-center text-gray-400">or</div>
+                  <div className="border-2 border-dashed border-gray-600/50 rounded-xl p-6 text-center hover:border-[#0CF2A0]/50 transition-colors">
+                    <input
+                      type="file"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          setResumeFile(file);
+                          setResumeUrl('');
+                        }
+                      }}
+                      className="hidden"
+                      id="resume-upload"
+                      accept=".pdf,.doc,.docx"
+                    />
+                    <label htmlFor="resume-upload" className="cursor-pointer">
+                      <Upload className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                      <p className="text-gray-400">Click to upload resume</p>
+                      {resumeFile && (
+                        <p className="text-[#0CF2A0] mt-2 text-sm">📄 {resumeFile.name}</p>
+                      )}
+                    </label>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Action buttons */}
+            <div className="flex items-center justify-between">
+              <button
+                onClick={handleCardPrevious}
+                disabled={currentCardIndex === 0}
+                className="flex items-center gap-2 px-6 py-3 text-gray-400 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                <ChevronLeft className="h-4 w-4" />
+                Previous
+              </button>
+
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={handleCardSkip}
+                  className="px-6 py-3 text-gray-400 hover:text-white transition-colors"
+                >
+                  Skip
+                </button>
+                
+                <button
+                  onClick={handleCardNext}
+                  disabled={card.required && !isCardComplete(card)}
+                  className="bg-gradient-to-r from-[#0CF2A0] to-[#0CF2A0]/80 text-black px-8 py-3 rounded-xl font-semibold hover:from-[#0CF2A0]/90 hover:to-[#0CF2A0]/70 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                >
+                  {currentCardIndex === questionCards.length - 1 ? 'Complete' : 'Next'}
+                  <ChevronRight className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </motion.div>
+    );
+  };
+
   const navLinks = [
     { href: "/professors", label: "Professors", icon: <GraduationCap className="h-4 w-4" /> },
     { href: "/profile", label: "Profile", icon: <User className="h-4 w-4" /> },
   ];
 
-  // Reset search state when component unmounts or user navigates away
+  // Save active tab to localStorage whenever it changes
   useEffect(() => {
-    const handleBeforeUnload = () => {
-      setSearchQuery("");
-      setLastSearchedTerm("");
-      setFilteredProfessors([]);
-      setHasSearched(false);
-      setAISuggestion("");
-      localStorage.removeItem('researchConnect_searchQuery');
-      localStorage.removeItem('researchConnect_lastSearchedTerm');
-      localStorage.removeItem('researchConnect_professors');
-      localStorage.removeItem('researchConnect_aiSuggestion');
-      localStorage.removeItem('researchConnect_hasSearched');
-    };
-
-    const handleRouteChange = () => {
-      handleBeforeUnload();
-    };
-
-    // Listen for page unload
-    window.addEventListener('beforeunload', handleBeforeUnload);
+    localStorage.setItem('researchConnect_activeTab', activeTab);
     
-    // Listen for route changes (if using Next.js router)
-    const router = require('next/router').default;
-    router.events.on('routeChangeStart', handleRouteChange);
-
-    return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-      router.events.off('routeChangeStart', handleRouteChange);
-    };
-  }, []);
+    // Update URL without causing navigation
+    const url = new URL(window.location.href);
+    url.searchParams.set('tab', activeTab);
+    window.history.replaceState({}, document.title, url.toString());
+  }, [activeTab]);
 
   // Add this section to render the AI suggestion
+  // Typing animation component
+  const TypingText = ({ text, speed = 30 }: { text: string; speed?: number }) => {
+    const [displayedText, setDisplayedText] = useState('');
+    const [isComplete, setIsComplete] = useState(false);
+    
+    useEffect(() => {
+      if (!text) return;
+      
+      setDisplayedText('');
+      setIsComplete(false);
+      let i = 0;
+      
+      const timer = setInterval(() => {
+        if (i < text.length) {
+          setDisplayedText(text.slice(0, i + 1));
+          i++;
+        } else {
+          setIsComplete(true);
+          clearInterval(timer);
+        }
+      }, speed);
+      
+      return () => clearInterval(timer);
+    }, [text, speed]);
+    
+    return (
+      <span className="text-white text-base leading-relaxed">
+        {displayedText}
+        {!isComplete && (
+          <motion.span
+            animate={{ opacity: [0, 1, 0] }}
+            transition={{ duration: 0.8, repeat: Infinity }}
+            className="text-[#0CF2A0] ml-1"
+          >
+            |
+          </motion.span>
+        )}
+      </span>
+    );
+  };
+
   const renderAISuggestion = () => {
     if (!filteredProfessors.length || !hasSearched) return null;
+    
+    const suggestionText = aiSuggestion || "Here are some professors that match your search criteria. Consider reaching out to those whose research interests align with your goals.";
     
     return (
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, delay: 0.2 }}
-        className="bg-[#1a1a1a]/80 border border-[#0CF2A0]/20 rounded-xl p-6 mb-8 max-w-4xl mx-auto w-full shadow-lg"
+        className="mb-8 max-w-4xl mx-auto w-full"
       >
-        <div className="flex items-start gap-4">
-          <div className="bg-[#0CF2A0]/20 rounded-full p-3 mt-1">
-            <SearchIcon className="h-6 w-6 text-[#0CF2A0]" />
-          </div>
-          <div className="flex-1">
-            <h3 className="text-lg font-medium text-white mb-3">Professor Recommendation</h3>
-            <p className="text-gray-300 text-base leading-relaxed">
-              {aiSuggestion || "Here are some professors that match your search criteria. Consider reaching out to those whose research interests align with your goals."}
-            </p>
+        <div className="flex flex-col">
+          <h3 className="text-lg font-medium text-white mb-3">Professor Recommendation</h3>
+          <div className="text-base leading-relaxed">
+            <TypingText text={suggestionText} speed={12} />
           </div>
         </div>
       </motion.div>
@@ -747,6 +1158,9 @@ ${userFullName}`;
       const subject = subjectLine ? subjectLine.replace('Subject:', '').trim() : `Research Collaboration Inquiry`;
       const body = lines.slice(lines.findIndex(line => line.startsWith('Subject:')) + 1).join('\n').trim();
       
+      // Get the stored entity ID for proper authentication
+      const storedEntityId = localStorage.getItem('composio_entity_id');
+      
       // Send email directly using the simple send endpoint
       const response = await fetch('/api/composio/send-email-simple', {
         method: 'POST',
@@ -757,7 +1171,8 @@ ${userFullName}`;
           to: selectedProfessorForEmail.email,
           subject,
           body,
-          connectedAccountId
+          connectedAccountId,
+          entityId: storedEntityId
         }),
       });
 
@@ -766,13 +1181,27 @@ ${userFullName}`;
       if (result.success) {
         setEmailSentStatus({
           success: true,
-          message: `Email sent successfully to ${selectedProfessorForEmail.name}! 🎉`
+          message: `Email sent successfully to ${selectedProfessorForEmail.name}!`
         });
+        
+        // Clear the email generation form or reset for next use
+        setTimeout(() => {
+          setEmailSentStatus(null);
+        }, 5000); // Auto-clear success message after 5 seconds
+        
       } else {
         setEmailSentStatus({
           success: false,
           message: `Failed to send email: ${result.error || 'Unknown error'}`
         });
+        
+        // If it's an authentication error, suggest reconnecting
+        if (result.needsAuth) {
+          setIsGmailConnected(false);
+          setConnectedAccountId(null);
+          localStorage.removeItem('composio_connected_account_id');
+          localStorage.removeItem('composio_entity_id');
+        }
       }
       
     } catch (error) {
@@ -959,10 +1388,15 @@ ${userFullName}`;
                 >
                   <SearchIcon className="h-4 w-4" />
                   Search Professors
+                  {hasSearched && filteredProfessors.length > 0 && (
+                    <span className="ml-2 bg-[#0CF2A0] text-black text-xs px-2 py-1 rounded-full font-bold">
+                      {filteredProfessors.length}
+                    </span>
+                  )}
                 </motion.button>
                 <motion.button
                   onClick={() => setActiveTab('email')}
-                  className={`px-6 py-3 rounded-xl text-sm font-medium transition-all duration-300 flex items-center gap-2 ${
+                  className={`px-6 py-3 rounded-xl text-sm font-medium transition-all duration-300 flex items-center gap-2 relative ${
                     activeTab === 'email'
                       ? 'bg-[#0CF2A0] text-black shadow-lg'
                       : 'text-gray-300 hover:text-white hover:bg-white/5'
@@ -973,6 +1407,12 @@ ${userFullName}`;
                 >
                   <PenTool className="h-4 w-4" />
                   Personalized Email
+                  {selectedProfessorForEmail && (
+                    <div className="ml-2 flex items-center gap-1">
+                      <div className="w-2 h-2 bg-[#0CF2A0] rounded-full animate-pulse"></div>
+                      <span className="text-xs opacity-75">Ready</span>
+                    </div>
+                  )}
                 </motion.button>
 
               </div>
@@ -1314,97 +1754,216 @@ ${userFullName}`;
                   </motion.div>
                 )}
 
-                {/* Gmail Connection Status - Sleek New Design */}
-                {isGmailConnected && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -10, scale: 0.95 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    transition={{ duration: 0.6, delay: 0.2, type: "spring", stiffness: 100 }}
-                    className="relative mb-8 group"
-                  >
-                    <div className="absolute -inset-1 bg-gradient-to-r from-[#0CF2A0]/20 via-[#0CF2A0]/30 to-[#0CF2A0]/20 rounded-2xl blur-lg group-hover:blur-xl transition-all duration-500"></div>
-                    <div className="relative bg-gradient-to-r from-[#0a0a0a] via-[#111111] to-[#0a0a0a] border border-[#0CF2A0]/40 rounded-2xl p-6 backdrop-blur-xl">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                          <div className="relative">
-                            <div className="flex items-center justify-center w-12 h-12 bg-gradient-to-br from-[#0CF2A0] to-[#0CF2A0]/70 rounded-2xl shadow-lg">
-                              <motion.div
-                                animate={{ rotate: [0, 360] }}
-                                transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                                className="w-6 h-6"
-                              >
-                                <Check className="h-6 w-6 text-black" />
-                              </motion.div>
-                            </div>
-                            <div className="absolute -top-1 -right-1 w-4 h-4 bg-[#0CF2A0] rounded-full animate-pulse"></div>
-                          </div>
-                          <div className="space-y-1">
-                            <h3 className="text-xl font-bold text-white flex items-center gap-2">
-                              Gmail Connected
-                              <motion.span
-                                animate={{ scale: [1, 1.2, 1] }}
-                                transition={{ duration: 1.5, repeat: Infinity }}
-                                className="text-[#0CF2A0]"
-                              >
- 
-                              </motion.span>
-                            </h3>
-                            <p className="text-gray-400 text-sm">
-                              Ready to send personalized emails instantly
-                            </p>
-                            {connectedAccountEmail && (
-                              <p className="text-blue-300 text-xs font-mono mt-1">
-                                📧 {connectedAccountEmail}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <div className="hidden sm:flex items-center gap-2 bg-[#0CF2A0]/10 border border-[#0CF2A0]/30 rounded-lg px-3 py-1.5">
-                            <div className="w-2 h-2 bg-[#0CF2A0] rounded-full animate-pulse"></div>
-                            <span className="text-[#0CF2A0] text-xs font-medium">ACTIVE</span>
-                          </div>
-                          <motion.div
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                            className="p-2 bg-white/5 hover:bg-white/10 rounded-lg transition-colors cursor-pointer"
-                          >
-                            <ExternalLink className="h-4 w-4 text-gray-400" />
-                          </motion.div>
-                        </div>
+                {/* Compact Gmail Status Indicator */}
+                <div className="absolute top-6 right-6 z-10">
+                  {isGmailConnected ? (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ duration: 0.5, type: "spring" }}
+                      className="relative group"
+                    >
+                      <div className="flex items-center gap-2 bg-[#0CF2A0]/10 border border-[#0CF2A0]/30 rounded-full px-3 py-2 backdrop-blur-sm">
+                        <div className="w-2 h-2 bg-[#0CF2A0] rounded-full animate-pulse"></div>
+                        <Check className="h-4 w-4 text-[#0CF2A0]" />
+                        <span className="text-[#0CF2A0] text-xs font-medium">Gmail</span>
                       </div>
                       
-                      {/* Enhanced Features Strip */}
-                      <div className="mt-4 pt-4 border-t border-gray-700/50">
-                        <div className="flex items-center justify-center gap-6 text-xs text-gray-400">
+                      {/* Tooltip on hover */}
+                      <div className="absolute top-full right-0 mt-2 bg-[#1a1a1a] border border-gray-700 rounded-lg p-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap">
+                        <p className="text-white text-xs font-medium">Gmail Connected</p>
+                        <p className="text-gray-400 text-xs">Ready to send emails</p>
+                        {connectedAccountEmail && (
+                          <p className="text-blue-300 text-xs">{connectedAccountEmail}</p>
+                        )}
+                      </div>
+                    </motion.div>
+                  ) : (
+                    <motion.button
+                      onClick={handleConnectGmail}
+                      disabled={isConnectingGmail}
+                      className="flex items-center gap-2 bg-gray-800/50 border border-gray-600/50 rounded-full px-3 py-2 hover:bg-gray-700/50 transition-colors text-gray-400 hover:text-white"
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      <Mail className="h-4 w-4" />
+                      <span className="text-xs font-medium">Connect Gmail</span>
+                    </motion.button>
+                  )}
+                </div>
+
+                {/* Main Interactive Card System */}
+                <div className="mb-8">
+                  {showCardSystem ? (
+                    <>
+                      {/* Progress Bar */}
+                      <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5 }}
+                        className="mb-8"
+                      >
+                        <div className="flex items-center justify-between mb-4">
+                          <h3 className="text-lg font-semibold text-white">Setup Progress</h3>
                           <div className="flex items-center gap-2">
-                            <div className="w-1.5 h-1.5 bg-[#0CF2A0] rounded-full"></div>
-                            <span>Direct Send</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <div className="w-1.5 h-1.5 bg-[#0CF2A0] rounded-full"></div>
-                            <span>Smart Templates</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <div className="w-1.5 h-1.5 bg-[#0CF2A0] rounded-full"></div>
-                            <span>Instant Delivery</span>
+                            <span className="text-sm text-gray-400">{completedCards.size}/{questionCards.length} completed</span>
+                            <span className="text-sm text-[#0CF2A0] font-semibold">{calculateProgress()}%</span>
                           </div>
                         </div>
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
+                        <Progress 
+                          value={calculateProgress()} 
+                          className="h-3 bg-gray-800/50" 
+                          indicatorClassName="bg-gradient-to-r from-[#0CF2A0] to-[#0CF2A0]/80 transition-all duration-500"
+                        />
+                        <div className="flex justify-between mt-4">
+                          {questionCards.map((card, index) => (
+                            <div key={card.id} className="flex flex-col items-center gap-1">
+                              <div className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                                completedCards.has(index) 
+                                  ? 'bg-[#0CF2A0] shadow-lg shadow-[#0CF2A0]/50' 
+                                  : index === currentCardIndex 
+                                    ? 'bg-blue-500 animate-pulse' 
+                                    : 'bg-gray-600'
+                              }`} />
+                              <span className={`text-xs transition-colors ${
+                                completedCards.has(index) 
+                                  ? 'text-[#0CF2A0]' 
+                                  : index === currentCardIndex 
+                                    ? 'text-blue-400' 
+                                    : 'text-gray-500'
+                              }`}>
+                                {index + 1}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </motion.div>
 
-                {/* Enhanced Research Information Form */}
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.5, delay: 0.3 }}
-                  className="relative mb-8"
-                >
-                  <div className="absolute -inset-1 bg-gradient-to-r from-gray-600/20 via-gray-500/20 to-gray-600/20 rounded-2xl blur-sm"></div>
-                  <div className="relative bg-[#1a1a1a]/90 border border-gray-700/50 rounded-2xl p-8 backdrop-blur-sm">
-                    <div className="space-y-6">
+                      {/* Question Card */}
+                      <AnimatePresence mode="wait">
+                        <QuestionCard 
+                          card={questionCards[currentCardIndex]} 
+                          isActive={true}
+                        />
+                      </AnimatePresence>
+                    </>
+                  ) : (
+                    /* Alternative Quick Form Option */
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ duration: 0.5 }}
+                      className="text-center py-12"
+                    >
+                      <motion.div
+                        className="bg-gradient-to-br from-[#1a1a1a]/90 to-[#0a0a0a]/90 border border-gray-700/50 rounded-2xl p-8 backdrop-blur-sm"
+                        whileHover={{ scale: 1.02 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <div className="mb-6">
+                          <div className="w-16 h-16 bg-gradient-to-br from-[#0CF2A0] to-[#0CF2A0]/70 rounded-2xl mx-auto mb-4 flex items-center justify-center">
+                            <Check className="h-8 w-8 text-black" />
+                          </div>
+                          <h3 className="text-2xl font-bold text-white mb-2">Setup Complete!</h3>
+                          <p className="text-gray-400">All your information has been saved.</p>
+                        </div>
+                        
+                        <div className="space-y-4">
+                          <motion.button
+                            onClick={startCardFlow}
+                            className="bg-gradient-to-r from-[#0CF2A0] to-[#0CF2A0]/80 text-black px-8 py-4 rounded-2xl font-semibold hover:from-[#0CF2A0]/90 hover:to-[#0CF2A0]/70 transition-all duration-300 flex items-center gap-3 mx-auto shadow-lg"
+                            whileHover={{ scale: 1.05, y: -2 }}
+                            whileTap={{ scale: 0.95 }}
+                          >
+                            <Shuffle className="h-5 w-5" />
+                            Update Information
+                          </motion.button>
+                        </div>
+                      </motion.div>
+                    </motion.div>
+                  )}
+                </div>
+
+                {/* Hidden Traditional Form - for fallback only */}
+                {false && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.5, delay: 0.3 }}
+                    className="relative mb-8"
+                  >
+                    {/* Start Card Flow Button */}
+                    <div className="text-center mb-8">
+                      {/* Check if there's saved progress */}
+                      {(() => {
+                        let hasProgress = false;
+                        try {
+                          const savedProgressStr = localStorage.getItem('cardSystemProgress');
+                          if (savedProgressStr) {
+                            const parsed = JSON.parse(savedProgressStr as string);
+                            hasProgress = parsed?.currentCardIndex > 0;
+                          }
+                        } catch (e) {
+                          // Invalid JSON or localStorage access, ignore
+                          hasProgress = false;
+                        }
+                        
+                        return hasProgress ? (
+                          <div className="space-y-4">
+                            <motion.button
+                              onClick={() => {
+                                const savedProgressData = localStorage.getItem('cardSystemProgress');
+                                const progress = savedProgressData ? JSON.parse(savedProgressData) : {};
+                                setCurrentCardIndex(progress.currentCardIndex || 0);
+                                setCompletedCards(new Set(progress.completedCards || []));
+                                setShowCardSystem(true);
+                              }}
+                              className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-8 py-4 rounded-2xl font-semibold hover:from-blue-600 hover:to-blue-700 transition-all duration-300 flex items-center gap-3 mx-auto shadow-lg hover:shadow-blue-500/25"
+                              whileHover={{ scale: 1.05, y: -2 }}
+                              whileTap={{ scale: 0.95 }}
+                              transition={{ duration: 0.2 }}
+                            >
+                              <ArrowUp className="h-5 w-5" />
+                              Resume Setup
+                            </motion.button>
+                            <motion.button
+                              onClick={startCardFlow}
+                              className="bg-gradient-to-r from-[#0CF2A0] to-[#0CF2A0]/80 text-black px-6 py-3 rounded-xl font-medium hover:from-[#0CF2A0]/90 hover:to-[#0CF2A0]/70 transition-all duration-300 flex items-center gap-2 mx-auto"
+                              whileHover={{ scale: 1.02 }}
+                              whileTap={{ scale: 0.98 }}
+                            >
+                              <Shuffle className="h-4 w-4" />
+                              Start Over
+                            </motion.button>
+                          </div>
+                        ) : (
+                          <motion.button
+                            onClick={startCardFlow}
+                            className="bg-gradient-to-r from-[#0CF2A0] to-[#0CF2A0]/80 text-black px-8 py-4 rounded-2xl font-semibold hover:from-[#0CF2A0]/90 hover:to-[#0CF2A0]/70 transition-all duration-300 flex items-center gap-3 mx-auto shadow-lg hover:shadow-[#0CF2A0]/25"
+                            whileHover={{ scale: 1.05, y: -2 }}
+                            whileTap={{ scale: 0.95 }}
+                            transition={{ duration: 0.2 }}
+                          >
+                            <Shuffle className="h-5 w-5" />
+                            Start Interactive Setup
+                          </motion.button>
+                        );
+                      })()}
+                      <p className="text-gray-400 text-sm mt-3">
+                        Get guided through personalized questions with progress tracking
+                      </p>
+                      <p className="text-gray-500 text-xs mt-2">
+                        💡 Use arrow keys to navigate • ESC to exit
+                      </p>
+                    </div>
+
+                    <div className="absolute -inset-1 bg-gradient-to-r from-gray-600/20 via-gray-500/20 to-gray-600/20 rounded-2xl blur-sm"></div>
+                    <div className="relative bg-[#1a1a1a]/90 border border-gray-700/50 rounded-2xl p-8 backdrop-blur-sm">
+                      <div className="text-center mb-6">
+                        <h3 className="text-xl font-semibold text-white mb-2">Quick Form</h3>
+                        <p className="text-gray-400 text-sm">Or fill out the traditional form below</p>
+                      </div>
+                      <div className="space-y-6">
                       {/* User Name Input */}
                       <div className="space-y-3">
                         <label className="text-white text-sm font-semibold block text-left flex items-center gap-2">
@@ -1501,7 +2060,7 @@ ${userFullName}`;
                               <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-3">
                                   <FileText className="h-5 w-5 text-[#0CF2A0]" />
-                                  <span className="text-[#0CF2A0] font-medium">{resumeFile.name}</span>
+                                  <span className="text-[#0CF2A0] font-medium">{resumeFile?.name}</span>
                                 </div>
                                 <button
                                   onClick={removeResumeFile}
@@ -1690,6 +2249,7 @@ ${userFullName}`;
                     </div>
                   </div>
                 </motion.div>
+                )}
 
                 {/* Enhanced Generate Email Button */}
                 <motion.div
@@ -1802,63 +2362,76 @@ INSTRUCTIONS:
                           <p className="text-gray-400">Ready to send your personalized message</p>
                         </div>
                         
-                        {/* Action Buttons */}
-                        <div className="flex flex-wrap gap-3">
+                        {/* Action Buttons - All on same line */}
+                        <div className="flex items-center gap-2 flex-nowrap">
                           {/* Gmail Status Badge */}
                           {isGmailConnected && (
                             <motion.div 
-                              className="flex items-center gap-2 bg-green-500/15 border border-green-500/30 rounded-xl px-4 py-2"
+                              className="flex items-center gap-1 bg-green-500/15 border border-green-500/30 rounded-lg px-2 py-1 flex-shrink-0"
                               whileHover={{ scale: 1.05 }}
                             >
                               <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                              <span className="text-green-400 text-sm font-medium">Ready to Send</span>
+                              <span className="text-green-400 text-xs font-medium whitespace-nowrap">Ready</span>
                             </motion.div>
                           )}
                           
                           {/* Edit Button */}
                           <motion.button
                             onClick={handleEditEmail}
-                            className="bg-blue-800/50 hover:bg-blue-700/50 text-white px-4 py-2 rounded-xl transition-all duration-200 flex items-center gap-2 text-sm border border-blue-600/50 hover:border-blue-500/50"
+                            className="bg-blue-800/50 hover:bg-blue-700/50 text-white px-3 py-2 rounded-lg transition-all duration-200 flex items-center gap-1 text-xs border border-blue-600/50 hover:border-blue-500/50 flex-shrink-0"
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                           >
-                            <Edit3 className="h-4 w-4" />
-                            Edit Email
+                            <Edit3 className="h-3 w-3" />
+                            <span className="hidden sm:inline">Edit</span>
                           </motion.button>
 
                           {/* Copy Button */}
                           <motion.button
                             onClick={copyEmailToClipboard}
-                            className="bg-gray-800/50 hover:bg-gray-700/50 text-white px-4 py-2 rounded-xl transition-all duration-200 flex items-center gap-2 text-sm border border-gray-600/50 hover:border-gray-500/50"
+                            className="bg-gray-800/50 hover:bg-gray-700/50 text-white px-3 py-2 rounded-lg transition-all duration-200 flex items-center gap-1 text-xs border border-gray-600/50 hover:border-gray-500/50 flex-shrink-0"
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                           >
-                            <Copy className="h-4 w-4" />
-                            Copy
+                            <Copy className="h-3 w-3" />
+                            <span className="hidden sm:inline">Copy</span>
                           </motion.button>
                           
-                          {/* Send/Connect Button - 3D Style */}
-                          <Button3D
+                          {/* Send Email Now Button - Right next to Copy */}
+                          <motion.button
                             onClick={isGmailConnected ? handleSendEmailWithAI : handleConnectGmail}
                             disabled={isConnectingGmail || isSendingEmail || !userFullName.trim() || !resumeUrl.trim()}
-                            variant={isGmailConnected ? "default" : "ai"}
-                            size="lg"
-                            supportIcon={isConnectingGmail ? TablerLoader2 as any : isSendingEmail ? Clock as any : isGmailConnected ? Clock as any : IconMail}
-                            isLoading={isConnectingGmail || isSendingEmail}
-                            whileHover={{ scale: 1.05, y: -2 }}
+                            className={`px-3 py-2 rounded-lg transition-all duration-200 flex items-center gap-1 text-xs shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0 ${
+                              isGmailConnected 
+                                ? 'bg-[#0CF2A0] hover:bg-[#0CF2A0]/90 text-black border border-[#0CF2A0]/50' 
+                                : 'bg-blue-600/50 hover:bg-blue-500/50 text-white border border-blue-500/50'
+                            }`}
+                            whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
-                            className="shadow-xl"
                           >
                             {isConnectingGmail ? (
-                              "Connecting..."
+                              <>
+                                <div className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                                <span className="hidden sm:inline">Connecting...</span>
+                              </>
                             ) : isSendingEmail ? (
-                              "Sending..."
+                              <>
+                                <div className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                                <span className="hidden sm:inline">Sending...</span>
+                              </>
                             ) : isGmailConnected ? (
-                              <>Send Email Now</>
+                              <>
+                                <Send className="h-3 w-3" />
+                                <span className="hidden sm:inline">Send Now</span>
+                                <span className="sm:hidden">Send</span>
+                              </>
                             ) : (
-                              "Connect Gmail"
+                              <>
+                                <Mail className="h-3 w-3" />
+                                <span className="hidden sm:inline">Connect</span>
+                              </>
                             )}
-                          </Button3D>
+                          </motion.button>
                         </div>
                       </div>
                       

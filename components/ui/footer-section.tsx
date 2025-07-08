@@ -60,13 +60,12 @@ export function Footer() {
 							<ul className="space-y-3">
 								{section.links.map((link) => (
 									<li key={link.title}>
-										<a
-											href={link.href}
-											className="text-gray-400 inline-flex items-center text-sm hover:text-[#0CF2A0] transition-colors duration-200"
+										<span
+											className="text-gray-400 inline-flex items-center text-sm cursor-not-allowed opacity-60"
 										>
 											{link.icon && <link.icon className="mr-1.5 size-4" />}
 											{link.title}
-										</a>
+										</span>
 									</li>
 								))}
 							</ul>

@@ -635,6 +635,14 @@ const InteractiveHero: React.FC = () => {
        setIsContactModalOpen(true);
    }, []);
 
+   const handleFacultiesClick = useCallback((e: ReactMouseEvent<HTMLAnchorElement>) => {
+       e.preventDefault();
+       const targetElement = document.getElementById('partner-institutions-section');
+       if (targetElement) {
+           targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+       }
+   }, []);
+
    const handleFacultyClick = useCallback((faculty: string) => {
        // You can expand this to show actual research topics from your database
        alert(`Showing research topics for ${faculty}. This will be connected to your database.`);
@@ -719,22 +727,8 @@ const InteractiveHero: React.FC = () => {
                 </div>
 
                 <div className="absolute left-1/2 transform -translate-x-1/2 hidden md:flex items-center space-x-6 lg:space-x-8">
-                    <div
-                        className="relative"
-                        onMouseEnter={() => setOpenDropdown('channels')}
-                        onMouseLeave={() => setOpenDropdown(null)}
-                    >
-                        <NavLink href="#" hasDropdown>Faculties</NavLink>
-                        <DropdownMenu isOpen={openDropdown === 'channels'}>
-                            <DropdownItem href="#" onClick={() => handleFacultyClick('Computer Science')}>Computer Science</DropdownItem>
-                            <DropdownItem href="#" onClick={() => handleFacultyClick('Engineering')}>Engineering</DropdownItem>
-                            <DropdownItem href="#" onClick={() => handleFacultyClick('Medicine')}>Medicine</DropdownItem>
-                            <DropdownItem href="#" onClick={() => handleFacultyClick('Arts & Humanities')}>Arts & Humanities</DropdownItem>
-                            <DropdownItem href="#" onClick={() => handleFacultyClick('Social Sciences')}>Social Sciences</DropdownItem>
-                        </DropdownMenu>
-                    </div>
-
-                    <NavLink href="#" onClick={handleAboutClick}>About</NavLink>
+                    <NavLink href="#" onClick={handleFacultiesClick}>Faculties</NavLink>
+                    <NavLink href="#" onClick={handleAboutClick}>Research Platform</NavLink>
                     <NavLink href="#" onClick={handleContactClick}>Contact</NavLink>
                 </div>
 
@@ -784,35 +778,20 @@ const InteractiveHero: React.FC = () => {
                             onClick={(e) => e.stopPropagation()}
                         >
                             <div className="p-6 max-h-[60vh] overflow-y-auto mobile-hide-scrollbar">
-                                {/* Navigation Grid */}
-                                <div className="grid grid-cols-2 gap-3 mb-6">
-                                    {[
-                                        { label: 'Computer Science', onClick: () => handleFacultyClick('Computer Science') },
-                                        { label: 'Engineering', onClick: () => handleFacultyClick('Engineering') },
-                                        { label: 'Medicine', onClick: () => handleFacultyClick('Medicine') },
-                                        { label: 'Arts & Humanities', onClick: () => handleFacultyClick('Arts & Humanities') },
-                                        { label: 'Social Sciences', onClick: () => handleFacultyClick('Social Sciences') },
-                                        { label: 'All Faculties', onClick: () => handleFacultyClick('All Faculties') }
-                                    ].map((item) => (
-                                        <motion.button
-                                            key={item.label}
-                                            onClick={() => {
-                                                item.onClick();
-                                                setIsMobileMenuOpen(false);
-                                            }}
-                                            className="flex flex-col items-center justify-center p-4 rounded-xl border border-gray-700/50 bg-gray-800/30 text-gray-300 hover:bg-gray-700/50 hover:border-gray-600 transition-all duration-200 touch-manipulation min-h-[80px]"
-                                            whileTap={{ scale: 0.95 }}
-                                        >
-                                            <span className="text-2xl mb-2">🎓</span>
-                                            <span className="text-sm font-medium text-center leading-tight">
-                                                {item.label}
-                                            </span>
-                                        </motion.button>
-                                    ))}
-                                </div>
-
                                 {/* Quick Actions */}
                                 <div className="space-y-3">
+                                    <motion.button
+                                        onClick={() => {
+                                            handleFacultiesClick({} as any);
+                                            setIsMobileMenuOpen(false);
+                                        }}
+                                        className="w-full flex items-center justify-center space-x-3 p-4 rounded-xl border border-gray-700/50 bg-gray-800/30 text-gray-300 hover:bg-gray-700/50 transition-all duration-200 touch-manipulation"
+                                        whileTap={{ scale: 0.95 }}
+                                    >
+                                        <span className="text-xl">🎓</span>
+                                        <span className="font-medium">Faculties</span>
+                                    </motion.button>
+
                                     <motion.button
                                         onClick={() => {
                                             handleAboutClick({} as any);
@@ -821,8 +800,8 @@ const InteractiveHero: React.FC = () => {
                                         className="w-full flex items-center justify-center space-x-3 p-4 rounded-xl border border-gray-700/50 bg-gray-800/30 text-gray-300 hover:bg-gray-700/50 transition-all duration-200 touch-manipulation"
                                         whileTap={{ scale: 0.95 }}
                                     >
-                                        <span className="text-xl">ℹ️</span>
-                                        <span className="font-medium">About</span>
+                                        <span className="text-xl">🔬</span>
+                                        <span className="font-medium">Research Platform</span>
                                     </motion.button>
 
                                     <motion.button

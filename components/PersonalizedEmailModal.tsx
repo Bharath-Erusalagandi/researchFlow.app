@@ -430,7 +430,7 @@ P.S. I am particularly interested in how your work on ${professorField} could co
               >
                 <div>
                   <h3 className="text-xl font-semibold text-white mb-2">Personal Information</h3>
-                  <p className="text-gray-400 text-sm mb-6">Let's start with your basic information.</p>
+                  <p className="text-gray-400 text-sm mb-6">Let&apos;s start with your basic information.</p>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -527,7 +527,7 @@ P.S. I am particularly interested in how your work on ${professorField} could co
 
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-2">
-                      Specific Interest in Professor's Work
+                      Specific Interest in Professor&apos;s Work
                     </label>
                     <input
                       type="text"

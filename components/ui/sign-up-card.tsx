@@ -232,7 +232,7 @@ export function SignUpCard() {
         // Email confirmation is enabled - provide helpful message and option to continue without confirmation
         setAuthError(
                       `Confirmation email sent to ${email}. Check your inbox and spam folder. ` +
-          `If you don't receive it, you can continue to the app and confirm later.`
+                                  `If you don&apos;t receive it, you can continue to the app and confirm later.`
         );
         
         // For development, allow user to continue after a delay
