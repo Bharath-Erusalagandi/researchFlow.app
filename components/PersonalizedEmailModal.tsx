@@ -72,9 +72,25 @@ export const PersonalizedEmailModal: React.FC<PersonalizedEmailModalProps> = ({
 
   // Load saved user info from localStorage
   useEffect(() => {
-    const savedInfo = localStorage.getItem('userResearchInfo');
-    if (savedInfo) {
-      setUserInfo(JSON.parse(savedInfo));
+    // Use the same consolidated form data key as search.tsx
+    const savedFormData = localStorage.getItem('researchConnect_formData');
+    if (savedFormData) {
+      try {
+        const formData = JSON.parse(savedFormData);
+        setUserInfo({
+          title: formData.researchTitle || '',
+          abstract: formData.researchAbstract || '',
+          name: formData.userFullName || '',
+          resumeUrl: formData.resumeUrl || '',
+          linkedinUrl: formData.linkedinUrl || '',
+          portfolioUrl: formData.portfolioUrl || '',
+          yearOfStudy: formData.yearOfStudy || '',
+          currentUniversity: formData.currentUniversity || '',
+          specificInterest: formData.specificInterest || ''
+        });
+      } catch (error) {
+        console.log('Error loading form data:', error);
+      }
     }
     
     // Load scheduled emails
@@ -84,10 +100,22 @@ export const PersonalizedEmailModal: React.FC<PersonalizedEmailModalProps> = ({
     }
   }, []);
 
-  // Save user info to localStorage when it changes
+  // Save user info to localStorage when it changes - use consolidated approach
   useEffect(() => {
     if (userInfo.title || userInfo.abstract || userInfo.name) {
-      localStorage.setItem('userResearchInfo', JSON.stringify(userInfo));
+      // Get existing form data and update with modal data
+      const existingFormData = JSON.parse(localStorage.getItem('researchConnect_formData') || '{}');
+      const updatedFormData = {
+        ...existingFormData,
+        userFullName: userInfo.name,
+        researchTitle: userInfo.title,
+        researchAbstract: userInfo.abstract,
+        resumeUrl: userInfo.resumeUrl,
+        yearOfStudy: userInfo.yearOfStudy,
+        currentUniversity: userInfo.currentUniversity,
+        specificInterest: userInfo.specificInterest
+      };
+      localStorage.setItem('researchConnect_formData', JSON.stringify(updatedFormData));
     }
   }, [userInfo]);
 

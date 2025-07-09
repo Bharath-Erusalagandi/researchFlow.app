@@ -111,7 +111,7 @@ export default function SearchPage() {
     
     const savedQuery = localStorage.getItem('researchConnect_searchQuery');
     const savedLastSearchedTerm = localStorage.getItem('researchConnect_lastSearchedTerm');
-    const savedProfessors = localStorage.getItem('researchConnect_professors');
+    const savedProfessorsResults = localStorage.getItem('researchConnect_professors');
     const savedSuggestion = localStorage.getItem('researchConnect_aiSuggestion');
     const savedHasSearched = localStorage.getItem('researchConnect_hasSearched');
     const savedSelectedProfessor = localStorage.getItem('selectedProfessorForEmail');
@@ -119,9 +119,14 @@ export default function SearchPage() {
     
     if (savedQuery) setSearchQuery(savedQuery);
     if (savedLastSearchedTerm) setLastSearchedTerm(savedLastSearchedTerm);
-    if (savedProfessors) setFilteredProfessors(JSON.parse(savedProfessors));
+    if (savedProfessorsResults) setFilteredProfessors(JSON.parse(savedProfessorsResults));
     if (savedSuggestion) setAISuggestion(savedSuggestion);
     if (savedHasSearched === 'true') setHasSearched(true);
+    
+    // Load saved/bookmarked professors
+    const savedBookmarkedProfs = JSON.parse(localStorage.getItem('savedProfessors') || '[]');
+    const savedIds = savedBookmarkedProfs.map((prof: any) => prof.id?.toString() || '');
+    setSavedProfessors(savedIds);
     
     // Load selected professor but DON'T force tab switch
     if (savedSelectedProfessor) {
@@ -139,32 +144,7 @@ export default function SearchPage() {
     
     setActiveTab(targetTab);
 
-    // Load user research data
-    const userInfo = localStorage.getItem('userInfo');
-    const researchData = localStorage.getItem('researchConnect_userResearchData');
-    const enhancedUserData = localStorage.getItem('userResearchInfo');
-    if (userInfo) {
-      const userData = JSON.parse(userInfo);
-      setUserFullName(userData.name || '');
-    }
-    
-    if (researchData) {
-      const research = JSON.parse(researchData);
-      setResearchTitle(research.title || '');
-      setResearchAbstract(research.abstract || '');
-    }
-
-    if (enhancedUserData) {
-      const enhanced = JSON.parse(enhancedUserData);
-      setResumeUrl(enhanced.resumeUrl || '');
-      setCurrentUniversity(enhanced.currentUniversity || '');
-      setYearOfStudy(enhanced.yearOfStudy || '');
-      setSpecificInterest(enhanced.specificInterest || '');
-      setResearchInterest(enhanced.researchInterest || '');
-      setResearchQuestions(enhanced.researchQuestions || '');
-      setOpportunityType(enhanced.opportunityType || '');
-      setResearchFieldConnection(enhanced.researchFieldConnection || '');
-    }
+    // Form data is now loaded in a separate useEffect to avoid conflicts and ensure persistence
 
     // Handle OAuth callback parameters
     const oauthSuccess = urlParams.get('oauth_success');
@@ -364,12 +344,7 @@ export default function SearchPage() {
     return () => clearInterval(intervalId);
   }, []);
 
-  // Check which professors are already saved
-  useEffect(() => {
-    const savedProfs = JSON.parse(localStorage.getItem('savedProfessors') || '[]');
-    const savedIds = savedProfs.map((p: any) => p.id.toString());
-    setSavedProfessors(savedIds);
-  }, []);
+
 
   const handleSearch = async (query?: string) => {
     const searchTerm = query || searchQuery;
@@ -687,25 +662,69 @@ export default function SearchPage() {
     }
   }, [currentCardIndex, completedCards, showCardSystem]);
 
-  // Load card progress on component mount
+  // Auto-save form data to localStorage whenever it changes
   useEffect(() => {
+    const formData = {
+      userFullName,
+      researchTitle,
+      researchAbstract,
+      resumeUrl,
+      currentUniversity,
+      yearOfStudy,
+      specificInterest,
+      researchInterest,
+      researchQuestions,
+      opportunityType,
+      researchFieldConnection
+    };
+    localStorage.setItem('researchConnect_formData', JSON.stringify(formData));
+  }, [userFullName, researchTitle, researchAbstract, resumeUrl, currentUniversity, yearOfStudy, specificInterest, researchInterest, researchQuestions, opportunityType, researchFieldConnection]);
+
+  // Load card progress and form data on component mount
+  useEffect(() => {
+    // Load form data
+    const savedFormData = localStorage.getItem('researchConnect_formData');
+    if (savedFormData) {
+      try {
+        const formData = JSON.parse(savedFormData);
+        setUserFullName(formData.userFullName || '');
+        setResearchTitle(formData.researchTitle || '');
+        setResearchAbstract(formData.researchAbstract || '');
+        setResumeUrl(formData.resumeUrl || '');
+        setCurrentUniversity(formData.currentUniversity || '');
+        setYearOfStudy(formData.yearOfStudy || '');
+        setSpecificInterest(formData.specificInterest || '');
+        setResearchInterest(formData.researchInterest || '');
+        setResearchQuestions(formData.researchQuestions || '');
+        setOpportunityType(formData.opportunityType || '');
+        setResearchFieldConnection(formData.researchFieldConnection || '');
+      } catch (error) {
+        console.log('Error loading form data from localStorage:', error);
+      }
+    }
+
+    // Load card progress
     const savedProgress = localStorage.getItem('cardSystemProgress');
     if (savedProgress) {
-      const { currentCardIndex: savedIndex, completedCards: savedCompleted, showCardSystem: savedShow } = JSON.parse(savedProgress);
-      if (savedShow && savedIndex !== undefined) {
-        setCurrentCardIndex(savedIndex);
-        setCompletedCards(new Set(savedCompleted));
-        // Don't auto-restore showCardSystem to avoid interrupting user
+      try {
+        const { currentCardIndex: savedIndex, completedCards: savedCompleted, showCardSystem: savedShow } = JSON.parse(savedProgress);
+        if (savedShow && savedIndex !== undefined) {
+          setCurrentCardIndex(savedIndex);
+          setCompletedCards(new Set(savedCompleted));
+          // Don't auto-restore showCardSystem to avoid interrupting user
+        }
+      } catch (error) {
+        console.log('Error loading card progress:', error);
       }
     }
   }, []);
 
+  // Optimized QuestionCard component with stable references
   const QuestionCard = ({ card, isActive }: { card: any; isActive: boolean }) => {
     if (!isActive) return null;
     
     return (
       <motion.div
-        key={card.id}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
@@ -759,7 +778,6 @@ export default function SearchPage() {
                   onChange={(e) => card.setValue(e.target.value)}
                   placeholder={card.placeholder}
                   className="w-full bg-[#0a0a0a]/80 border border-gray-600/50 rounded-xl px-6 py-4 text-white text-lg placeholder:text-gray-500 focus:border-[#0CF2A0]/50 focus:outline-none focus:ring-2 focus:ring-[#0CF2A0]/20 transition-all duration-200"
-                  autoFocus
                 />
               )}
               
@@ -770,7 +788,6 @@ export default function SearchPage() {
                   placeholder={card.placeholder}
                   rows={6}
                   className="w-full bg-[#0a0a0a]/80 border border-gray-600/50 rounded-xl px-6 py-4 text-white text-lg placeholder:text-gray-500 focus:border-[#0CF2A0]/50 focus:outline-none focus:ring-2 focus:ring-[#0CF2A0]/20 transition-all duration-200 resize-none"
-                  autoFocus
                 />
               )}
               
@@ -779,7 +796,6 @@ export default function SearchPage() {
                   value={card.value}
                   onChange={(e) => card.setValue(e.target.value)}
                   className="w-full bg-[#0a0a0a]/80 border border-gray-600/50 rounded-xl px-6 py-4 text-white text-lg focus:border-[#0CF2A0]/50 focus:outline-none focus:ring-2 focus:ring-[#0CF2A0]/20 transition-all duration-200"
-                  autoFocus
                 >
                   <option value="">Select your level...</option>
                   {card.options?.map((option: string) => (
@@ -811,10 +827,10 @@ export default function SearchPage() {
                         }
                       }}
                       className="hidden"
-                      id="resume-upload"
+                      id={`resume-upload-${currentCardIndex}`}
                       accept=".pdf,.doc,.docx"
                     />
-                    <label htmlFor="resume-upload" className="cursor-pointer">
+                    <label htmlFor={`resume-upload-${currentCardIndex}`} className="cursor-pointer">
                       <Upload className="h-8 w-8 text-gray-400 mx-auto mb-2" />
                       <p className="text-gray-400">Click to upload resume</p>
                       {resumeFile && (
@@ -1303,28 +1319,6 @@ ${userFullName}`;
       }, 200);
     }
   }, [activeTab]);
-
-  // Save form data to localStorage whenever form fields change
-  useEffect(() => {
-    const formData = {
-      name: userFullName,
-      title: researchTitle,
-      abstract: researchAbstract,
-      resumeUrl,
-      resumeFile: resumeFile?.name || null,
-      currentUniversity,
-      yearOfStudy,
-      specificInterest,
-      researchInterest,
-      researchQuestions,
-      opportunityType,
-      researchFieldConnection
-    };
-    
-    if (userFullName || researchTitle || researchAbstract || resumeUrl || currentUniversity || yearOfStudy || specificInterest || researchInterest || researchQuestions || opportunityType || researchFieldConnection) {
-      localStorage.setItem('userResearchInfo', JSON.stringify(formData));
-    }
-  }, [userFullName, researchTitle, researchAbstract, resumeUrl, resumeFile, currentUniversity, yearOfStudy, specificInterest, researchInterest, researchQuestions, opportunityType, researchFieldConnection]);
 
   return (
     <div className="relative min-h-screen bg-[#111111] text-gray-300 flex flex-col overflow-x-hidden">
@@ -2523,7 +2517,7 @@ INSTRUCTIONS:
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.3 }}
-              className="w-full max-w-6xl mx-auto"
+              className="w-full max-w-4xl mx-auto"
             >
               {/* Email Content Will Go Here */}
               <div className="text-center text-white">
