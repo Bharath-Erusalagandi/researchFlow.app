@@ -272,11 +272,7 @@ const ChevronDownIcon: React.FC<SVGProps<SVGSVGElement>> = (props) => (
    </svg>
 );
 
-const MenuIcon: React.FC<SVGProps<SVGSVGElement>> = (props) => (
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6" {...props}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-    </svg>
-);
+
 
 const CloseIcon: React.FC<SVGProps<SVGSVGElement>> = (props) => (
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6" {...props}>
@@ -378,7 +374,7 @@ interface ContactFormData {
 const InteractiveHero: React.FC = () => {
    const canvasRef = useRef<HTMLCanvasElement>(null);
    const animationFrameId = useRef<number | null>(null);
-   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
+   
    const [openDropdown, setOpenDropdown] = useState<string | null>(null);
    const [isScrolled, setIsScrolled] = useState<boolean>(false);
    const [isContactModalOpen, setIsContactModalOpen] = useState<boolean>(false);
@@ -572,14 +568,7 @@ const InteractiveHero: React.FC = () => {
        };
    }, [handleResize, handleMouseMove, animateDots]);
 
-   useEffect(() => {
-       if (isMobileMenuOpen) {
-           document.body.style.overflow = 'hidden';
-       } else {
-           document.body.style.overflow = 'unset';
-       }
-       return () => { document.body.style.overflow = 'unset'; };
-   }, [isMobileMenuOpen]);
+
 
    const headerVariants: Variants = {
        top: {
@@ -596,11 +585,7 @@ const InteractiveHero: React.FC = () => {
        }
    };
 
-   const mobileMenuVariants: Variants = {
-       hidden: { opacity: 0, y: -20 },
-       visible: { opacity: 1, y: 0, transition: { duration: 0.2, ease: "easeOut" } },
-       exit: { opacity: 0, y: -20, transition: { duration: 0.15, ease: "easeIn" } }
-   };
+
 
     const contentDelay = 0.3;
     const itemDelayIncrement = 0.1;
@@ -750,91 +735,11 @@ const InteractiveHero: React.FC = () => {
                         </span>
                     </ShimmerButton>
 
-                    <motion.button
-                        className="md:hidden text-gray-300 hover:text-white z-50"
-                        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                        aria-label="Toggle menu"
-                        whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
-                    >
-                        {isMobileMenuOpen ? <CloseIcon /> : <MenuIcon />}
-                    </motion.button>
+
                 </div>
             </nav>
 
-            <AnimatePresence>
-                {isMobileMenuOpen && (
-                    <motion.div
-                        key="mobile-menu"
-                        variants={mobileMenuVariants} initial="hidden" animate="visible" exit="exit"
-                        className="md:hidden fixed inset-0 top-full z-40 bg-black/60 backdrop-blur-sm"
-                        onClick={() => setIsMobileMenuOpen(false)}
-                    >
-                        <motion.div
-                            initial={{ y: '-100%' }}
-                            animate={{ y: 0 }}
-                            exit={{ y: '-100%' }}
-                            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-                            className="bg-[#111111]/98 backdrop-blur-xl border-b border-gray-800/50 shadow-2xl"
-                            onClick={(e) => e.stopPropagation()}
-                        >
-                            <div className="p-6 max-h-[60vh] overflow-y-auto mobile-hide-scrollbar">
-                                {/* Quick Actions */}
-                                <div className="space-y-3">
-                                    <motion.button
-                                        onClick={() => {
-                                            handleFacultiesClick({} as any);
-                                            setIsMobileMenuOpen(false);
-                                        }}
-                                        className="w-full flex items-center justify-center space-x-3 p-4 rounded-xl border border-gray-700/50 bg-gray-800/30 text-gray-300 hover:bg-gray-700/50 transition-all duration-200 touch-manipulation"
-                                        whileTap={{ scale: 0.95 }}
-                                    >
-                                        <span className="text-xl">🎓</span>
-                                        <span className="font-medium">Faculties</span>
-                                    </motion.button>
 
-                                    <motion.button
-                                        onClick={() => {
-                                            handleAboutClick({} as any);
-                                            setIsMobileMenuOpen(false);
-                                        }}
-                                        className="w-full flex items-center justify-center space-x-3 p-4 rounded-xl border border-gray-700/50 bg-gray-800/30 text-gray-300 hover:bg-gray-700/50 transition-all duration-200 touch-manipulation"
-                                        whileTap={{ scale: 0.95 }}
-                                    >
-                                        <span className="text-xl">🔬</span>
-                                        <span className="font-medium">Research Platform</span>
-                                    </motion.button>
-
-                                    <motion.button
-                                        onClick={() => {
-                                            handleContactClick({} as any);
-                                            setIsMobileMenuOpen(false);
-                                        }}
-                                        className="w-full flex items-center justify-center space-x-3 p-4 rounded-xl border border-gray-700/50 bg-gray-800/30 text-gray-300 hover:bg-gray-700/50 transition-all duration-200 touch-manipulation"
-                                        whileTap={{ scale: 0.95 }}
-                                    >
-                                        <span className="text-xl">📧</span>
-                                        <span className="font-medium">Contact</span>
-                                    </motion.button>
-
-                                    <motion.button
-                                        onClick={(e) => {
-                                            e.preventDefault();
-                                            e.stopPropagation();
-                                            window.location.href = '/login';
-                                            setIsMobileMenuOpen(false);
-                                        }}
-                                        className="w-full flex items-center justify-center space-x-3 p-4 rounded-xl bg-[#0CF2A0]/10 border border-[#0CF2A0]/20 text-[#0CF2A0] hover:bg-[#0CF2A0]/20 transition-all duration-200 touch-manipulation"
-                                        whileTap={{ scale: 0.95 }}
-                                    >
-                                        <span className="text-xl">🚀</span>
-                                        <span className="font-medium">Get Started</span>
-                                    </motion.button>
-                                </div>
-                            </div>
-                        </motion.div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
         </motion.header>
 
         <main className="flex-grow flex flex-col items-center justify-center text-center px-4 pt-20 pb-16 relative z-10">
