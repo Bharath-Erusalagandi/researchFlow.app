@@ -204,9 +204,9 @@ const ProfessorsPage = () => {
             <div className="flex items-center justify-between h-16 md:h-20">
               
               {/* Mobile Layout */}
-              <div className="flex items-center space-x-3 md:hidden">
+              <div className="flex items-center space-x-2 md:hidden">
                 <Link href="/" className="flex items-center space-x-2">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="#0CF2A0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                     <path d="M2 17L12 22L22 17" stroke="#0CF2A0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                     <path d="M2 12L12 17L22 12" stroke="#0CF2A0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -215,38 +215,47 @@ const ProfessorsPage = () => {
                 </Link>
               </div>
 
-              <h1 className="text-lg font-semibold text-white md:hidden">My Professors</h1>
+              {/* Mobile Page Title */}
+              <div className="flex-1 text-center md:hidden">
+                <h1 className="text-lg font-semibold text-white">My Professors</h1>
+              </div>
 
-              <motion.button
-                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="md:hidden p-2 rounded-md text-gray-300 hover:text-white hover:bg-gray-700/50 transition-colors touch-manipulation"
-                whileTap={{ scale: 0.95 }}
-                aria-label="Toggle navigation menu"
-              >
-                <AnimatePresence mode="wait">
-                  {isMobileMenuOpen ? (
-                    <motion.div
-                      key="close"
-                      initial={{ rotate: -90, opacity: 0 }}
-                      animate={{ rotate: 0, opacity: 1 }}
-                      exit={{ rotate: 90, opacity: 0 }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      <X className="h-6 w-6" />
-                    </motion.div>
-                  ) : (
-                    <motion.div
-                      key="menu"
-                      initial={{ rotate: 90, opacity: 0 }}
-                      animate={{ rotate: 0, opacity: 1 }}
-                      exit={{ rotate: -90, opacity: 0 }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      <Menu className="h-6 w-6" />
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </motion.button>
+              {/* Mobile Menu Button */}
+              <div className="md:hidden">
+                <motion.button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsMobileMenuOpen(!isMobileMenuOpen);
+                  }}
+                  className="p-2 rounded-md text-gray-300 hover:text-white hover:bg-gray-700/50 transition-colors touch-manipulation"
+                  whileTap={{ scale: 0.95 }}
+                  aria-label="Toggle navigation menu"
+                >
+                  <AnimatePresence mode="wait">
+                    {isMobileMenuOpen ? (
+                      <motion.div
+                        key="close"
+                        initial={{ rotate: -90, opacity: 0 }}
+                        animate={{ rotate: 0, opacity: 1 }}
+                        exit={{ rotate: 90, opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <X className="h-6 w-6" />
+                      </motion.div>
+                    ) : (
+                      <motion.div
+                        key="menu"
+                        initial={{ rotate: 90, opacity: 0 }}
+                        animate={{ rotate: 0, opacity: 1 }}
+                        exit={{ rotate: -90, opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <Menu className="h-6 w-6" />
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </motion.button>
+              </div>
 
               {/* Desktop Layout */}
               <div className="hidden md:flex items-center justify-center flex-1">

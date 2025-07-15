@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { GraduationCap, User, Mail, BookOpen, Award, ArrowUp, Square, Tag, Home, FileText, Search as SearchIcon, Settings, LogOut, AlertCircle, Check, Heart, Brain, PenTool, Send, Copy, Loader2, ExternalLink, Upload, Link as LinkIcon, Edit3, Clock, Trash2, ChevronRight, ChevronLeft, Shuffle } from 'lucide-react';
+import { GraduationCap, User, Mail, BookOpen, Award, ArrowUp, Square, Tag, Home, FileText, Search as SearchIcon, Settings, LogOut, AlertCircle, Check, Heart, Brain, PenTool, Send, Copy, Loader2, ExternalLink, Upload, Link as LinkIcon, Edit3, Clock, Trash2, ChevronRight, ChevronLeft, Shuffle, X } from 'lucide-react';
 import { IconSend, IconMail, IconLoader2 as TablerLoader2 } from '@tabler/icons-react';
 import { getTimeBasedGreeting } from '@/lib/utils';
 // Removed PromptInput components - now using AIInputWithLoading
@@ -97,6 +97,7 @@ export default function SearchPage() {
   const [emailSentStatus, setEmailSentStatus] = useState<{success: boolean, message: string} | null>(null);
   
   // Email composer state
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Card-based question system state
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
@@ -1320,6 +1321,38 @@ ${userFullName}`;
     }
   }, [activeTab]);
 
+  // Close mobile menu when clicking outside or on escape
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsMobileMenuOpen(false);
+      }
+    };
+
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest('.mobile-menu-container') && !target.closest('.mobile-menu-button')) {
+        setIsMobileMenuOpen(false);
+      }
+    };
+
+    if (isMobileMenuOpen) {
+      document.addEventListener('keydown', handleEscape);
+      setTimeout(() => {
+        document.addEventListener('click', handleClickOutside);
+      }, 100);
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+      document.removeEventListener('click', handleClickOutside);
+      document.body.style.overflow = 'unset';
+    };
+  }, [isMobileMenuOpen]);
+
   return (
     <div className="relative min-h-screen bg-[#111111] text-gray-300 flex flex-col overflow-x-hidden">
       {/* Interactive Background */}
@@ -1336,9 +1369,22 @@ ${userFullName}`;
         transition={{ duration: 0.6, ease: "easeOut" }}
       >
         <div className="container mx-auto px-4">
-          <div className="flex items-center justify-center h-20">
+          <div className="flex items-center justify-center h-20 relative">
+            {/* Mobile Logo */}
+            <div className="md:hidden absolute left-4 flex items-center">
+              <Link href="/" className="flex items-center space-x-2">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="#0CF2A0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M2 17L12 22L22 17" stroke="#0CF2A0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M2 12L12 17L22 12" stroke="#0CF2A0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                <span className="text-lg font-bold text-white">Research Flow</span>
+              </Link>
+            </div>
+
+            {/* Desktop Navigation */}
             <motion.div 
-              className="bg-[#1a1a1a]/80 backdrop-blur-xl rounded-2xl p-2 border border-gray-700/50 shadow-lg"
+              className="hidden md:block bg-[#1a1a1a]/80 backdrop-blur-xl rounded-2xl p-2 border border-gray-700/50 shadow-lg"
               whileHover={{ 
                 scale: 1.02,
                 boxShadow: "0 8px 32px rgba(12, 242, 160, 0.15)"
@@ -1415,20 +1461,147 @@ ${userFullName}`;
             {/* Mobile menu button */}
             <div className="md:hidden absolute right-4 flex items-center">
               <motion.button 
-                className="text-gray-300 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-[#0CF2A0] p-2 rounded-lg"
-                onClick={() => alert('Mobile menu placeholder')}
-                whileHover={{ scale: 1.1, rotate: 90 }}
+                className="mobile-menu-button text-gray-300 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-[#0CF2A0] p-2 rounded-lg"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsMobileMenuOpen(!isMobileMenuOpen);
+                }}
+                whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
                 transition={{ duration: 0.2 }}
               >
-                <svg className="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
+                <AnimatePresence mode="wait">
+                  {isMobileMenuOpen ? (
+                    <motion.div
+                      key="close"
+                      initial={{ rotate: -90, opacity: 0 }}
+                      animate={{ rotate: 0, opacity: 1 }}
+                      exit={{ rotate: 90, opacity: 0 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <X className="h-6 w-6" />
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      key="menu"
+                      initial={{ rotate: 90, opacity: 0 }}
+                      animate={{ rotate: 0, opacity: 1 }}
+                      exit={{ rotate: -90, opacity: 0 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <svg className="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                      </svg>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </motion.button>
             </div>
           </div>
         </div>
       </motion.div>
+
+      {/* Mobile Menu Overlay */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="md:hidden fixed inset-0 top-20 bg-black/50 backdrop-blur-sm z-40"
+            onClick={() => setIsMobileMenuOpen(false)}
+          >
+            {/* Mobile Menu Panel */}
+                         <motion.div
+               initial={{ x: '100%' }}
+               animate={{ x: 0 }}
+               exit={{ x: '100%' }}
+               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+               className="mobile-menu-container absolute right-0 top-0 h-full w-80 max-w-[80vw] bg-[#111111]/95 backdrop-blur-xl border-l border-gray-800/50 shadow-2xl"
+               onClick={(e) => e.stopPropagation()}
+             >
+              <div className="flex flex-col h-full">
+                {/* Menu Header */}
+                <div className="p-6 border-b border-gray-800/50">
+                  <h2 className="text-lg font-semibold text-white">Navigation</h2>
+                </div>
+
+                {/* Search Tab Buttons */}
+                <div className="p-4 border-b border-gray-800/50">
+                  <div className="space-y-2">
+                    <motion.button
+                      onClick={() => {
+                        setActiveTab('search');
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all duration-200 ${
+                        activeTab === 'search'
+                          ? 'bg-[#0CF2A0]/20 text-[#0CF2A0] border border-[#0CF2A0]/30'
+                          : 'bg-gray-800/30 text-gray-300 hover:bg-gray-700/50'
+                      }`}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      <SearchIcon className="h-5 w-5" />
+                      <span className="font-medium">Search Professors</span>
+                      {hasSearched && filteredProfessors.length > 0 && (
+                        <span className="ml-auto bg-[#0CF2A0] text-black text-xs px-2 py-1 rounded-full font-bold">
+                          {filteredProfessors.length}
+                        </span>
+                      )}
+                    </motion.button>
+                    <motion.button
+                      onClick={() => {
+                        setActiveTab('email');
+                        setIsMobileMenuOpen(false);
+                      }}
+                      className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all duration-200 ${
+                        activeTab === 'email'
+                          ? 'bg-[#0CF2A0]/20 text-[#0CF2A0] border border-[#0CF2A0]/30'
+                          : 'bg-gray-800/30 text-gray-300 hover:bg-gray-700/50'
+                      }`}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      <PenTool className="h-5 w-5" />
+                      <span className="font-medium">Personalized Email</span>
+                      {selectedProfessorForEmail && (
+                        <div className="ml-auto flex items-center gap-1">
+                          <div className="w-2 h-2 bg-[#0CF2A0] rounded-full animate-pulse"></div>
+                          <span className="text-xs opacity-75">Ready</span>
+                        </div>
+                      )}
+                    </motion.button>
+                  </div>
+                </div>
+
+                {/* Navigation Links */}
+                <div className="flex-1 overflow-y-auto py-4">
+                  <nav className="space-y-1 px-4">
+                    {navLinks.map((link) => (
+                      <Link key={link.href} href={link.href} onClick={() => setIsMobileMenuOpen(false)}>
+                        <motion.div
+                          className="flex items-center gap-3 p-4 rounded-xl bg-gray-800/30 border border-gray-700/50 text-gray-300 hover:bg-gray-700/50 transition-all duration-200 touch-manipulation"
+                          whileTap={{ scale: 0.95 }}
+                        >
+                          {link.icon}
+                          <span className="font-medium">{link.label}</span>
+                        </motion.div>
+                      </Link>
+                    ))}
+                  </nav>
+                </div>
+
+                {/* Menu Footer */}
+                <div className="p-6 border-t border-gray-800/50">
+                  <div className="flex items-center text-sm text-gray-400">
+                    <span>Research Flow Platform</span>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <main className="flex-grow flex flex-col items-center justify-center text-center px-4 pt-12 pb-16 relative z-10">
         {/* Tab Content */}
