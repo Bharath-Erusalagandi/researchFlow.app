@@ -211,7 +211,7 @@ const ProfessorsPage = () => {
                     <path d="M2 17L12 22L22 17" stroke="#0CF2A0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                     <path d="M2 12L12 17L22 12" stroke="#0CF2A0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
-                  <span className="text-lg font-bold text-white">Flow Research</span>
+                  <span className="text-lg font-bold text-white">Research Flow</span>
                 </Link>
               </div>
 

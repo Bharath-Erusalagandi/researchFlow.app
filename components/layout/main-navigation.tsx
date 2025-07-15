@@ -156,14 +156,18 @@ export const MainNavigation: React.FC<MainNavigationProps> = ({
 
     const handleClickOutside = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
-      if (!target.closest('.mobile-menu-container')) {
+      // Only close if clicking outside the mobile menu button and container
+      if (!target.closest('.mobile-menu-container') && !target.closest('.mobile-menu-button')) {
         setIsMobileMenuOpen(false);
       }
     };
 
     if (isMobileMenuOpen) {
       document.addEventListener('keydown', handleEscape);
-      document.addEventListener('click', handleClickOutside);
+      // Add a slight delay to prevent immediate closure
+      setTimeout(() => {
+        document.addEventListener('click', handleClickOutside);
+      }, 100);
       // Prevent body scroll when mobile menu is open
       document.body.style.overflow = 'hidden';
     } else {
@@ -207,7 +211,7 @@ export const MainNavigation: React.FC<MainNavigationProps> = ({
                 <path d="M2 17L12 22L22 17" stroke="#0CF2A0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                 <path d="M2 12L12 17L22 12" stroke="#0CF2A0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
-              <span className="text-lg sm:text-xl font-bold text-white">Flow Research</span>
+              <span className="text-lg sm:text-xl font-bold text-white">Research Flow</span>
             </Link>
 
             {/* Desktop Navigation */}
@@ -221,10 +225,13 @@ export const MainNavigation: React.FC<MainNavigationProps> = ({
             </div>
 
             {/* Mobile Menu Button */}
-            <div className="md:hidden mobile-menu-container">
+            <div className="md:hidden">
               <motion.button
-                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="p-2 rounded-md text-gray-300 hover:text-white hover:bg-gray-700/50 transition-colors touch-manipulation"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsMobileMenuOpen(!isMobileMenuOpen);
+                }}
+                className="mobile-menu-button p-2 rounded-md text-gray-300 hover:text-white hover:bg-gray-700/50 transition-colors touch-manipulation"
                 whileTap={{ scale: 0.95 }}
                 aria-label="Toggle navigation menu"
                 aria-expanded={isMobileMenuOpen}
@@ -303,7 +310,7 @@ export const MainNavigation: React.FC<MainNavigationProps> = ({
                   {/* Menu Footer */}
                   <div className="p-6 border-t border-gray-800/50">
                     <div className="flex items-center text-sm text-gray-400">
-                      <span>Flow Research Platform</span>
+                      <span>Research Flow Platform</span>
                     </div>
                   </div>
                 </div>
