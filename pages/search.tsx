@@ -1374,9 +1374,9 @@ ${userFullName}`;
             <div className="md:hidden absolute left-4 flex items-center">
               <Link href="/" className="flex items-center">
                 <img 
-                  src="/images/RF Full Image from Slack.png" 
+                  src="/images/RF Full Image from Slack (1).png" 
                   alt="Research Flow Logo" 
-                  className="h-8 w-auto"
+                  className="h-9 w-auto"
                 />
               </Link>
             </div>

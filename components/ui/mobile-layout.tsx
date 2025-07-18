@@ -93,9 +93,9 @@ export const MobileLayout: React.FC<MobileLayoutProps> = ({
             ) : (
               <Link href="/" className="flex items-center">
                 <img 
-                  src="/images/RF Full Image from Slack.png" 
+                  src="/images/RF Full Image from Slack (1).png" 
                   alt="Research Flow Logo" 
-                  className="h-7 w-auto"
+                  className="h-9 w-auto"
                 />
               </Link>
             )}

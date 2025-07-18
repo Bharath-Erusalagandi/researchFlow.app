@@ -207,9 +207,9 @@ export const MainNavigation: React.FC<MainNavigationProps> = ({
             {/* Logo */}
             <Link href="/" className="flex items-center flex-shrink-0">
               <img 
-                src="/images/RF Full Image from Slack.png" 
+                src="/images/RF Full Image from Slack (1).png" 
                 alt="Research Flow Logo" 
-                className="h-8 sm:h-10 w-auto"
+                className="h-10 sm:h-12 w-auto"
               />
             </Link>
 

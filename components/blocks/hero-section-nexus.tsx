@@ -704,9 +704,9 @@ const InteractiveHero: React.FC = () => {
             <nav className="flex justify-between items-center max-w-screen-xl mx-auto h-[70px]">
                 <div className="flex items-center flex-shrink-0">
                     <img 
-                        src="/images/RF Full Image from Slack.png" 
+                        src="/images/RF Full Image from Slack (1).png" 
                         alt="Research Flow Logo" 
-                        className="h-8 w-auto"
+                        className="h-10 w-auto"
                     />
                 </div>
 
