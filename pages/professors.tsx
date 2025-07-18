@@ -204,14 +204,13 @@ const ProfessorsPage = () => {
             <div className="flex items-center justify-between h-16 md:h-20">
               
               {/* Mobile Layout */}
-              <div className="flex items-center space-x-2 md:hidden">
-                <Link href="/" className="flex items-center space-x-2">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="#0CF2A0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    <path d="M2 17L12 22L22 17" stroke="#0CF2A0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    <path d="M2 12L12 17L22 12" stroke="#0CF2A0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                  <span className="text-lg font-bold text-white">Research Flow</span>
+              <div className="flex items-center md:hidden">
+                <Link href="/" className="flex items-center">
+                  <img 
+                    src="/images/RF Full Image from Slack.png" 
+                    alt="Research Flow Logo" 
+                    className="h-8 w-auto"
+                  />
                 </Link>
               </div>
 

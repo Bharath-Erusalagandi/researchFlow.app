@@ -340,10 +340,14 @@ export function SignUpCard() {
                   initial={{ scale: 0.5, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   transition={{ type: "spring", duration: 0.8 }}
-                  className="mx-auto w-10 h-10 rounded-full border border-white/10 flex items-center justify-center relative overflow-hidden"
+                  className="mx-auto w-12 h-12 rounded-full border border-white/10 flex items-center justify-center relative overflow-hidden"
                 >
-                  {/* Logo placeholder */}
-                  <span className="text-lg font-bold bg-clip-text text-transparent bg-gradient-to-b from-white to-white/70">A</span>
+                  {/* Research Flow Logo */}
+                  <img 
+                    src="/images/Research Flow Logo.png" 
+                    alt="Research Flow Logo" 
+                    className="w-8 h-8 object-contain"
+                  />
                   
                   {/* Inner lighting effect */}
                   <div className="absolute inset-0 bg-gradient-to-br from-[#0CF2A0]/20 to-transparent opacity-50" />

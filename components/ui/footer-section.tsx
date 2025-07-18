@@ -45,11 +45,11 @@ export function Footer() {
 			<div className="grid w-full gap-10 xl:grid-cols-2">
 				<div className="space-y-6">
 					<div className="flex items-center gap-2">
-						<svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-							<path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="#0CF2A0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-							<path d="M2 17L12 22L22 17" stroke="#0CF2A0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-							<path d="M2 12L12 17L22 12" stroke="#0CF2A0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-						</svg>
+						<img 
+							src="/images/Research Flow Logo.png" 
+							alt="Research Flow Logo" 
+							className="h-7 w-auto"
+						/>
 						<span className="font-semibold text-white">Research Flow</span>
 					</div>
 					<p className="text-gray-400 text-sm">
