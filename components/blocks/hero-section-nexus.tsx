@@ -706,7 +706,7 @@ const InteractiveHero: React.FC = () => {
                     <img 
                         src="/images/RF Full Image from Slack (1).png" 
                         alt="Research Flow Logo" 
-                        className="h-10 w-auto"
+                        className="h-24 w-auto"
                     />
                 </div>
 

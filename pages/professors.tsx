@@ -207,9 +207,9 @@ const ProfessorsPage = () => {
               <div className="flex items-center md:hidden">
                 <Link href="/" className="flex items-center">
                   <img 
-                    src="/images/RF Full Image from Slack (1).png" 
+                    src="/images/logo new.png" 
                     alt="Research Flow Logo" 
-                    className="h-9 w-auto"
+                    className="h-24 w-auto"
                   />
                 </Link>
               </div>

@@ -46,14 +46,17 @@ export function Footer() {
 				<div className="space-y-6">
 					<div className="flex items-center gap-2">
 						<img 
-							src="/images/Research Flow Logo.png" 
+							src="/images/logo new.png" 
 							alt="Research Flow Logo" 
-							className="h-7 w-auto"
+							className="h-8 w-auto"
 						/>
 						<span className="font-semibold text-white">Research Flow</span>
 					</div>
 					<p className="text-gray-400 text-sm">
 						© {new Date().getFullYear()} Research Flow. All rights reserved.
+					</p>
+					<p className="text-gray-500 text-xs">
+						Logo design by Rohan Mittal
 					</p>
 				</div>
 
