@@ -45,7 +45,7 @@ const features = [
 
 export default function FeatureSection() {
   return (
-    <section className="py-20 md:py-32 bg-[#111111] relative z-10">
+    <section className="pt-16 pb-20 md:pt-20 md:pb-32 bg-[#111111] relative z-10">
       <div className="absolute inset-0 z-0 pointer-events-none bg-dot-pattern"></div>
       <div className="mx-auto w-full max-w-6xl space-y-16 px-6">
         <AnimatedContainer className="mx-auto max-w-3xl text-center">

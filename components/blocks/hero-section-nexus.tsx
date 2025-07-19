@@ -675,7 +675,7 @@ const InteractiveHero: React.FC = () => {
    }, []);
 
    return (
-     <div className="relative bg-[#111111] text-gray-300 min-h-screen flex flex-col overflow-x-hidden" style={{
+     <div className="relative bg-[#111111] text-gray-300 min-h-screen flex flex-col overflow-x-hidden pb-8" style={{
        scrollbarWidth: 'none',
        msOverflowStyle: 'none'
      }}>
@@ -741,7 +741,7 @@ const InteractiveHero: React.FC = () => {
 
         </motion.header>
 
-        <main className="flex-grow flex flex-col items-center justify-center text-center px-4 pt-20 pb-16 relative z-10">
+        <main className="flex-grow flex flex-col items-center text-center px-4 pt-20 pb-20 relative z-10">
 
             <motion.div
                 variants={bannerVariants}
