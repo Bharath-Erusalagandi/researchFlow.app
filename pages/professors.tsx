@@ -207,7 +207,7 @@ const ProfessorsPage = () => {
               <div className="flex items-center md:hidden">
                 <Link href="/" className="flex items-center">
                   <img 
-                    src="/images/logo new.png" 
+                    src="/logo without text.png" 
                     alt="Research Flow Logo" 
                     className="h-24 w-auto"
                   />
@@ -383,7 +383,7 @@ const ProfessorsPage = () => {
                         {/* Professor Header */}
                         <div className="flex items-start justify-between">
                           <div className="flex-1 min-w-0">
-                            <h3 className="text-lg sm:text-xl font-semibold text-white truncate">
+                            <h3 className="text-lg sm:text-xl font-semibold text-white">
                               {professor.name}
                             </h3>
                             <p className="text-sm text-gray-400 truncate">

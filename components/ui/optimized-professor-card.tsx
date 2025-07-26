@@ -71,16 +71,16 @@ const OptimizedProfessorCard = memo<OptimizedProfessorCardProps>(({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, delay: index * 0.1 }}
-      className="group relative bg-[#1a1a1a]/90 border border-gray-800/50 rounded-xl p-6 hover:border-[#0CF2A0]/50 transition-all duration-300 hover:shadow-lg hover:shadow-[#0CF2A0]/10 backdrop-blur-sm"
+      className="group relative bg-[#1a1a1a]/90 border border-gray-800/50 rounded-xl p-8 hover:border-[#0CF2A0]/50 transition-all duration-300 hover:shadow-lg hover:shadow-[#0CF2A0]/10 backdrop-blur-sm"
     >
       {/* Professor Image with optimized loading */}
-      <div className="relative w-20 h-20 mx-auto mb-4 rounded-full overflow-hidden bg-gray-800">
+      <div className="relative w-24 h-24 mx-auto mb-6 rounded-full overflow-hidden bg-gray-800">
         {!imageError ? (
           <Image
             src={professor.image || '/api/placeholder/80/80'}
             alt={professor.name}
-            width={80}
-            height={80}
+            width={96}
+            height={96}
             className={`object-cover transition-opacity duration-200 ${imageLoading ? 'opacity-0' : 'opacity-100'}`}
             onLoad={handleImageLoad}
             onError={handleImageError}
@@ -100,19 +100,19 @@ const OptimizedProfessorCard = memo<OptimizedProfessorCardProps>(({
       </div>
 
       {/* Professor Name */}
-      <h3 className="text-xl font-bold text-white mb-2 text-center group-hover:text-[#0CF2A0] transition-colors">
+      <h3 className="text-2xl font-bold text-white mb-3 text-center group-hover:text-[#0CF2A0] transition-colors">
         {professor.name}
       </h3>
 
       {/* University */}
-      <div className="flex items-center justify-center gap-2 mb-3">
+      <div className="flex items-center justify-center gap-2 mb-4">
         <GraduationCap className="h-4 w-4 text-[#0CF2A0]" />
-        <p className="text-gray-300 text-sm text-center">{professor.university_name}</p>
+        <p className="text-gray-300 text-base text-center">{professor.university_name}</p>
       </div>
 
       {/* Research Field */}
-      <div className="mb-4">
-        <p className="text-gray-400 text-sm text-center leading-relaxed">
+      <div className="mb-6">
+        <p className="text-gray-400 text-base text-center leading-relaxed">
           {professor.field_of_research.length > 120 
             ? `${professor.field_of_research.substring(0, 120)}...` 
             : professor.field_of_research
@@ -122,7 +122,7 @@ const OptimizedProfessorCard = memo<OptimizedProfessorCardProps>(({
 
       {/* Stats Row */}
       {(professor.publications || professor.citations) && (
-        <div className="flex justify-center gap-6 mb-4 text-sm">
+        <div className="flex justify-center gap-6 mb-6 text-base">
           {professor.publications && (
             <div className="flex items-center gap-1">
               <BookOpen className="h-4 w-4 text-[#0CF2A0]" />
@@ -146,7 +146,7 @@ const OptimizedProfessorCard = memo<OptimizedProfessorCardProps>(({
         <div className="flex gap-2">
           <motion.button
             onClick={handlePersonalizedEmail}
-            className="flex-1 bg-[#0CF2A0] text-black px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#0CF2A0]/90 transition-colors flex items-center justify-center gap-2"
+            className="flex-1 bg-[#0CF2A0] text-black px-6 py-3 rounded-lg text-base font-medium hover:bg-[#0CF2A0]/90 transition-colors flex items-center justify-center gap-2"
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
           >
@@ -156,7 +156,7 @@ const OptimizedProfessorCard = memo<OptimizedProfessorCardProps>(({
           
           <motion.button
             onClick={handleSave}
-            className={`p-2 rounded-lg transition-colors ${
+            className={`p-3 rounded-lg transition-colors ${
               isSaved 
                 ? 'bg-red-500/20 text-red-400 hover:bg-red-500/30' 
                 : 'bg-gray-700/50 text-gray-300 hover:bg-gray-600/50'
@@ -172,7 +172,7 @@ const OptimizedProfessorCard = memo<OptimizedProfessorCardProps>(({
         <div className="flex gap-2">
           <motion.button
             onClick={handleQuickEmail}
-            className="flex-1 bg-gray-700/50 text-gray-300 px-4 py-2 rounded-lg text-sm hover:bg-gray-600/50 transition-colors flex items-center justify-center gap-2"
+            className="flex-1 bg-gray-700/50 text-gray-300 px-6 py-3 rounded-lg text-base hover:bg-gray-600/50 transition-colors flex items-center justify-center gap-2"
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
           >

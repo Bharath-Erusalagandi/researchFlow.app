@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Mail, BookOpen, Award, GraduationCap, Brain } from 'lucide-react';
+import { Mail, BookOpen, Award, GraduationCap, Brain, Building2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface Professor {
@@ -41,14 +41,14 @@ export const ProfessorCard: React.FC<ProfessorCardProps> = ({
         duration: 0.4,
         delay: index * 0.1
       }}
-      className="bg-[#1a1a1a] border border-gray-800 rounded-xl p-8 hover:border-[#0CF2A0]/50 transition-all duration-300 group min-h-[280px] flex flex-col overflow-hidden"
+      className="bg-[#1a1a1a] border border-gray-800 rounded-xl p-10 hover:border-[#0CF2A0]/50 transition-all duration-300 group min-h-[320px] flex flex-col overflow-hidden"
     >
       {/* Header: Name, University, and Save Button */}
-      <div className="flex items-center justify-between mb-5 min-w-0">
-        <div className="flex items-center gap-4 flex-1 min-w-0 overflow-hidden">
-          <h3 className="text-2xl font-bold text-white group-hover:text-[#0CF2A0] transition-colors truncate">
-            {professor.name}
-          </h3>
+      <div className="flex items-start justify-between mb-5 gap-4">
+        <div className="flex items-center gap-4 flex-1">
+                      <h3 className="text-2xl font-bold text-white group-hover:text-[#0CF2A0] transition-colors">
+              {professor.name}
+            </h3>
           <div className="flex items-center gap-2 min-w-0">
             <GraduationCap className="h-5 w-5 text-[#0CF2A0] flex-shrink-0" />
             <span className="text-base font-medium text-gray-300 truncate">{professor.university_name}</span>

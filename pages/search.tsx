@@ -365,7 +365,18 @@ export default function SearchPage() {
     
     try {
       // Call our API endpoint
-      const response = await axios.get(`/api/professor-search?query=${encodeURIComponent(searchTerm)}`);
+      const response = await axios.get(`/api/professor-search?query=${encodeURIComponent(searchTerm)}`, {
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        timeout: 30000 // 30 second timeout
+      });
+      
+      // Validate response is JSON
+      if (!response.data || typeof response.data !== 'object') {
+        throw new Error('Invalid response format from server');
+      }
       
       // Process the professors data
       let professors = response.data.professors;
@@ -395,10 +406,25 @@ export default function SearchPage() {
     } catch (error: any) {
       console.error('Error searching professors:', error);
       
-      // Handle smart validation errors
-      if (error.response?.status === 400 && error.response?.data?.suggestion) {
+      // Handle different types of errors
+      if (error.message?.includes('JSON') || error.message?.includes('Unexpected token')) {
+        // JSON parsing error - likely server returned HTML error page
+        setAISuggestion(`Server error occurred. Please refresh the page and try again. If the problem persists, check your internet connection.`);
+        setFilteredProfessors([]);
+        setHasSearched(true);
+      } else if (error.response?.status === 400 && error.response?.data?.suggestion) {
         // Display helpful validation message
         setAISuggestion(error.response.data.suggestion);
+        setFilteredProfessors([]);
+        setHasSearched(true);
+      } else if (error.code === 'ECONNABORTED' || error.message?.includes('timeout')) {
+        // Timeout error
+        setAISuggestion(`Request timed out. Please check your internet connection and try again.`);
+        setFilteredProfessors([]);
+        setHasSearched(true);
+      } else if (error.response?.status >= 500) {
+        // Server error
+        setAISuggestion(`Server is temporarily unavailable. Please try again in a few moments.`);
         setFilteredProfessors([]);
         setHasSearched(true);
       } else {
@@ -1374,7 +1400,7 @@ ${userFullName}`;
             <div className="md:hidden absolute left-4 flex items-center">
               <Link href="/" className="flex items-center">
                 <img 
-                  src="/images/logo new.png" 
+                  src="/logo without text.png" 
                   alt="Research Flow Logo" 
                   className="h-24 w-auto"
                 />
@@ -1446,12 +1472,6 @@ ${userFullName}`;
                 >
                   <PenTool className="h-4 w-4" />
                   Personalized Email
-                  {selectedProfessorForEmail && (
-                    <div className="ml-2 flex items-center gap-1">
-                      <div className="w-2 h-2 bg-[#0CF2A0] rounded-full animate-pulse"></div>
-                      <span className="text-xs opacity-75">Ready</span>
-                    </div>
-                  )}
                 </motion.button>
 
               </div>
@@ -1563,12 +1583,6 @@ ${userFullName}`;
                     >
                       <PenTool className="h-5 w-5" />
                       <span className="font-medium">Personalized Email</span>
-                      {selectedProfessorForEmail && (
-                        <div className="ml-auto flex items-center gap-1">
-                          <div className="w-2 h-2 bg-[#0CF2A0] rounded-full animate-pulse"></div>
-                          <span className="text-xs opacity-75">Ready</span>
-                        </div>
-                      )}
                     </motion.button>
                   </div>
                 </div>
@@ -1616,14 +1630,7 @@ ${userFullName}`;
             >
               {/* Hero Section with Search */}
               <section className="w-full">
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.5 }}
-                  className="mb-6"
-                >
-                  <ShinyText text="Find Academic Excellence" className="bg-[#1a1a1a] border border-gray-700 text-[#0CF2A0] px-4 py-1 rounded-full text-xs sm:text-sm font-medium cursor-pointer hover:border-[#0CF2A0]/50 transition-colors" />
-                </motion.div>
+
               
                 <motion.h1 
                   className="text-4xl md:text-5xl lg:text-[60px] font-bold mb-6 text-white leading-tight"
@@ -1631,7 +1638,7 @@ ${userFullName}`;
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: 0.1 }}
                 >
-                  Find Professors for Your <span className="text-[#0CF2A0]">Research</span>
+                  Find Professors for Your <span className="text-[#0CF2A0] italic">Research</span>
                 </motion.h1>
                 
                 <motion.p 
@@ -1640,7 +1647,7 @@ ${userFullName}`;
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: 0.2 }}
                 >
-                  Connect with leading professors in your field of interest. Enter a research topic to find experts who can mentor or collaborate with you.
+                  Go on then, type in your research field.
                 </motion.p>
                 
                 <motion.div

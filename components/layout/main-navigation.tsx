@@ -183,7 +183,6 @@ export const MainNavigation: React.FC<MainNavigationProps> = ({
 
   const navItems = [
     { href: "/professors", label: "Professors", icon: <GraduationCap className="h-4 w-4" /> },
-    { href: "/search", label: "Search", icon: <Search className="h-4 w-4" /> },
     { href: "/search?tab=email", label: "AI Email", icon: <Brain className="h-4 w-4" /> },
     { href: "/profile", label: "Profile", icon: <User className="h-4 w-4" /> },
   ];
@@ -191,133 +190,96 @@ export const MainNavigation: React.FC<MainNavigationProps> = ({
   return (
     <div className="min-h-screen bg-[#111111] text-gray-300">
       {/* Header */}
-      <motion.header
-        initial={{ backgroundColor: "rgba(17, 17, 17, 0.8)" }}
-        animate={{
-          backgroundColor: isScrolled ? "rgba(17, 17, 17, 0.95)" : "rgba(17, 17, 17, 0.8)",
-          boxShadow: isScrolled 
-            ? '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
-            : 'none'
-        }}
-        transition={{ duration: 0.3 }}
-        className="fixed top-0 left-0 right-0 z-50 backdrop-blur-md border-b border-gray-800/50"
-      >
-        <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
+      <nav className="bg-black/95 backdrop-blur-md border-b border-gray-800 sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
             {/* Logo */}
-            <Link href="/" className="flex items-center flex-shrink-0">
-              <img 
-                src="/images/logo new.png" 
-                alt="Research Flow Logo" 
-                className="h-24 w-auto"
-              />
+            <Link href="/" className="flex items-center">
+              <span className="text-display text-2xl font-bold text-white">
+                Research<span className="text-[#0CF2A0]">Flow</span>
+              </span>
             </Link>
-
-            {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center space-x-1 lg:space-x-2">
-              {navItems.map((item) => (
-                <NavLink key={item.href} href={item.href}>
-                  <span className="mr-1">{item.icon}</span>
-                  {item.label}
-                </NavLink>
-              ))}
+            
+            {/* Navigation Links */}
+            <div className="hidden md:flex items-center space-x-8">
+              <Link href="/professors" className="text-space text-gray-300 hover:text-white transition-colors font-medium">
+                Professors
+              </Link>
+              <Link href="/research" className="text-space text-gray-300 hover:text-white transition-colors font-medium">
+                Research
+              </Link>
+              <Link href="/contact" className="text-space text-gray-300 hover:text-white transition-colors font-medium">
+                Contact
+              </Link>
             </div>
-
-            {/* Mobile Menu Button */}
-            <div className="md:hidden">
-              <motion.button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setIsMobileMenuOpen(!isMobileMenuOpen);
-                }}
-                className="mobile-menu-button p-2 rounded-md text-gray-300 hover:text-white hover:bg-gray-700/50 transition-colors touch-manipulation"
-                whileTap={{ scale: 0.95 }}
-                aria-label="Toggle navigation menu"
-                aria-expanded={isMobileMenuOpen}
-              >
-                <AnimatePresence mode="wait">
-                  {isMobileMenuOpen ? (
-                    <motion.div
-                      key="close"
-                      initial={{ rotate: -90, opacity: 0 }}
-                      animate={{ rotate: 0, opacity: 1 }}
-                      exit={{ rotate: 90, opacity: 0 }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      <X className="h-6 w-6" />
-                    </motion.div>
-                  ) : (
-                    <motion.div
-                      key="menu"
-                      initial={{ rotate: 90, opacity: 0 }}
-                      animate={{ rotate: 0, opacity: 1 }}
-                      exit={{ rotate: -90, opacity: 0 }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      <Menu className="h-6 w-6" />
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </motion.button>
+            
+            {/* Auth Buttons */}
+            <div className="flex items-center space-x-4">
+              <Link href="/login" className="text-caption text-gray-300 hover:text-white transition-colors">
+                Sign In
+              </Link>
+              <Link href="/signup" className="bg-[#0CF2A0] text-black px-4 py-2 rounded-md font-space font-semibold hover:bg-[#0CF2A0]/90 transition-colors">
+                Get Started
+              </Link>
             </div>
           </div>
-        </nav>
+        </div>
+      </nav>
 
-        {/* Mobile Menu Overlay */}
-        <AnimatePresence>
-          {isMobileMenuOpen && (
+      {/* Mobile Menu Overlay */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="md:hidden fixed inset-0 top-16 bg-black/50 backdrop-blur-sm z-40"
+            onClick={() => setIsMobileMenuOpen(false)}
+          >
+            {/* Mobile Menu Panel */}
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="md:hidden fixed inset-0 top-16 bg-black/50 backdrop-blur-sm z-40"
-              onClick={() => setIsMobileMenuOpen(false)}
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              className="mobile-menu-container absolute right-0 top-0 h-full w-80 max-w-[80vw] bg-[#111111]/95 backdrop-blur-xl border-l border-gray-800/50 shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
             >
-              {/* Mobile Menu Panel */}
-              <motion.div
-                initial={{ x: '100%' }}
-                animate={{ x: 0 }}
-                exit={{ x: '100%' }}
-                transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-                className="mobile-menu-container absolute right-0 top-0 h-full w-80 max-w-[80vw] bg-[#111111]/95 backdrop-blur-xl border-l border-gray-800/50 shadow-2xl"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <div className="flex flex-col h-full">
-                  {/* Menu Header */}
-                  <div className="p-6 border-b border-gray-800/50">
-                    <h2 className="text-lg font-semibold text-white">Navigation</h2>
-                  </div>
+              <div className="flex flex-col h-full">
+                {/* Menu Header */}
+                <div className="p-6 border-b border-gray-800/50">
+                  <h2 className="text-lg font-semibold text-white">Navigation</h2>
+                </div>
 
-                  {/* Menu Items */}
-                  <div className="flex-1 overflow-y-auto py-4">
-                    <nav className="space-y-1 px-4">
-                      {navItems.map((item) => (
-                        <NavLink 
-                          key={item.href} 
-                          href={item.href} 
-                          isMobile={true}
-                          onClick={() => setIsMobileMenuOpen(false)}
-                        >
-                          <span className="mr-3">{item.icon}</span>
-                          {item.label}
-                        </NavLink>
-                      ))}
-                    </nav>
-                  </div>
+                {/* Menu Items */}
+                <div className="flex-1 overflow-y-auto py-4">
+                  <nav className="space-y-1 px-4">
+                    {navItems.map((item) => (
+                      <NavLink 
+                        key={item.href} 
+                        href={item.href} 
+                        isMobile={true}
+                        onClick={() => setIsMobileMenuOpen(false)}
+                      >
+                        <span className="mr-3">{item.icon}</span>
+                        {item.label}
+                      </NavLink>
+                    ))}
+                  </nav>
+                </div>
 
-                  {/* Menu Footer */}
-                  <div className="p-6 border-t border-gray-800/50">
-                    <div className="flex items-center text-sm text-gray-400">
-                      <span>Research Flow Platform</span>
-                    </div>
+                {/* Menu Footer */}
+                <div className="p-6 border-t border-gray-800/50">
+                  <div className="flex items-center text-sm text-gray-400">
+                    <span>Research Flow Platform</span>
                   </div>
                 </div>
-              </motion.div>
+              </div>
             </motion.div>
-          )}
-        </AnimatePresence>
-      </motion.header>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Main content */}
       <main className="pt-16">

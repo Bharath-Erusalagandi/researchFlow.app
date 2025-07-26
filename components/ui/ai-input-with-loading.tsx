@@ -96,6 +96,11 @@ export function AIInputWithLoading({
             `h-[${minHeight}px]`,
             showLoading && "pointer-events-none"
           )}
+          style={{
+            WebkitBoxShadow: '0 0 0 1000px #1a1a1a inset',
+            WebkitTextFillColor: 'white',
+            caretColor: 'white'
+          }}
           value={inputValue}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange(e.target.value)}
           onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
