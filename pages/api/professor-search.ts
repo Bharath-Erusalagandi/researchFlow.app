@@ -449,6 +449,12 @@ function enhancedBasicSearch(query: string, allProfessors: Professor[]): Profess
 }
 
 async function handler(req: NextApiRequest, res: NextApiResponse) {
+  // Add CORS headers
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Content-Type', 'application/json');
+
   if (req.method !== 'GET') {
     return res.status(405).json({ message: 'Method not allowed' });
   }
@@ -530,9 +536,25 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
         suggestion: validationResult.suggestion
       }
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error in professor search API:', error);
-    return res.status(500).json({ message: 'Internal server error' });
+    
+    // Ensure we always return JSON, even on error
+    try {
+      return res.status(500).json({ 
+        message: 'Internal server error',
+        error: process.env.NODE_ENV === 'development' ? error.message : 'An unexpected error occurred',
+        timestamp: new Date().toISOString()
+      });
+    } catch (jsonError) {
+      // If JSON response fails, try to at least set headers correctly
+      res.setHeader('Content-Type', 'application/json');
+      res.status(500);
+      res.end(JSON.stringify({ 
+        message: 'Critical server error',
+        timestamp: new Date().toISOString()
+      }));
+    }
   }
 }
 

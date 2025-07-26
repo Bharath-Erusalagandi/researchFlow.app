@@ -16,7 +16,8 @@
     "analyze-server": "npm run build && npx webpack-bundle-analyzer .next/static/chunks/*.js",
     "perf": "npm run build && npm run start",
     "lighthouse": "lighthouse http://localhost:3000 --output-path=./lighthouse-report.html --save-assets --view",
-    "optimize-images": "node scripts/optimize-images.js"
+    "optimize-images": "node scripts/optimize-images.js",
+    "generate-favicon": "node scripts/generate-favicon.js"
   },
   "dependencies": {
     "@google-cloud/local-auth": "^3.0.1",
@@ -29,6 +30,7 @@
     "@radix-ui/react-slot": "^1.2.3",
     "@radix-ui/react-tooltip": "^1.2.6",
     "@react-oauth/google": "^0.12.2",
+    "@react-three/fiber": "^8.17.9",
     "@supabase/supabase-js": "^2.49.4",
     "@tabler/icons-react": "^3.34.0",
     "@types/eventsource": "^1.1.15",
@@ -52,6 +54,7 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "tailwind-merge": "^2.0.0",
+    "three": "^0.178.0",
     "typescript": "^5.2.2",
     "usehooks-ts": "^3.1.1"
   },
@@ -59,6 +62,7 @@
     "@types/node": "^20.8.10",
     "@types/react": "^18.2.37",
     "@types/react-dom": "^18.2.15",
+    "@types/three": "^0.178.1",
     "autoprefixer": "^10.4.15",
     "eslint": "^8.53.0",
     "eslint-config-next": "14.0.1",

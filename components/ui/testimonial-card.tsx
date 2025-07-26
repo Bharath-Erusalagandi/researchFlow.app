@@ -28,9 +28,10 @@ export function TestimonialCard({
         className
       )}
     >
-      <p className="text-gray-400 text-sm leading-relaxed">
-        &quot;{text}&quot;
-      </p>
+      <p 
+        className="text-gray-400 text-sm leading-relaxed"
+        dangerouslySetInnerHTML={{ __html: `"${text}"` }}
+      />
     </div>
   )
 } 

@@ -12,48 +12,48 @@ import { FeatureCard } from '@/components/ui/grid-feature-cards';
 
 const features = [
   {
-    title: 'Research Collaboration',
+    title: 'Find Your Perfect Match',
     icon: Users,
-    description: 'Connect with leading professors and researchers for collaborative projects and opportunities.',
+    description: 'Discover professors who align with your research interests and academic goals in seconds.',
   },
   {
-    title: 'Academic Mentorship',
+    title: 'Get Expert Guidance',
     icon: GraduationCap,
-    description: 'Receive guidance and mentorship from experienced professors in your field of study.',
+    description: 'Connect with experienced mentors who can accelerate your academic journey and career.',
   },
   {
-    title: 'Publication Support',
+    title: 'Research Opportunities',
     icon: BookOpen,
-    description: 'Get assistance with academic publications, paper reviews, and journal submissions.',
+    description: 'Access exclusive research positions, internships, and collaborative projects in your field.',
   },
   {
-    title: 'Research Resources',
+    title: 'Build Your Network',
     icon: BookMarked,
-    description: 'Access comprehensive research materials, methodologies, and tools for your academic work.',
+    description: 'Expand your academic circle with leading researchers and industry professionals.',
   },
   {
-    title: 'Grant Opportunities',
+    title: 'Secure Funding',
     icon: FileSpreadsheet,
-    description: 'Discover funding opportunities and receive guidance for research grant applications.',
+    description: 'Get connected to professors who can help you find scholarships and research grants.',
   },
   {
-    title: 'Academic Recognition',
+    title: 'Launch Your Career',
     icon: Award,
-    description: 'Showcase your research achievements and gain recognition in the academic community.',
+    description: 'Transform your academic experience into career success with the right connections.',
   },
 ];
 
 export default function FeatureSection() {
   return (
-    <section className="pt-16 pb-20 md:pt-20 md:pb-32 bg-[#111111] relative z-10">
-      <div className="absolute inset-0 z-0 pointer-events-none bg-dot-pattern"></div>
-      <div className="mx-auto w-full max-w-6xl space-y-16 px-6">
+    <section id="feature-section" className="pt-24 pb-20 md:pt-32 md:pb-32 bg-[#111111] relative z-20">
+      <div className="absolute inset-0 z-1 bg-[#111111]"></div>
+              <div className="mx-auto w-full max-w-6xl space-y-16 px-6 relative z-10">
         <AnimatedContainer className="mx-auto max-w-3xl text-center">
           <h2 className="text-3xl font-bold tracking-wide text-white text-balance md:text-4xl lg:text-6xl">
-            Academic Excellence & Research Innovation
+            Find The <span className="italic" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", system-ui, sans-serif' }}>Perfect Professor</span> For You
           </h2>
           <p className="text-gray-400 mt-6 text-sm tracking-wide text-balance md:text-lg">
-            Everything you need to elevate your academic research and collaboration experience.
+            Connect with <span className="font-bold text-gray-300 italic">leading professors</span> in your field and unlock opportunities that will <span className="font-bold text-[#0CF2A0]">transform your academic journey</span>.
           </p>
         </AnimatedContainer>
 

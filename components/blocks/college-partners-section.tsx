@@ -4,10 +4,10 @@ import UniversityCarousel from '@/components/ui/modified-3d-carousel';
 
 export default function CollegePartnersSection() {
   return (
-    <section id="partner-institutions-section" className="py-24 md:py-32 bg-[#111111] relative z-10">
-      <div className="absolute inset-0 z-0 pointer-events-none bg-dot-pattern opacity-50"></div>
+    <section id="partner-institutions-section" className="py-24 md:py-32 bg-[#111111] relative z-30">
+      <div className="absolute inset-0 z-0 bg-[#111111]"></div>
       
-      <div className="mx-auto w-full max-w-6xl px-6">
+              <div className="mx-auto w-full max-w-6xl px-6 relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -16,11 +16,10 @@ export default function CollegePartnersSection() {
           className="text-center mb-16"
         >
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4">
-            Partner Institutions
+            From Your <span className="italic font-extrabold text-[#0CF2A0]" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", system-ui, sans-serif' }}>Dream</span> <span className="italic" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", system-ui, sans-serif' }}>Universities</span>
           </h2>
           <p className="text-gray-400 text-lg max-w-2xl mx-auto">
-            Connect with professors from these prestigious universities 
-            for research collaborations and academic mentorship.
+            Access professors from <span className="font-bold text-gray-300 italic">world-renowned institutions</span> and discover opportunities at universities you've always dreamed of joining. Your <span className="font-bold text-[#0CF2A0]">next breakthrough</span> starts here.
           </p>
         </motion.div>
         

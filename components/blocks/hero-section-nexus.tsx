@@ -16,8 +16,6 @@ import React, {
 import {
     motion,
     AnimatePresence,
-    useScroll,
-    useMotionValueEvent,
     type Transition,
     type VariantLabels,
     type Target,
@@ -266,93 +264,10 @@ const ShinyText: React.FC<{ text: string; className?: string }> = ({ text, class
     </span>
 );
 
-const ChevronDownIcon: React.FC<SVGProps<SVGSVGElement>> = (props) => (
-   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-3 h-3 ml-1 inline-block transition-transform duration-200 group-hover:rotate-180" {...props}>
-     <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
-   </svg>
-);
-
-
-
 const CloseIcon: React.FC<SVGProps<SVGSVGElement>> = (props) => (
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6" {...props}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
     </svg>
-);
-
-const ExternalLinkIcon: React.FC<SVGProps<SVGSVGElement>> = (props) => (
-  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 ml-1 opacity-70 group-hover:opacity-100 transition-opacity" {...props}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
-  </svg>
-);
-
-interface NavLinkProps {
-    href?: string;
-    children: ReactNode;
-    hasDropdown?: boolean;
-    className?: string;
-    onClick?: (event: ReactMouseEvent<HTMLAnchorElement>) => void;
-}
-
-const NavLink: React.FC<NavLinkProps> = ({ href = "#", children, hasDropdown = false, className = "", onClick }) => (
-   <motion.a
-     href={href}
-     onClick={onClick}
-     className={cn("relative group text-sm font-medium text-gray-300 hover:text-white transition-colors duration-200 flex items-center py-1", className)}
-     whileHover="hover"
-   >
-     {children}
-     {hasDropdown && <ChevronDownIcon />}
-     {!hasDropdown && (
-         <motion.div
-           className="absolute bottom-[-2px] left-0 right-0 h-[1px] bg-[#0CF2A0]"
-           variants={{ initial: { scaleX: 0, originX: 0.5 }, hover: { scaleX: 1, originX: 0.5 } }}
-           initial="initial"
-           transition={{ duration: 0.3, ease: "easeOut" }}
-         />
-     )}
-   </motion.a>
- );
-
-interface DropdownMenuProps {
-    children: ReactNode;
-    isOpen: boolean;
-}
-
-const DropdownMenu: React.FC<DropdownMenuProps> = ({ children, isOpen }) => (
-   <AnimatePresence>
-     {isOpen && (
-       <motion.div
-         initial={{ opacity: 0, y: 10, scale: 0.95 }}
-         animate={{ opacity: 1, y: 0, scale: 1 }}
-         exit={{ opacity: 0, y: 10, scale: 0.95, transition: { duration: 0.15 } }}
-         transition={{ duration: 0.2, ease: "easeOut" }}
-         className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 w-56 origin-top z-40"
-       >
-           <div className="bg-[#111111] border border-gray-700/50 rounded-md shadow-xl p-2">
-               {children}
-           </div>
-       </motion.div>
-     )}
-   </AnimatePresence>
-);
-
-interface DropdownItemProps {
-    href?: string;
-    children: ReactNode;
-    icon?: React.ReactElement<SVGProps<SVGSVGElement>>;
-    onClick?: () => void;
-}
-
-const DropdownItem: React.FC<DropdownItemProps> = ({ href = "#", children, icon, onClick }) => (
- <a
-   href={href}
-   onClick={onClick}
-   className="group flex items-center justify-between w-full px-3 py-2 text-sm text-gray-300 hover:bg-gray-700/30 hover:text-white rounded-md transition-colors duration-150"
- >
-   <span>{children}</span>
-   {icon && React.cloneElement(icon, { className: "w-4 h-4 ml-1 opacity-70 group-hover:opacity-100 transition-opacity" })}
- </a>
 );
 
 interface Dot {
@@ -375,17 +290,10 @@ const InteractiveHero: React.FC = () => {
    const canvasRef = useRef<HTMLCanvasElement>(null);
    const animationFrameId = useRef<number | null>(null);
    
-   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
-   const [isScrolled, setIsScrolled] = useState<boolean>(false);
    const [isContactModalOpen, setIsContactModalOpen] = useState<boolean>(false);
    const [contactForm, setContactForm] = useState<ContactFormData>({ email: '', message: '' });
    const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
    const [submitStatus, setSubmitStatus] = useState<string>('');
-
-   const { scrollY } = useScroll();
-   useMotionValueEvent(scrollY, "change", (latest) => {
-       setIsScrolled(latest > 10);
-   });
 
    const dotsRef = useRef<Dot[]>([]);
    const gridRef = useRef<Record<string, number[]>>({});
@@ -570,20 +478,7 @@ const InteractiveHero: React.FC = () => {
 
 
 
-   const headerVariants: Variants = {
-       top: {
-           backgroundColor: "rgba(17, 17, 17, 0.8)",
-           borderBottomColor: "rgba(55, 65, 81, 0.5)",
-           position: 'fixed',
-           boxShadow: 'none',
-       },
-       scrolled: {
-           backgroundColor: "rgba(17, 17, 17, 0.95)",
-           borderBottomColor: "rgba(75, 85, 99, 0.7)",
-           boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-           position: 'fixed'
-       }
-   };
+
 
 
 
@@ -607,30 +502,9 @@ const InteractiveHero: React.FC = () => {
         visible: { opacity: 1, scale: 1, y: 0, transition: { duration: 0.6, delay: contentDelay + itemDelayIncrement * 3, ease: [0.16, 1, 0.3, 1] } }
     };
 
-   const handleAboutClick = useCallback((e: ReactMouseEvent<HTMLAnchorElement>) => {
-       e.preventDefault();
-       const targetElement = document.getElementById('academic-excellence-section');
-       if (targetElement) {
-           targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-       }
-   }, []);
-
    const handleContactClick = useCallback((e: ReactMouseEvent<HTMLAnchorElement>) => {
        e.preventDefault();
        setIsContactModalOpen(true);
-   }, []);
-
-   const handleFacultiesClick = useCallback((e: ReactMouseEvent<HTMLAnchorElement>) => {
-       e.preventDefault();
-       const targetElement = document.getElementById('partner-institutions-section');
-       if (targetElement) {
-           targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-       }
-   }, []);
-
-   const handleFacultyClick = useCallback((faculty: string) => {
-       // You can expand this to show actual research topics from your database
-       alert(`Showing research topics for ${faculty}. This will be connected to your database.`);
    }, []);
 
    const handleContactSubmit = useCallback(async (e: FormEvent<HTMLFormElement>) => {
@@ -675,7 +549,7 @@ const InteractiveHero: React.FC = () => {
    }, []);
 
    return (
-     <div className="relative bg-[#111111] text-gray-300 min-h-screen flex flex-col overflow-x-hidden pb-8" style={{
+     <div className="relative bg-[#111111] text-gray-300 overflow-hidden z-0 min-h-screen max-h-screen" style={{
        scrollbarWidth: 'none',
        msOverflowStyle: 'none'
      }}>
@@ -694,76 +568,21 @@ const InteractiveHero: React.FC = () => {
             background: 'linear-gradient(to bottom, transparent 0%, #111111 90%), radial-gradient(ellipse at center, transparent 40%, #111111 95%)'
         }}></div>
 
-        <motion.header
-            variants={headerVariants}
-            initial="top"
-            animate={isScrolled ? "scrolled" : "top"}
-            transition={{ duration: 0.3, ease: "easeInOut" }}
-            className="px-6 w-full md:px-10 lg:px-16 sticky top-0 z-30 backdrop-blur-md border-b border-gray-800/50"
-        >
-            <nav className="flex justify-between items-center max-w-screen-xl mx-auto h-[70px]">
-                <div className="flex items-center flex-shrink-0">
-                    <img 
-                        src="/images/RF Full Image from Slack (1).png" 
-                        alt="Research Flow Logo" 
-                        className="h-24 w-auto"
-                    />
-                </div>
-
-                <div className="absolute left-1/2 transform -translate-x-1/2 hidden md:flex items-center space-x-6 lg:space-x-8">
-                    <NavLink href="#" onClick={handleFacultiesClick}>Faculties</NavLink>
-                    <NavLink href="#" onClick={handleAboutClick}>Research Platform</NavLink>
-                    <NavLink href="#" onClick={handleContactClick}>Contact</NavLink>
-                </div>
-
-                <div className="flex items-center flex-shrink-0 space-x-4 lg:space-x-6">
-                    <ShimmerButton
-                        onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            window.location.href = '/login';
-                        }}
-                        className="px-6 py-2"
-                        shimmerColor="#0CF2A0"
-                        background="rgba(17, 17, 17, 0.9)"
-                        borderRadius="8px"
-                        shimmerDuration="2s"
-                    >
-                        <span className="text-sm font-semibold text-white">
-                            Get Started
-                        </span>
-                    </ShimmerButton>
 
 
-                </div>
-            </nav>
-
-
-        </motion.header>
-
-        <main className="flex-grow flex flex-col items-center text-center px-4 pt-20 pb-20 relative z-10">
-
-            <motion.div
-                variants={bannerVariants}
-                initial="hidden"
-                animate="visible"
-                className="mb-8"
-                id="academic-excellence-section"
-            >
-                <ShinyText text="Academic Excellence & Research Innovation" className="bg-[#1a1a1a] border border-gray-700 text-[#0CF2A0] px-4 py-1 rounded-full text-xs sm:text-sm font-medium cursor-pointer hover:border-[#0CF2A0]/50 transition-colors" />
-            </motion.div>
+        <main className="flex flex-col items-center justify-center text-center px-4 py-20 relative z-10 h-full max-h-screen overflow-hidden">
 
             <motion.h1
                 variants={headlineVariants}
                 initial="hidden"
                 animate="visible"
-                className="text-4xl sm:text-5xl lg:text-[64px] font-semibold text-white leading-tight max-w-4xl mb-6"
+                className="text-4xl sm:text-5xl lg:text-[64px] font-bold text-white leading-tight max-w-4xl mb-6"
             >
-                Professor Connect<br />{' '}
+                <span className="italic" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", system-ui, sans-serif' }}>Professor</span> <span className="font-extrabold">Connect</span><br />{' '}
                 <span className="inline-block h-[1.2em] sm:h-[1.2em] lg:h-[1.2em] overflow-hidden align-bottom">
                     <RotatingText
                         texts={['Research', 'Publications', 'Mentorship', 'Grants', 'Teaching']}
-                        mainClassName="text-[#0CF2A0] mx-1"
+                        mainClassName="text-[#0CF2A0] mx-1 font-bold"
                         staggerFrom={"last"}
                         initial={{ y: "-100%", opacity: 0 }}
                         animate={{ y: 0, opacity: 1 }}
@@ -784,21 +603,21 @@ const InteractiveHero: React.FC = () => {
                 animate="visible"
                 className="text-base sm:text-lg lg:text-xl text-gray-400 max-w-2xl mx-auto mb-12"
             >
-                Connect with leading professors for research opportunities, mentorship, and academic collaboration in your field of interest.
+                Connect with <span className="font-bold text-gray-300 italic">leading professors</span> for research opportunities, <span className="font-bold text-gray-300">mentorship</span>, and academic collaboration in your <span className="font-bold text-[#0CF2A0] italic">field of interest</span>.
             </motion.p>
 
             <motion.div
                 variants={imageVariants}
                 initial="hidden"
                 animate="visible"
-                className="w-full max-w-4xl mx-auto px-4 sm:px-0"
+                className="w-full max-w-3xl mx-auto px-4 sm:px-0 flex-shrink-0"
             >
                 <img
                     src="/cambridge-university-image.png"
                     alt="Cambridge University"
                     width={1024}
                     height={640}
-                    className="w-full h-auto object-contain rounded-lg shadow-xl border border-gray-700/50"
+                    className="w-full h-auto max-h-[300px] object-cover rounded-lg shadow-xl border border-gray-700/50"
                     loading="lazy"
                 />
             </motion.div>

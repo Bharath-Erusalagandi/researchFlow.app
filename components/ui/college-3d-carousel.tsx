@@ -250,7 +250,7 @@ function CollegeCarousel() {
                 <motion.div className="text-center px-4">
                   <h3 className="text-white text-xl font-bold mb-3">{activeCollege.name}</h3>
                   <p className="text-gray-400 text-sm leading-relaxed">
-                    Connect with professors from this prestigious institution for research collaborations and academic mentorship.
+                    Discover professors who can open doors to <span className="font-bold text-gray-300">research opportunities</span> and help launch your academic career at this world-class institution.
                   </p>
                 </motion.div>
                 <motion.button 

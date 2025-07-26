@@ -344,7 +344,7 @@ export function SignUpCard() {
                 >
                   {/* Research Flow Logo */}
                   <img 
-                    src="/images/logo new.png" 
+                    src="/logo without text.png" 
                     alt="Research Flow Logo" 
                     className="w-8 h-8 object-contain"
                   />

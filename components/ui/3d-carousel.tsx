@@ -286,7 +286,7 @@ function ThreeDCollegeCarousel() {
                   <h3 className="text-white text-xl font-semibold">{activeCollege.name}</h3>
                 </div>
                 <p className="text-gray-400 text-sm text-center mt-2">
-                  Connect with professors from this prestigious institution for research collaborations and academic mentorship.
+                  Discover professors who can open doors to <span className="font-bold text-gray-300">research opportunities</span> and help launch your academic career.
                 </p>
               </motion.div>
             </motion.div>

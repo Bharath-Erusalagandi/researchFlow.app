@@ -16,7 +16,7 @@ html,
 body {
   max-width: 100vw;
   overflow-x: hidden;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
   /* Mobile viewport optimizations */
   min-height: 100vh;
   min-height: -webkit-fill-available;
@@ -176,12 +176,6 @@ button:disabled {
 /* Dark mode improvements */
 body {
   color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
 }
 
 a {
@@ -306,7 +300,6 @@ a {
   
   html, 
   body {
-    background-color: #000000;
     margin: 0;
     padding: 0;
     min-height: 100vh;
@@ -447,6 +440,52 @@ a {
 }
 
 @layer utilities {
+  /* Font Family Utilities */
+  .font-inter { font-family: 'Inter', sans-serif; }
+  .font-playfair { font-family: 'Playfair Display', serif; }
+  .font-jetbrains { font-family: 'JetBrains Mono', monospace; }
+  .font-space { font-family: 'Space Grotesk', sans-serif; }
+  .font-crimson { font-family: 'Crimson Pro', serif; }
+  
+  /* Typography Styles */
+  .text-display {
+    font-family: 'Playfair Display', serif;
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+  }
+  
+  .text-heading {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 600;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+  }
+  
+  .text-subheading {
+    font-family: 'Crimson Pro', serif;
+    font-weight: 500;
+    line-height: 1.3;
+  }
+  
+  .text-body {
+    font-family: 'Inter', sans-serif;
+    font-weight: 400;
+    line-height: 1.6;
+  }
+  
+  .text-caption {
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+    line-height: 1.4;
+    font-size: 0.875rem;
+  }
+  
+  .text-code {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 400;
+  }
+
   @keyframes shine {
     0% {
       transform: translateX(-100%);

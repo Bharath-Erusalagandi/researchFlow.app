@@ -16,12 +16,12 @@ export function TestimonialsSection({
 }: TestimonialsSectionProps) {
   return (
     <section className={cn(
-      "bg-[#111111] text-white py-16 md:py-24 relative z-10",
+      "bg-[#111111] text-white py-16 md:py-24 relative z-40",
       className
     )}>
-      <div className="absolute inset-0 z-0 pointer-events-none bg-dot-pattern opacity-50"></div>
+      <div className="absolute inset-0 z-0 bg-[#111111]"></div>
       
-      <div className="relative w-full overflow-hidden">
+              <div className="relative w-full overflow-hidden z-10">
         <div className="flex flex-nowrap gap-6 py-8">
           {/* First copy - moves from right to left */}
           <div className="flex animate-marquee gap-6 flex-nowrap">
