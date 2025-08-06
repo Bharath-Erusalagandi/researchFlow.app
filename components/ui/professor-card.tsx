@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Mail, BookOpen, Award, GraduationCap, Brain, Building2 } from 'lucide-react';
+import { Mail, BookOpen, Award, GraduationCap, Brain, Building2, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface Professor {
@@ -22,6 +22,7 @@ interface ProfessorCardProps {
   professor: Professor;
   index: number;
   isSaved: boolean;
+  isProcessing?: boolean;
   onSave: (professor: Professor) => void;
   onPersonalizedEmail: (professor: Professor) => void;
 }
@@ -30,6 +31,7 @@ export const ProfessorCard: React.FC<ProfessorCardProps> = ({
   professor, 
   index, 
   isSaved, 
+  isProcessing = false,
   onSave, 
   onPersonalizedEmail 
 }) => {
@@ -38,21 +40,17 @@ export const ProfessorCard: React.FC<ProfessorCardProps> = ({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ 
-        duration: 0.4,
-        delay: index * 0.1
+        duration: 0.3,
+        delay: index * 0.05
       }}
-      className="bg-[#1a1a1a] border border-gray-800 rounded-xl p-10 hover:border-[#0CF2A0]/50 transition-all duration-300 group min-h-[320px] flex flex-col overflow-hidden"
+      className="bg-[#1a1a1a] border border-gray-800 rounded-xl p-6 sm:p-8 lg:p-10 hover:border-[#0CF2A0]/50 transition-all duration-300 group min-h-[320px] flex flex-col w-full"
     >
-      {/* Header: Name, University, and Save Button */}
-      <div className="flex items-start justify-between mb-5 gap-4">
-        <div className="flex items-center gap-4 flex-1">
-                      <h3 className="text-2xl font-bold text-white group-hover:text-[#0CF2A0] transition-colors">
-              {professor.name}
-            </h3>
-          <div className="flex items-center gap-2 min-w-0">
-            <GraduationCap className="h-5 w-5 text-[#0CF2A0] flex-shrink-0" />
-            <span className="text-base font-medium text-gray-300 truncate">{professor.university_name}</span>
-          </div>
+      {/* Header: Name and Save Button */}
+      <div className="flex items-start justify-between mb-3 gap-4">
+        <div className="flex-1 min-w-0">
+          <h3 className="text-xl sm:text-2xl font-bold text-white group-hover:text-[#0CF2A0] transition-colors mb-2 pr-2 leading-tight">
+            {professor.name}
+          </h3>
         </div>
         
         <button
@@ -66,7 +64,7 @@ export const ProfessorCard: React.FC<ProfessorCardProps> = ({
             e.stopPropagation();
           }}
           className={cn(
-            "px-5 py-3 rounded-lg text-sm font-medium transition-all duration-300 flex-shrink-0 ml-4 touch-manipulation mobile-touch-target",
+            "px-3 py-2 sm:px-4 sm:py-2 rounded-lg text-sm font-medium transition-all duration-300 flex-shrink-0 touch-manipulation min-h-[40px] min-w-[60px]",
             isSaved
               ? 'bg-green-600/20 text-green-400 cursor-not-allowed'
               : 'bg-gray-700/50 text-gray-300 hover:bg-[#0CF2A0]/20 hover:text-[#0CF2A0]'
@@ -76,6 +74,12 @@ export const ProfessorCard: React.FC<ProfessorCardProps> = ({
         >
           {isSaved ? 'Saved' : 'Save'}
         </button>
+      </div>
+
+      {/* University */}
+      <div className="flex items-center gap-2 mb-5 min-w-0">
+        <GraduationCap className="h-5 w-5 text-[#0CF2A0] flex-shrink-0" />
+        <span className="text-base font-medium text-gray-300 truncate">{professor.university_name}</span>
       </div>
 
       {/* Research Field */}
@@ -132,17 +136,34 @@ export const ProfessorCard: React.FC<ProfessorCardProps> = ({
         onClick={(e) => {
           e.preventDefault();
           e.stopPropagation();
-          onPersonalizedEmail(professor);
+          if (!isProcessing) {
+            onPersonalizedEmail(professor);
+          }
         }}
         onTouchEnd={(e) => {
           e.preventDefault();
           e.stopPropagation();
         }}
-        className="w-full bg-[#0CF2A0]/20 text-[#0CF2A0] px-6 py-6 rounded-xl hover:bg-[#0CF2A0]/30 transition-colors border border-[#0CF2A0]/30 text-lg font-semibold flex items-center justify-center gap-3 mt-auto touch-manipulation mobile-button"
+        disabled={isProcessing}
+        className={cn(
+          "w-full px-6 py-6 rounded-xl transition-all duration-300 border text-lg font-semibold flex items-center justify-center gap-3 mt-auto touch-manipulation mobile-button",
+          isProcessing
+            ? "bg-gray-700/50 text-gray-400 border-gray-600/30 cursor-not-allowed"
+            : "bg-[#0CF2A0]/20 text-[#0CF2A0] hover:bg-[#0CF2A0]/30 border-[#0CF2A0]/30"
+        )}
         type="button"
       >
-        <Brain className="h-6 w-6" />
-        Personalized Email
+        {isProcessing ? (
+          <>
+            <Loader2 className="h-6 w-6 animate-spin" />
+            Processing...
+          </>
+        ) : (
+          <>
+            <Brain className="h-6 w-6" />
+            Personalized Email
+          </>
+        )}
       </button>
     </motion.div>
   );

@@ -222,6 +222,44 @@ interface Professor {
   source?: string;
 }
 
+// Generate intelligent fallback recommendations when AI is not available
+function generateSmartFallbackRecommendation(query: string, professors: Professor[]): string {
+  if (professors.length === 0) {
+    return `No professors found for "${query}". Try broader terms like "computer science", "biology", or "psychology". You can also search for specific research areas like "machine learning" or "cancer research".`;
+  }
+
+  // Get top 2-3 professors for recommendation
+  const topProfessors = professors.slice(0, 3);
+  const queryLower = query.toLowerCase();
+  
+  // Analyze the search query to provide context
+  let fieldContext = "";
+  if (queryLower.includes("machine learning") || queryLower.includes("ai") || queryLower.includes("artificial intelligence")) {
+    fieldContext = "AI and machine learning research is rapidly evolving. ";
+  } else if (queryLower.includes("cancer") || queryLower.includes("medicine") || queryLower.includes("medical")) {
+    fieldContext = "Medical research offers tremendous opportunities to make a real impact. ";
+  } else if (queryLower.includes("climate") || queryLower.includes("environment")) {
+    fieldContext = "Environmental research is crucial for addressing global challenges. ";
+  } else if (queryLower.includes("neuro") || queryLower.includes("brain")) {
+    fieldContext = "Neuroscience research is unlocking the mysteries of the human brain. ";
+  }
+
+  // Build recommendation text
+  let recommendation = `Based on your search for "${query}", here are some excellent professors to consider:\n\n`;
+  
+  if (topProfessors.length >= 2) {
+    recommendation += `I'd particularly recommend reaching out to **${topProfessors[0].name}** at ${topProfessors[0].university_name}, who specializes in ${topProfessors[0].field_of_research}. `;
+    recommendation += `Also consider **${topProfessors[1].name}** at ${topProfessors[1].university_name}, whose work in ${topProfessors[1].field_of_research} might align well with your interests.\n\n`;
+  } else {
+    recommendation += `I'd recommend starting with **${topProfessors[0].name}** at ${topProfessors[0].university_name}, who works in ${topProfessors[0].field_of_research}.\n\n`;
+  }
+
+  recommendation += fieldContext;
+  recommendation += `When reaching out, mention specific aspects of their research that interest you and briefly describe your background. Good luck with your research journey!`;
+
+  return recommendation;
+}
+
 // Read and parse CSV file
 const getProfessorsData = (): Professor[] => {
   try {
@@ -247,7 +285,8 @@ async function getAISuggestion(query: string, professors: Professor[]): Promise<
     
     if (!GROQ_API_KEY) {
       console.error('GROQ_API_KEY not configured');
-      return "I couldn't generate personalized recommendations at this time. Please explore the professor results below and consider reaching out to those whose research aligns with your interests.";
+      // Provide intelligent fallback recommendation
+      return generateSmartFallbackRecommendation(query, professors);
     }
     
     const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
@@ -326,8 +365,8 @@ async function getRelevantProfessors(query: string, allProfessors: Professor[]):
     
     const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
 
-    // Limit the number of professors to avoid token limits
-    const professorsForGroq = allProfessors.slice(0, 100);
+    // Use all professors but batch them intelligently
+    const professorsForGroq = allProfessors;
     
     const prompt = `
       Based on this user input: "${query}", return the most relevant professors from this dataset as a JSON array.
@@ -411,41 +450,46 @@ function basicSearchFallback(query: string, allProfessors: Professor[]): Profess
   }).slice(0, 10);
 }
 
-// Enhanced basic search with better matching
+// Enhanced basic search with better matching - now searches ALL professors
 function enhancedBasicSearch(query: string, allProfessors: Professor[]): Professor[] {
-  const searchTerms = query.toLowerCase().split(' ');
+  const searchTerms = query.toLowerCase().split(/\s+/).filter(term => term.length > 1);
   
-  return allProfessors.filter(professor => {
+  // Score each professor for relevance
+  const scoredProfessors = allProfessors.map(professor => {
     const fieldLower = professor.field_of_research.toLowerCase();
     const nameLower = professor.name.toLowerCase();
     const uniLower = professor.university_name.toLowerCase();
     
-    // Score-based matching for better relevance
     let score = 0;
     
     searchTerms.forEach(term => {
       // Exact field matches get highest score
-      if (fieldLower.includes(term)) score += 10;
-      // Name matches get medium score
-      if (nameLower.includes(term)) score += 5;
+      if (fieldLower.includes(term)) {
+        score += fieldLower === term ? 20 : 10; // Exact match vs partial
+      }
+      // Name matches get high score (for professor searches)
+      if (nameLower.includes(term)) {
+        score += nameLower.includes(term) ? 15 : 8;
+      }
       // University matches get lower score
-      if (uniLower.includes(term)) score += 2;
+      if (uniLower.includes(term)) {
+        score += 3;
+      }
+      
+      // Bonus for multiple term matches in same field
+      const fieldWords = fieldLower.split(/[;\s,]+/);
+      const matchingWords = fieldWords.filter(word => word.includes(term)).length;
+      if (matchingWords > 1) score += 5;
     });
     
-    return score > 0;
+    return { professor, score };
   })
-  .sort((a, b) => {
-    // Sort by relevance (field matches first)
-    const aFieldMatches = searchTerms.filter(term => 
-      a.field_of_research.toLowerCase().includes(term)
-    ).length;
-    const bFieldMatches = searchTerms.filter(term => 
-      b.field_of_research.toLowerCase().includes(term)
-    ).length;
-    
-    return bFieldMatches - aFieldMatches;
-  })
-  .slice(0, 15); // Increased limit for better results
+  .filter(item => item.score > 0)
+  .sort((a, b) => b.score - a.score)
+  .slice(0, 25) // Increased to 25 for better variety
+  .map(item => item.professor);
+
+  return scoredProfessors;
 }
 
 async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -484,8 +528,10 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     // Get all professors data
     const allProfessors = getProfessorsData();
     
+    console.log(`Loaded ${allProfessors.length} professors from database`);
+    
     if (allProfessors.length === 0) {
-      return res.status(500).json({ message: 'Failed to load professor data' });
+      return res.status(500).json({ message: 'Failed to load professor data - check if professors.csv exists in data folder' });
     }
 
     // Get relevant professors using enhanced search or Groq AI

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { GraduationCap, User, Mail, BookOpen, Award, ArrowUp, Square, Tag, Home, FileText, Search as SearchIcon, Settings, LogOut, AlertCircle, Check, Heart, Brain, PenTool, Send, Copy, Loader2, ExternalLink, Upload, Link as LinkIcon, Edit3, Clock, Trash2, ChevronRight, ChevronLeft, Shuffle, X } from 'lucide-react';
+import { GraduationCap, User, Mail, BookOpen, Award, ArrowUp, Square, Tag, Home, FileText, Search as SearchIcon, Settings, LogOut, AlertCircle, Check, Heart, Brain, PenTool, Send, Copy, Loader2, ExternalLink, Upload, Link as LinkIcon, Edit3, Clock, Trash2, ChevronRight, ChevronLeft, Shuffle, X, Info, AlertTriangle, XCircle } from 'lucide-react';
 import { IconSend, IconMail, IconLoader2 as TablerLoader2 } from '@tabler/icons-react';
 import { getTimeBasedGreeting } from '@/lib/utils';
 // Removed PromptInput components - now using AIInputWithLoading
@@ -51,6 +51,410 @@ interface Professor {
 // Tab types
 type TabType = 'search' | 'email';
 
+// Progress Bar Form Component
+const ProgressBarForm = ({ 
+  userFullName, setUserFullName,
+  researchTitle, setResearchTitle,
+  researchAbstract, setResearchAbstract,
+  currentUniversity, setCurrentUniversity,
+  academicLevel, setAcademicLevel,
+  resumeUrl, setResumeUrl,
+  onCancel, onComplete 
+}: {
+  userFullName: string, setUserFullName: (value: string) => void,
+  researchTitle: string, setResearchTitle: (value: string) => void,
+  researchAbstract: string, setResearchAbstract: (value: string) => void,
+  currentUniversity: string, setCurrentUniversity: (value: string) => void,
+  academicLevel: string, setAcademicLevel: (value: string) => void,
+  resumeUrl: string, setResumeUrl: (value: string) => void,
+  onCancel: () => void,
+  onComplete: () => void
+}) => {
+  const [currentStep, setCurrentStep] = useState(0);
+  const [dataRestored, setDataRestored] = useState(false);
+
+  // Save progress to localStorage whenever step changes
+  useEffect(() => {
+    const progressData = {
+      currentStep,
+      formData: {
+        userFullName,
+        researchTitle,
+        researchAbstract,
+        currentUniversity,
+        academicLevel,
+        resumeUrl
+      }
+    };
+    localStorage.setItem('researchConnect_progressForm', JSON.stringify(progressData));
+  }, [currentStep, userFullName, researchTitle, researchAbstract, currentUniversity, academicLevel, resumeUrl]);
+
+  // Restore progress from localStorage on component mount
+  useEffect(() => {
+    const savedProgress = localStorage.getItem('researchConnect_progressForm');
+    if (savedProgress) {
+      try {
+        const progressData = JSON.parse(savedProgress);
+        
+        // Restore form data
+        const formData = progressData.formData;
+        if (formData) {
+          if (formData.userFullName && formData.userFullName !== userFullName) {
+            setUserFullName(formData.userFullName);
+          }
+          if (formData.researchTitle && formData.researchTitle !== researchTitle) {
+            setResearchTitle(formData.researchTitle);
+          }
+          if (formData.researchAbstract && formData.researchAbstract !== researchAbstract) {
+            setResearchAbstract(formData.researchAbstract);
+          }
+          if (formData.currentUniversity && formData.currentUniversity !== currentUniversity) {
+            setCurrentUniversity(formData.currentUniversity);
+          }
+          if (formData.academicLevel && formData.academicLevel !== academicLevel) {
+            setAcademicLevel(formData.academicLevel);
+          }
+          if (formData.resumeUrl && formData.resumeUrl !== resumeUrl) {
+            setResumeUrl(formData.resumeUrl);
+          }
+        }
+
+        // Restore current step (but don't go beyond what's valid)
+        if (progressData.currentStep !== undefined) {
+          setCurrentStep(progressData.currentStep);
+        }
+
+        // Show restoration notification if any data was restored
+        const hasData = formData && (
+          formData.userFullName || 
+          formData.researchTitle || 
+          formData.researchAbstract || 
+          formData.currentUniversity || 
+          formData.academicLevel || 
+          formData.resumeUrl
+        );
+        
+        if (hasData) {
+          setDataRestored(true);
+          setTimeout(() => setDataRestored(false), 4000);
+        }
+      } catch (error) {
+        console.log('Error loading progress from localStorage:', error);
+      }
+    }
+  }, []); // Only run on mount
+
+  const steps = [
+    {
+      id: 'personal',
+      title: 'Personal Information',
+      subtitle: 'Tell us about yourself',
+      icon: <User className="h-6 w-6" />,
+      fields: [
+        {
+          label: 'Full Name',
+          required: true,
+          value: userFullName,
+          setValue: setUserFullName,
+          type: 'text',
+          placeholder: 'Enter your full name',
+          autoComplete: 'name'
+        }
+      ]
+    },
+    {
+      id: 'research',
+      title: 'Research Interest',
+      subtitle: 'What field excites you?',
+      icon: <Brain className="h-6 w-6" />,
+      fields: [
+        {
+          label: 'Research Interest',
+          required: true,
+          value: researchTitle,
+          setValue: setResearchTitle,
+          type: 'text',
+          placeholder: 'e.g., Machine Learning in Healthcare, Climate Change Research'
+        }
+      ]
+    },
+    {
+      id: 'background',
+      title: 'Research Background',
+      subtitle: 'Share your research experience',
+      icon: <BookOpen className="h-6 w-6" />,
+      fields: [
+        {
+          label: 'Research Abstract',
+          required: true,
+          value: researchAbstract,
+          setValue: setResearchAbstract,
+          type: 'textarea',
+          placeholder: 'Describe your research interests and background...',
+          rows: 4
+        }
+      ]
+    },
+    {
+      id: 'academic',
+      title: 'Academic Details',
+      subtitle: 'Your academic information',
+      icon: <GraduationCap className="h-6 w-6" />,
+      fields: [
+        {
+          label: 'Current University',
+          required: false,
+          value: currentUniversity,
+          setValue: setCurrentUniversity,
+          type: 'text',
+          placeholder: 'e.g., MIT, Stanford University'
+        },
+        {
+          label: 'Academic Level',
+          required: false,
+          value: academicLevel,
+          setValue: setAcademicLevel,
+          type: 'select',
+          options: [
+            'High School Student',
+            'Undergraduate Student',
+            'Graduate Student (Master\'s)',
+            'Graduate Student (PhD)',
+            'Postdoctoral Researcher',
+            'Research Professional'
+          ]
+        }
+      ]
+    },
+    {
+      id: 'resume',
+      title: 'Resume/CV',
+      subtitle: 'Share your professional profile',
+      icon: <FileText className="h-6 w-6" />,
+      fields: [
+        {
+          label: 'Resume/CV URL',
+          required: true,
+          value: resumeUrl,
+          setValue: setResumeUrl,
+          type: 'url',
+          placeholder: 'https://your-resume-link.com'
+        }
+      ]
+    }
+  ];
+
+  const isStepValid = (stepIndex: number) => {
+    const step = steps[stepIndex];
+    return step.fields.every(field => !field.required || field.value.trim() !== '');
+  };
+
+  const canProceed = () => isStepValid(currentStep);
+  const canComplete = () => steps.every((_, index) => isStepValid(index));
+
+  const handleNext = () => {
+    if (currentStep < steps.length - 1 && canProceed()) {
+      setCurrentStep(currentStep + 1);
+    } else if (currentStep === steps.length - 1 && canComplete()) {
+      // Clear progress data when completing
+      localStorage.removeItem('researchConnect_progressForm');
+      onComplete();
+    }
+  };
+
+  const handlePrev = () => {
+    if (currentStep > 0) {
+      setCurrentStep(currentStep - 1);
+    }
+  };
+
+  const currentStepData = steps[currentStep];
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+      className="w-full max-w-2xl mx-auto"
+    >
+      {/* Data Restored Notification */}
+      <AnimatePresence>
+        {dataRestored && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="mb-4 p-3 bg-[#0CF2A0]/20 border border-[#0CF2A0]/30 rounded-xl text-[#0CF2A0] text-sm flex items-center gap-2"
+          >
+            <Check className="h-4 w-4" />
+            Your progress has been restored from your last session
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <div className="relative">
+        <div className="absolute -inset-1 bg-gradient-to-r from-[#0CF2A0]/10 via-blue-500/10 to-purple-500/10 rounded-2xl blur-sm"></div>
+        
+        <div className="relative bg-gradient-to-br from-[#1a1a1a]/95 to-[#0a0a0a]/95 border border-[#0CF2A0]/30 rounded-2xl p-8 backdrop-blur-xl">
+          {/* Progress Bar */}
+          <div className="mb-8">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-white">Setup Progress</h3>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-400">{currentStep + 1}/{steps.length}</span>
+                <span className="text-sm text-[#0CF2A0] font-semibold">{Math.round(((currentStep + 1) / steps.length) * 100)}%</span>
+              </div>
+            </div>
+            
+            {/* Progress Bar Visual */}
+            <div className="w-full bg-gray-800/50 rounded-full h-3 mb-4">
+              <motion.div
+                className="bg-gradient-to-r from-[#0CF2A0] to-[#0CF2A0]/80 h-3 rounded-full transition-all duration-500"
+                style={{ width: `${((currentStep + 1) / steps.length) * 100}%` }}
+                initial={{ width: 0 }}
+                animate={{ width: `${((currentStep + 1) / steps.length) * 100}%` }}
+              />
+            </div>
+            
+            {/* Step Indicators */}
+            <div className="flex justify-between">
+              {steps.map((step, index) => (
+                <div key={step.id} className="flex flex-col items-center gap-1">
+                  <div className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                    index <= currentStep 
+                      ? 'bg-[#0CF2A0] shadow-lg shadow-[#0CF2A0]/50' 
+                      : 'bg-gray-600'
+                  }`} />
+                  <span className={`text-xs transition-colors ${
+                    index <= currentStep 
+                      ? 'text-[#0CF2A0]' 
+                      : 'text-gray-500'
+                  }`}>
+                    {index + 1}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Step Content */}
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentStep}
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.3 }}
+            >
+              {/* Step Header */}
+              <div className="flex items-center gap-4 mb-6">
+                <div className="p-3 bg-[#0CF2A0]/20 rounded-xl text-[#0CF2A0]">
+                  {currentStepData.icon}
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-2xl font-bold text-white mb-2">{currentStepData.title}</h3>
+                  <p className="text-gray-400">{currentStepData.subtitle}</p>
+                </div>
+                <div className="text-sm text-gray-500 bg-gray-800/50 px-3 py-1 rounded-full">
+                  {currentStep + 1} / {steps.length}
+                </div>
+              </div>
+
+              {/* Step Fields */}
+              <div className="space-y-6 mb-8">
+                {currentStepData.fields.map((field, fieldIndex) => (
+                  <div key={fieldIndex}>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">
+                      {field.label} {field.required && <span className="text-red-400">*</span>}
+                    </label>
+                    
+                    {field.type === 'textarea' ? (
+                      <textarea
+                        value={field.value}
+                        onChange={(e) => field.setValue(e.target.value)}
+                        placeholder={field.placeholder}
+                        rows={'rows' in field ? field.rows : 4}
+                        className="w-full bg-[#0a0a0a]/80 border border-gray-600/50 rounded-xl px-6 py-4 text-white text-lg placeholder:text-gray-500 focus:border-[#0CF2A0]/50 focus:outline-none focus:ring-2 focus:ring-[#0CF2A0]/20 transition-all duration-200 resize-none"
+                        required={field.required}
+                      />
+                    ) : field.type === 'select' ? (
+                      <select
+                        value={field.value}
+                        onChange={(e) => field.setValue(e.target.value)}
+                        className="w-full bg-[#0a0a0a]/80 border border-gray-600/50 rounded-xl px-6 py-4 text-white text-lg focus:border-[#0CF2A0]/50 focus:outline-none focus:ring-2 focus:ring-[#0CF2A0]/20 transition-all duration-200"
+                        required={field.required}
+                      >
+                        <option value="">Select your level...</option>
+                        {'options' in field && field.options?.map((option) => (
+                          <option key={option} value={option} className="bg-[#1a1a1a]">
+                            {option}
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      <input
+                        type={field.type}
+                        value={field.value}
+                        onChange={(e) => field.setValue(e.target.value)}
+                        placeholder={field.placeholder}
+                        className="w-full bg-[#0a0a0a]/80 border border-gray-600/50 rounded-xl px-6 py-4 text-white text-lg placeholder:text-gray-500 focus:border-[#0CF2A0]/50 focus:outline-none focus:ring-2 focus:ring-[#0CF2A0]/20 transition-all duration-200"
+                        autoComplete={'autoComplete' in field ? field.autoComplete : undefined}
+                        required={field.required}
+                      />
+                    )}
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          </AnimatePresence>
+
+          {/* Navigation Buttons */}
+          <div className="flex gap-4">
+            <button
+              onClick={currentStep === 0 ? () => {
+                // Clear progress when canceling
+                localStorage.removeItem('researchConnect_progressForm');
+                onCancel();
+              } : handlePrev}
+              className="flex-1 bg-gray-700 hover:bg-gray-600 text-white px-6 py-3 rounded-xl font-medium transition-colors flex items-center justify-center gap-2"
+            >
+              {currentStep === 0 ? (
+                <>
+                  <X className="h-4 w-4" />
+                  Cancel
+                </>
+              ) : (
+                <>
+                  <ChevronLeft className="h-4 w-4" />
+                  Previous
+                </>
+              )}
+            </button>
+            
+            <button
+              onClick={handleNext}
+              disabled={!canProceed()}
+              className="flex-1 bg-gradient-to-r from-[#0CF2A0] to-[#0CF2A0]/80 hover:from-[#0CF2A0]/90 hover:to-[#0CF2A0]/70 text-black px-6 py-3 rounded-xl font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            >
+              {currentStep === steps.length - 1 ? (
+                <>
+                  <Check className="h-4 w-4" />
+                  Complete Setup
+                </>
+              ) : (
+                <>
+                  Next
+                  <ChevronRight className="h-4 w-4" />
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  );
+};
+
 export default function SearchPage() {
   const [activeTab, setActiveTab] = useState<TabType>('search');
   const [searchQuery, setSearchQuery] = useState("");
@@ -67,6 +471,21 @@ export default function SearchPage() {
   const mousePositionRef = useRef<{x: number | null, y: number | null}>({ x: null, y: null });
   const [aiSuggestion, setAISuggestion] = useState<string>("");
   const [savedProfessors, setSavedProfessors] = useState<string[]>([]);
+  
+  // Notification state
+  const [notifications, setNotifications] = useState<Array<{
+    id: string;
+    type: 'success' | 'info' | 'warning' | 'error';
+    title: string;
+    message: string;
+    icon?: React.ReactNode;
+  }>>([]);
+  
+  // Custom modal state
+  const [showTabSwitchModal, setShowTabSwitchModal] = useState(false);
+  const [modalProfessor, setModalProfessor] = useState<Professor | null>(null);
+  const [dontAskAgain, setDontAskAgain] = useState(false);
+  const [isProcessingEmail, setIsProcessingEmail] = useState(false); // Prevent multiple triggers
 
   
   // Personalized email tab state
@@ -76,6 +495,7 @@ export default function SearchPage() {
   const [resumeFile, setResumeFile] = useState<File | null>(null);
   const [resumeUrl, setResumeUrl] = useState(""); // Fallback for URL if no file uploaded
   const [currentUniversity, setCurrentUniversity] = useState("");
+  const [academicLevel, setAcademicLevel] = useState("");
   const [yearOfStudy, setYearOfStudy] = useState("");
   const [specificInterest, setSpecificInterest] = useState("");
   const [researchInterest, setResearchInterest] = useState(""); // Paper/work title
@@ -386,14 +806,20 @@ export default function SearchPage() {
       setAISuggestion(suggestion);
       localStorage.setItem('researchConnect_aiSuggestion', suggestion);
       
+      // Clear any previous suggestion display status since this is a new suggestion
+      if (suggestion) {
+        const suggestionKey = `researchConnect_aiSuggestionDisplayed_${btoa(suggestion.substring(0, 50))}`;
+        localStorage.removeItem(suggestionKey);
+      }
+      
       // Add some mock data for UI display purposes
-      professors = professors.map((prof: Professor) => ({
+      professors = professors.map((prof: Professor, index: number) => ({
         ...prof,
-        id: Math.floor(Math.random() * 10000),
+        id: prof.id || (prof.name + prof.university_name + prof.field_of_research).split('').reduce((a, b) => a + b.charCodeAt(0), 0), // Generate consistent ID based on professor data
         publications: Math.floor(Math.random() * 100) + 10,
         citations: Math.floor(Math.random() * 5000) + 500,
         title: `Professor of ${prof.field_of_research.split(';')[0]}`,
-        image: `https://source.unsplash.com/random/256x256/?professor&${Math.random()}`,
+        image: `https://source.unsplash.com/random/256x256/?professor&${prof.name}`, // Use professor name for consistent image
         researchAreas: prof.field_of_research.split(';').map(area => area.trim())
       }));
       
@@ -414,7 +840,14 @@ export default function SearchPage() {
         setHasSearched(true);
       } else if (error.response?.status === 400 && error.response?.data?.suggestion) {
         // Display helpful validation message
-        setAISuggestion(error.response.data.suggestion);
+        const errorSuggestion = error.response.data.suggestion;
+        setAISuggestion(errorSuggestion);
+        
+        // Clear any previous suggestion display status since this is a new suggestion
+        if (errorSuggestion) {
+          const suggestionKey = `researchConnect_aiSuggestionDisplayed_${btoa(errorSuggestion.substring(0, 50))}`;
+          localStorage.removeItem(suggestionKey);
+        }
         setFilteredProfessors([]);
         setHasSearched(true);
       } else if (error.code === 'ECONNABORTED' || error.message?.includes('timeout')) {
@@ -457,51 +890,74 @@ export default function SearchPage() {
       localStorage.setItem('savedProfessors', JSON.stringify(savedProfs));
       setSavedProfessors([...savedProfessors, professor.id?.toString() || '']);
       
-      // Show success message
-      alert(`${professor.name} has been saved to your professors!`);
+      // Show beautiful success notification
+      addNotification({
+        type: 'success',
+        title: 'Professor Saved!',
+        message: `${professor.name} has been added to your saved professors.`,
+        icon: <Heart className="h-5 w-5" />
+      });
     } else {
-      alert(`${professor.name} is already saved!`);
+      // Show info notification for already saved
+      addNotification({
+        type: 'info',
+        title: 'Already Saved',
+        message: `${professor.name} is already in your saved professors.`,
+        icon: <Check className="h-5 w-5" />
+      });
     }
   };
 
   const handlePersonalizedEmail = (professor: Professor) => {
+    // Prevent multiple triggers
+    if (isProcessingEmail) {
+      return;
+    }
+    
+    setIsProcessingEmail(true);
+    
     // Store the selected professor data for the email tab
     setSelectedProfessorForEmail(professor);
     localStorage.setItem('selectedProfessorForEmail', JSON.stringify(professor));
     
-    // Show a user-friendly notification
-    const notification = document.createElement('div');
-    notification.className = 'fixed top-4 right-4 bg-[#0CF2A0] text-black px-6 py-3 rounded-lg shadow-lg z-50 flex items-center gap-2';
-    notification.innerHTML = `
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-      </svg>
-      <span class="font-medium">Professor ${professor.name} selected!</span>
-      <button onclick="this.parentElement.remove()" class="ml-2 hover:bg-black/10 rounded p-1">×</button>
-    `;
+    // Show a beautiful notification with longer duration
+    addNotification({
+      type: 'success',
+      title: 'Professor Selected!',
+      message: `${professor.name} has been selected for personalized email composition.`,
+      icon: <Mail className="h-5 w-5" />
+    });
     
-    document.body.appendChild(notification);
+    // Check user preference for auto-switching
+    const autoSwitchPreference = localStorage.getItem('researchConnect_autoSwitchToEmail');
     
-    // Auto-remove notification after 5 seconds
-    setTimeout(() => {
-      if (notification.parentElement) {
-        notification.remove();
-      }
-    }, 5000);
-    
-    // Ask if user wants to switch tabs (less intrusive)
-    setTimeout(() => {
-      const confirmSwitch = window.confirm(
-        `Would you like to switch to the Email tab to compose a message to ${professor.name}?`
-      );
-      
-      if (confirmSwitch) {
+    if (autoSwitchPreference === 'true') {
+      // Auto-switch to email tab after a longer delay
+      setTimeout(() => {
         setActiveTab('email');
         setTimeout(() => {
           window.scrollTo({ top: 0, behavior: 'smooth' });
         }, 100);
-      }
-    }, 1000);
+        // Reset processing state after a longer cooldown
+        setTimeout(() => {
+          setIsProcessingEmail(false);
+        }, 3000);
+      }, 3000); // Increased from 1500ms to 3000ms
+    } else if (autoSwitchPreference === 'false') {
+      // Don't show modal, just stay on current tab
+      setTimeout(() => {
+        setIsProcessingEmail(false);
+      }, 3000);
+    } else {
+      // Show custom modal after a longer delay to let user read the notification
+      setTimeout(() => {
+        // Only show modal if it's not already showing and we're still processing
+        if (!showTabSwitchModal && isProcessingEmail) {
+          setModalProfessor(professor);
+          setShowTabSwitchModal(true);
+        }
+      }, 4000); // Increased from 2500ms to 4000ms for longer cooldown
+    }
   };
 
   // ShinyText component from the home page
@@ -659,6 +1115,17 @@ export default function SearchPage() {
     if (!showCardSystem) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Don't interfere with typing in input fields
+      const target = e.target as HTMLElement;
+      if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT')) {
+        // Only handle Escape key when in input fields
+        if (e.key === 'Escape') {
+          target.blur(); // Remove focus from input
+          return;
+        }
+        return; // Let the input handle all other keys normally
+      }
+
       if (e.key === 'ArrowRight' || e.key === 'Enter') {
         e.preventDefault();
         const currentCard = questionCards[currentCardIndex];
@@ -697,6 +1164,7 @@ export default function SearchPage() {
       researchAbstract,
       resumeUrl,
       currentUniversity,
+      academicLevel,
       yearOfStudy,
       specificInterest,
       researchInterest,
@@ -705,7 +1173,7 @@ export default function SearchPage() {
       researchFieldConnection
     };
     localStorage.setItem('researchConnect_formData', JSON.stringify(formData));
-  }, [userFullName, researchTitle, researchAbstract, resumeUrl, currentUniversity, yearOfStudy, specificInterest, researchInterest, researchQuestions, opportunityType, researchFieldConnection]);
+  }, [userFullName, researchTitle, researchAbstract, resumeUrl, currentUniversity, academicLevel, yearOfStudy, specificInterest, researchInterest, researchQuestions, opportunityType, researchFieldConnection]);
 
   // Load card progress and form data on component mount
   useEffect(() => {
@@ -719,6 +1187,7 @@ export default function SearchPage() {
         setResearchAbstract(formData.researchAbstract || '');
         setResumeUrl(formData.resumeUrl || '');
         setCurrentUniversity(formData.currentUniversity || '');
+        setAcademicLevel(formData.academicLevel || '');
         setYearOfStudy(formData.yearOfStudy || '');
         setSpecificInterest(formData.specificInterest || '');
         setResearchInterest(formData.researchInterest || '');
@@ -802,9 +1271,17 @@ export default function SearchPage() {
                 <input
                   type="text"
                   value={card.value}
-                  onChange={(e) => card.setValue(e.target.value)}
+                  onChange={(e) => {
+                    console.log('Input change:', e.target.value);
+                    card.setValue(e.target.value);
+                  }}
+                  onFocus={() => console.log('Input focused')}
+                  onBlur={() => console.log('Input blurred')}
+                  onClick={() => console.log('Input clicked')}
                   placeholder={card.placeholder}
                   className="w-full bg-[#0a0a0a]/80 border border-gray-600/50 rounded-xl px-6 py-4 text-white text-lg placeholder:text-gray-500 focus:border-[#0CF2A0]/50 focus:outline-none focus:ring-2 focus:ring-[#0CF2A0]/20 transition-all duration-200"
+                  autoComplete="off"
+                  spellCheck="false"
                 />
               )}
               
@@ -904,6 +1381,219 @@ export default function SearchPage() {
     );
   };
 
+  // Beautiful macOS-style notification component
+  const Notification = ({ notification, onRemove }: { 
+    notification: { id: string; type: 'success' | 'info' | 'warning' | 'error'; title: string; message: string; icon?: React.ReactNode }; 
+    onRemove: (id: string) => void 
+  }) => {
+    const getIcon = () => {
+      switch (notification.type) {
+        case 'success':
+          return <Check className="h-5 w-5" />;
+        case 'info':
+          return <Info className="h-5 w-5" />;
+        case 'warning':
+          return <AlertTriangle className="h-5 w-5" />;
+        case 'error':
+          return <XCircle className="h-5 w-5" />;
+        default:
+          return notification.icon || <Check className="h-5 w-5" />;
+      }
+    };
+
+    const getIconColor = () => {
+      switch (notification.type) {
+        case 'success':
+          return 'text-green-400';
+        case 'info':
+          return 'text-blue-400';
+        case 'warning':
+          return 'text-yellow-400';
+        case 'error':
+          return 'text-red-400';
+        default:
+          return 'text-[#0CF2A0]';
+      }
+    };
+
+    return (
+      <div
+        className="relative overflow-hidden rounded-2xl border border-white/10 shadow-2xl backdrop-blur-xl bg-white/5 transition-all duration-300 hover:bg-white/8 hover:border-white/20"
+        style={{
+          backdropFilter: 'blur(20px) saturate(180%)',
+          WebkitBackdropFilter: 'blur(20px) saturate(180%)'
+        }}
+      >
+        {/* Subtle inner glow */}
+        <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent rounded-2xl" />
+        
+        {/* Content */}
+        <div className="relative flex items-start gap-3 p-4">
+          {/* Icon */}
+          <div className="flex-shrink-0 mt-0.5">
+            <div className={`p-2 rounded-xl bg-white/10 backdrop-blur-sm ${getIconColor()}`}>
+              {getIcon()}
+            </div>
+          </div>
+          
+          {/* Text content */}
+          <div className="flex-1 min-w-0">
+            <h4 className="font-semibold text-sm leading-tight mb-1 text-white">
+              {notification.title}
+            </h4>
+            <p className="text-sm text-white/80 leading-relaxed">
+              {notification.message}
+            </p>
+          </div>
+          
+          {/* Close button */}
+          <button
+            onClick={() => onRemove(notification.id)}
+            className="flex-shrink-0 p-1.5 rounded-lg hover:bg-white/15 transition-all duration-200 group"
+          >
+            <X className="h-4 w-4 text-white/60 group-hover:text-white transition-colors" />
+          </button>
+        </div>
+        
+        {/* Progress bar */}
+        <motion.div
+          initial={{ width: "100%" }}
+          animate={{ width: "0%" }}
+          transition={{ duration: 10, ease: "linear" }}
+          className="h-0.5 bg-white/20"
+        />
+      </div>
+    );
+  };
+
+  // Notification manager functions
+  const addNotification = (notification: Omit<typeof notifications[0], 'id'>) => {
+    const id = Math.random().toString(36).substr(2, 9);
+    setNotifications(prev => [...prev, { ...notification, id }]);
+    
+    // Auto-remove after 10 seconds (even longer duration for better UX)
+    setTimeout(() => {
+      removeNotification(id);
+    }, 10000);
+  };
+
+  const removeNotification = (id: string) => {
+    setNotifications(prev => prev.filter(n => n.id !== id));
+  };
+
+  // Beautiful custom modal component
+  const TabSwitchModal = () => {
+    if (!showTabSwitchModal || !modalProfessor) return null;
+
+    const handleConfirm = () => {
+      setActiveTab('email');
+      setShowTabSwitchModal(false);
+      setModalProfessor(null);
+      setIsProcessingEmail(false); // Reset processing state
+      // Save preference if "don't ask again" is checked
+      if (dontAskAgain) {
+        localStorage.setItem('researchConnect_autoSwitchToEmail', 'true');
+      }
+      setTimeout(() => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }, 100);
+    };
+
+    const handleCancel = () => {
+      setShowTabSwitchModal(false);
+      setModalProfessor(null);
+      setIsProcessingEmail(false); // Reset processing state
+      // Save preference if "don't ask again" is checked
+      if (dontAskAgain) {
+        localStorage.setItem('researchConnect_autoSwitchToEmail', 'false');
+      }
+    };
+
+    return (
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 z-50 flex items-center justify-center p-4"
+        onClick={handleCancel}
+      >
+        {/* Backdrop */}
+        <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
+        
+        {/* Modal */}
+        <motion.div
+          initial={{ scale: 0.9, opacity: 0, y: 20 }}
+          animate={{ scale: 1, opacity: 1, y: 0 }}
+          exit={{ scale: 0.9, opacity: 0, y: 20 }}
+          transition={{ type: "spring", stiffness: 300, damping: 30 }}
+          className="relative w-full max-w-md"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div 
+            className="relative overflow-hidden rounded-2xl border border-white/10 shadow-2xl backdrop-blur-xl bg-white/5 transition-all duration-300 hover:bg-white/8 hover:border-white/20"
+            style={{
+              backdropFilter: 'blur(20px) saturate(180%)',
+              WebkitBackdropFilter: 'blur(20px) saturate(180%)'
+            }}
+          >
+            {/* Subtle inner glow */}
+            <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent rounded-2xl" />
+            
+            {/* Content */}
+            <div className="relative p-6">
+              {/* Icon */}
+              <div className="flex justify-center mb-4">
+                <div className="p-3 rounded-2xl bg-[#0CF2A0]/20 backdrop-blur-sm">
+                  <Mail className="h-8 w-8 text-[#0CF2A0]" />
+                </div>
+              </div>
+              
+              {/* Title */}
+              <h3 className="text-xl font-semibold text-white text-center mb-2">
+                Switch to Email Tab?
+              </h3>
+              
+              {/* Message */}
+              <p className="text-white/80 text-center mb-4 leading-relaxed">
+                Would you like to switch to the Email tab to compose a personalized message to{' '}
+                <span className="text-[#0CF2A0] font-medium">{modalProfessor.name}</span>?
+              </p>
+              
+              {/* Don't ask again checkbox */}
+              <div className="flex items-center justify-center mb-6">
+                <label className="flex items-center gap-2 text-white/70 hover:text-white/90 transition-colors cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={dontAskAgain}
+                    onChange={(e) => setDontAskAgain(e.target.checked)}
+                    className="w-4 h-4 rounded border-white/30 bg-white/10 checked:bg-[#0CF2A0] checked:border-[#0CF2A0] focus:ring-[#0CF2A0] focus:ring-2 transition-all"
+                  />
+                  <span className="text-sm">Don't ask again</span>
+                </label>
+              </div>
+              
+              {/* Buttons */}
+              <div className="flex gap-3">
+                <button
+                  onClick={handleCancel}
+                  className="flex-1 px-4 py-3 rounded-xl text-white/80 hover:text-white hover:bg-white/10 transition-all duration-200 font-medium"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleConfirm}
+                  className="flex-1 px-4 py-3 rounded-xl bg-[#0CF2A0] text-black font-semibold hover:bg-[#0CF2A0]/90 transition-all duration-200 shadow-lg"
+                >
+                  Switch Tab
+                </button>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      </motion.div>
+    );
+  };
+
   const navLinks = [
     { href: "/professors", label: "Professors", icon: <GraduationCap className="h-4 w-4" /> },
     { href: "/profile", label: "Profile", icon: <User className="h-4 w-4" /> },
@@ -917,17 +1607,49 @@ export default function SearchPage() {
     const url = new URL(window.location.href);
     url.searchParams.set('tab', activeTab);
     window.history.replaceState({}, document.title, url.toString());
+    
+    // Debug: Log tab changes to help identify reloading issues
+    console.log('Tab changed to:', activeTab, 'Professors count:', filteredProfessors.length);
   }, [activeTab]);
 
   // Add this section to render the AI suggestion
-  // Typing animation component
+  // Typing animation component - fixed to not restart on tab switch or page refresh
   const TypingText = ({ text, speed = 30 }: { text: string; speed?: number }) => {
     const [displayedText, setDisplayedText] = useState('');
     const [isComplete, setIsComplete] = useState(false);
+    const [hasStarted, setHasStarted] = useState(false);
+    const [textHash, setTextHash] = useState('');
     
     useEffect(() => {
       if (!text) return;
       
+      // Create a hash of the text to detect actual changes
+      const currentHash = btoa(text.substring(0, 50));
+      
+      // Only reset if the text actually changed
+      if (textHash !== currentHash) {
+        console.log('TypingText: Text changed, resetting animation');
+        setTextHash(currentHash);
+        setHasStarted(false);
+        setDisplayedText('');
+        setIsComplete(false);
+      }
+      
+      // Check if this specific AI suggestion was already fully displayed before
+      const suggestionKey = `researchConnect_aiSuggestionDisplayed_${currentHash}`;
+      const wasAlreadyDisplayed = localStorage.getItem(suggestionKey) === 'true';
+      
+      if (wasAlreadyDisplayed) {
+        // If already displayed before, show immediately without animation
+        setDisplayedText(text);
+        setIsComplete(true);
+        setHasStarted(true);
+        return;
+      }
+      
+      if (hasStarted) return;
+      
+      setHasStarted(true);
       setDisplayedText('');
       setIsComplete(false);
       let i = 0;
@@ -938,17 +1660,19 @@ export default function SearchPage() {
           i++;
         } else {
           setIsComplete(true);
+          // Mark this suggestion as fully displayed
+          localStorage.setItem(suggestionKey, 'true');
           clearInterval(timer);
         }
       }, speed);
       
       return () => clearInterval(timer);
-    }, [text, speed]);
+    }, [text, speed, hasStarted, textHash]);
     
     return (
       <span className="text-white text-base leading-relaxed">
         {displayedText}
-        {!isComplete && (
+        {!isComplete && hasStarted && (
           <motion.span
             animate={{ opacity: [0, 1, 0] }}
             transition={{ duration: 0.8, repeat: Infinity }}
@@ -964,19 +1688,21 @@ export default function SearchPage() {
   const renderAISuggestion = () => {
     if (!filteredProfessors.length || !hasSearched) return null;
     
+    console.log('Rendering AI suggestion with', filteredProfessors.length, 'professors');
+    
     const suggestionText = aiSuggestion || "Here are some professors that match your search criteria. Consider reaching out to those whose research interests align with your goals.";
     
     return (
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.2 }}
+        transition={{ duration: 0.3, delay: 0.1 }}
         className="mb-8 max-w-4xl mx-auto w-full"
       >
         <div className="flex flex-col">
           <h3 className="text-lg font-medium text-white mb-3">Professor Recommendation</h3>
           <div className="text-base leading-relaxed">
-            <TypingText text={suggestionText} speed={12} />
+            <TypingText text={suggestionText} speed={8} />
           </div>
         </div>
       </motion.div>
@@ -1055,10 +1781,24 @@ ${userFullName}`;
   const copyEmailToClipboard = async () => {
     try {
       await navigator.clipboard.writeText(editableEmail || generatedEmail);
-      // You could add a toast notification here
-      alert('Email copied to clipboard!');
+      
+      // Show beautiful success notification
+      addNotification({
+        type: 'success',
+        title: 'Email Copied!',
+        message: 'The email has been copied to your clipboard.',
+        icon: <Copy className="h-5 w-5" />
+      });
     } catch (error) {
       console.error('Failed to copy email:', error);
+      
+      // Show error notification
+      addNotification({
+        type: 'error',
+        title: 'Copy Failed',
+        message: 'Failed to copy email to clipboard. Please try again.',
+        icon: <XCircle className="h-5 w-5" />
+      });
     }
   };
 
@@ -1387,12 +2127,43 @@ ${userFullName}`;
             background: 'linear-gradient(to bottom, transparent 0%, #111111 90%), radial-gradient(ellipse at center, transparent 40%, #111111 95%)'
       }}></div>
       
+      {/* Notification Container */}
+      <div className="fixed top-4 right-4 z-50 space-y-3 pointer-events-none">
+        <AnimatePresence mode="popLayout">
+          {notifications.map((notification, index) => (
+            <motion.div 
+              key={notification.id} 
+              className="pointer-events-auto"
+              initial={{ opacity: 0, x: 50 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 50 }}
+              transition={{ 
+                delay: index * 0.1,
+                duration: 0.3 
+              }}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              <Notification 
+                notification={notification} 
+                onRemove={removeNotification} 
+              />
+            </motion.div>
+          ))}
+        </AnimatePresence>
+      </div>
+      
+      {/* Custom Modal */}
+      <AnimatePresence>
+        <TabSwitchModal />
+      </AnimatePresence>
+      
       {/* Combined Navigation */}
       <motion.div 
         className="sticky top-0 z-30 bg-[#111111]/90 backdrop-blur-md border-b border-gray-800/50 shadow-md"
         initial={{ y: -100 }}
         animate={{ y: 0 }}
-        transition={{ duration: 0.6, ease: "easeOut" }}
+        transition={{ duration: 0.4, ease: "easeOut" }}
       >
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-center h-20 relative">
@@ -1645,7 +2416,7 @@ ${userFullName}`;
                   className="text-base md:text-lg text-gray-400 max-w-3xl mx-auto mb-10"
                   initial={{ opacity: 0, y: -20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.2 }}
+                  transition={{ duration: 0.3, delay: 0.1 }}
                 >
                   Go on then, type in your research field.
                 </motion.p>
@@ -1713,16 +2484,14 @@ ${userFullName}`;
               </section>
 
               {/* Results Section */}
-              <AnimatePresence mode="wait">
-                {hasSearched && (
-                  <motion.section 
-                    key="results"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                    transition={{ duration: 0.5 }}
-                    className="py-12 px-6 max-w-6xl mx-auto w-full"
-                  >
+              {hasSearched && (
+                <motion.section 
+                  key="results"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="py-12 px-6 max-w-6xl mx-auto w-full"
+                >
                     <h2 className="text-2xl font-bold mb-6 text-white">{
                       filteredProfessors.length > 0 
                         ? lastSearchedTerm.trim() 
@@ -1745,6 +2514,7 @@ ${userFullName}`;
                             professor={professor}
                             index={index}
                             isSaved={isSaved}
+                            isProcessing={isProcessingEmail}
                             onSave={handleSaveProfessor}
                             onPersonalizedEmail={handlePersonalizedEmail}
                           />
@@ -1771,7 +2541,6 @@ ${userFullName}`;
                     )}
                   </motion.section>
                 )}
-              </AnimatePresence>
             </motion.div>
           ) : activeTab === 'email' ? (
             <motion.div
@@ -1787,7 +2556,7 @@ ${userFullName}`;
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  transition={{ duration: 0.5 }}
+                  transition={{ duration: 0.3 }}
                   className="mb-6"
                 >
                   <ShinyText text="AI-Powered Email Generation" className="bg-[#1a1a1a] border border-gray-700 text-[#0CF2A0] px-4 py-1 rounded-full text-xs sm:text-sm font-medium cursor-pointer hover:border-[#0CF2A0]/50 transition-colors" />
@@ -1812,7 +2581,7 @@ ${userFullName}`;
                   className="text-base md:text-lg text-gray-400 max-w-3xl mx-auto mb-10"
                   initial={{ opacity: 0, y: -20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.2 }}
+                  transition={{ duration: 0.3, delay: 0.1 }}
                 >
                   {selectedProfessorForEmail ? (
                     <>
@@ -1968,64 +2737,42 @@ ${userFullName}`;
                 {/* Main Interactive Card System */}
                 <div className="mb-8">
                   {showCardSystem ? (
-                    <>
-                      {/* Progress Bar */}
-                      <motion.div
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.5 }}
-                        className="mb-8"
-                      >
-                        <div className="flex items-center justify-between mb-4">
-                          <h3 className="text-lg font-semibold text-white">Setup Progress</h3>
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm text-gray-400">{completedCards.size}/{questionCards.length} completed</span>
-                            <span className="text-sm text-[#0CF2A0] font-semibold">{calculateProgress()}%</span>
-                          </div>
-                        </div>
-                        <Progress 
-                          value={calculateProgress()} 
-                          className="h-3 bg-gray-800/50" 
-                          indicatorClassName="bg-gradient-to-r from-[#0CF2A0] to-[#0CF2A0]/80 transition-all duration-500"
-                        />
-                        <div className="flex justify-between mt-4">
-                          {questionCards.map((card, index) => (
-                            <div key={card.id} className="flex flex-col items-center gap-1">
-                              <div className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                                completedCards.has(index) 
-                                  ? 'bg-[#0CF2A0] shadow-lg shadow-[#0CF2A0]/50' 
-                                  : index === currentCardIndex 
-                                    ? 'bg-blue-500 animate-pulse' 
-                                    : 'bg-gray-600'
-                              }`} />
-                              <span className={`text-xs transition-colors ${
-                                completedCards.has(index) 
-                                  ? 'text-[#0CF2A0]' 
-                                  : index === currentCardIndex 
-                                    ? 'text-blue-400' 
-                                    : 'text-gray-500'
-                              }`}>
-                                {index + 1}
-                              </span>
-                            </div>
-                          ))}
-                        </div>
-                      </motion.div>
-
-                      {/* Question Card */}
-                      <AnimatePresence mode="wait">
-                        <QuestionCard 
-                          card={questionCards[currentCardIndex]} 
-                          isActive={true}
-                        />
-                      </AnimatePresence>
-                    </>
+                    /* Progress Bar Form */
+                    <ProgressBarForm 
+                      userFullName={userFullName}
+                      setUserFullName={setUserFullName}
+                      researchTitle={researchTitle}
+                      setResearchTitle={setResearchTitle}
+                      researchAbstract={researchAbstract}
+                      setResearchAbstract={setResearchAbstract}
+                      currentUniversity={currentUniversity}
+                      setCurrentUniversity={setCurrentUniversity}
+                      academicLevel={academicLevel}
+                      setAcademicLevel={setAcademicLevel}
+                      resumeUrl={resumeUrl}
+                      setResumeUrl={setResumeUrl}
+                      onCancel={() => setShowCardSystem(false)}
+                      onComplete={() => {
+                        setShowCardSystem(false);
+                        // Show success message
+                        const notification = document.createElement('div');
+                        notification.className = 'fixed top-4 right-4 bg-[#0CF2A0] text-black px-6 py-3 rounded-lg shadow-lg z-50 flex items-center gap-2';
+                        notification.innerHTML = `
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                          </svg>
+                          Setup completed successfully!
+                        `;
+                        document.body.appendChild(notification);
+                        setTimeout(() => notification.remove(), 3000);
+                      }}
+                    />
                   ) : (
                     /* Alternative Quick Form Option */
                     <motion.div
                       initial={{ opacity: 0, scale: 0.95 }}
                       animate={{ opacity: 1, scale: 1 }}
-                      transition={{ duration: 0.5 }}
+                      transition={{ duration: 0.3 }}
                       className="text-center py-12"
                     >
                       <motion.div
@@ -2518,7 +3265,7 @@ INSTRUCTIONS:
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5 }}
+                    transition={{ duration: 0.3 }}
                     className="relative"
                   >
                     <div className="absolute -inset-1 bg-gradient-to-r from-[#0CF2A0]/20 via-blue-500/20 to-purple-500/20 rounded-3xl blur-lg"></div>

@@ -300,15 +300,15 @@ const InteractiveHero: React.FC = () => {
    const canvasSizeRef = useRef<{ width: number; height: number }>({ width: 0, height: 0 });
    const mousePositionRef = useRef<{ x: number | null; y: number | null }>({ x: null, y: null });
 
-   const DOT_SPACING = 25;
-   const BASE_OPACITY_MIN = 0.40;
-   const BASE_OPACITY_MAX = 0.50;
+   const DOT_SPACING = 35; // Increased spacing for better performance
+   const BASE_OPACITY_MIN = 0.30;
+   const BASE_OPACITY_MAX = 0.40;
    const BASE_RADIUS = 1;
-   const INTERACTION_RADIUS = 150;
+   const INTERACTION_RADIUS = 120; // Reduced interaction radius
    const INTERACTION_RADIUS_SQ = INTERACTION_RADIUS * INTERACTION_RADIUS;
-   const OPACITY_BOOST = 0.6;
-   const RADIUS_BOOST = 2.5;
-   const GRID_CELL_SIZE = Math.max(50, Math.floor(INTERACTION_RADIUS / 1.5));
+   const OPACITY_BOOST = 0.5;
+   const RADIUS_BOOST = 2;
+   const GRID_CELL_SIZE = Math.max(60, Math.floor(INTERACTION_RADIUS / 1.2));
 
    const handleMouseMove = useCallback((event: globalThis.MouseEvent) => {
         const canvas = canvasRef.current;
@@ -393,7 +393,9 @@ const InteractiveHero: React.FC = () => {
            return;
        }
 
-       ctx.clearRect(0, 0, width, height);
+       // Performance optimization: clear with fillRect instead of clearRect
+       ctx.fillStyle = '#111111';
+       ctx.fillRect(0, 0, width, height);
 
        const activeDotIndices = new Set<number>();
        if (mouseX !== null && mouseY !== null) {
@@ -482,24 +484,24 @@ const InteractiveHero: React.FC = () => {
 
 
 
-    const contentDelay = 0.3;
-    const itemDelayIncrement = 0.1;
+    const contentDelay = 0.1;
+    const itemDelayIncrement = 0.05;
 
     const bannerVariants: Variants = {
         hidden: { opacity: 0, y: -10 },
-        visible: { opacity: 1, y: 0, transition: { duration: 0.4, delay: contentDelay } }
+        visible: { opacity: 1, y: 0, transition: { duration: 0.3, delay: contentDelay } }
     };
    const headlineVariants: Variants = {
         hidden: { opacity: 0 },
-        visible: { opacity: 1, transition: { duration: 0.5, delay: contentDelay + itemDelayIncrement } }
+        visible: { opacity: 1, transition: { duration: 0.4, delay: contentDelay + itemDelayIncrement } }
     };
     const subHeadlineVariants: Variants = {
         hidden: { opacity: 0, y: 10 },
-        visible: { opacity: 1, y: 0, transition: { duration: 0.5, delay: contentDelay + itemDelayIncrement * 2 } }
+        visible: { opacity: 1, y: 0, transition: { duration: 0.4, delay: contentDelay + itemDelayIncrement * 2 } }
     };
     const imageVariants: Variants = {
         hidden: { opacity: 0, scale: 0.95, y: 20 },
-        visible: { opacity: 1, scale: 1, y: 0, transition: { duration: 0.6, delay: contentDelay + itemDelayIncrement * 3, ease: [0.16, 1, 0.3, 1] } }
+        visible: { opacity: 1, scale: 1, y: 0, transition: { duration: 0.5, delay: contentDelay + itemDelayIncrement * 3, ease: [0.16, 1, 0.3, 1] } }
     };
 
    const handleContactClick = useCallback((e: ReactMouseEvent<HTMLAnchorElement>) => {
@@ -587,9 +589,9 @@ const InteractiveHero: React.FC = () => {
                         initial={{ y: "-100%", opacity: 0 }}
                         animate={{ y: 0, opacity: 1 }}
                         exit={{ y: "110%", opacity: 0 }}
-                        staggerDuration={0.01}
-                        transition={{ type: "spring", damping: 18, stiffness: 250 }}
-                        rotationInterval={2200}
+                        staggerDuration={0.005}
+                        transition={{ type: "spring", damping: 20, stiffness: 350 }}
+                        rotationInterval={1800}
                         splitBy="characters"
                         auto={true}
                         loop={true}
@@ -610,16 +612,28 @@ const InteractiveHero: React.FC = () => {
                 variants={imageVariants}
                 initial="hidden"
                 animate="visible"
-                className="w-full max-w-3xl mx-auto px-4 sm:px-0 flex-shrink-0"
+                className="w-full max-w-4xl mx-auto px-4 sm:px-0 flex-shrink-0"
             >
-                <img
-                    src="/cambridge-university-image.png"
-                    alt="Cambridge University"
-                    width={1024}
-                    height={640}
-                    className="w-full h-auto max-h-[300px] object-cover rounded-lg shadow-xl border border-gray-700/50"
-                    loading="lazy"
-                />
+                <video
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    preload="metadata"
+                    disablePictureInPicture
+                    disableRemotePlayback
+                    className="w-full h-auto max-h-[450px] sm:max-h-[500px] lg:max-h-[550px] object-cover rounded-lg shadow-xl border border-gray-700/50"
+                    style={{ aspectRatio: '16/9' }}
+                    onLoadStart={() => console.log('Video loading started')}
+                    onCanPlay={() => console.log('Video ready to play')}
+                >
+                    <source src="/Bharath's Video.mp4" type="video/mp4" />
+                    <img
+                        src="/cambridge-university-image.png"
+                        alt="University Campus"
+                        className="w-full h-auto max-h-[300px] object-cover rounded-lg shadow-xl border border-gray-700/50"
+                    />
+                </video>
             </motion.div>
         </main>
 

@@ -11,6 +11,16 @@ const nextConfig = {
     optimizeServerReact: true,
   },
 
+  // Turbopack configuration (stable)
+  turbopack: {
+    rules: {
+      '*.svg': {
+        loaders: ['@svgr/webpack'],
+        as: '*.js',
+      },
+    },
+  },
+
   // Compression and optimization
   compress: true,
   
