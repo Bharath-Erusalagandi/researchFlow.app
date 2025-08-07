@@ -604,9 +604,11 @@ export default function SearchPage() {
           ? 'Gmail connected but verification pending. Connection should work normally.'
                                 : 'Gmail connected successfully! You can now send emails directly from the website.';
       
-      setEmailSentStatus({ 
-        success: true, 
-        message: successMessage
+      addNotification({
+        type: 'success',
+        title: 'Gmail Connected!',
+        message: successMessage,
+        icon: <Check className="h-5 w-5" />
       });
       
       // Clean up URL parameters but preserve the current tab
@@ -616,9 +618,11 @@ export default function SearchPage() {
     } else if (oauthError) {
       setIsGmailConnected(false);
       setIsConnectingGmail(false); // Reset loading state
-      setEmailSentStatus({ 
-        success: false, 
-        message: `OAuth Error: ${oauthError}. Please try connecting Gmail again.` 
+      addNotification({
+        type: 'error',
+        title: 'OAuth Error',
+        message: `OAuth Error: ${oauthError}. Please try connecting Gmail again.`,
+        icon: <XCircle className="h-5 w-5" />
       });
       // Clean up URL parameters but preserve the current tab
       const currentTabParam = targetTab ? `?tab=${targetTab}` : '';
@@ -1173,12 +1177,15 @@ export default function SearchPage() {
       researchFieldConnection
     };
     localStorage.setItem('researchConnect_formData', JSON.stringify(formData));
+    
+    // Also save to a backup key for better persistence
+    localStorage.setItem('researchConnect_formData_backup', JSON.stringify(formData));
   }, [userFullName, researchTitle, researchAbstract, resumeUrl, currentUniversity, academicLevel, yearOfStudy, specificInterest, researchInterest, researchQuestions, opportunityType, researchFieldConnection]);
 
   // Load card progress and form data on component mount
   useEffect(() => {
-    // Load form data
-    const savedFormData = localStorage.getItem('researchConnect_formData');
+    // Load form data with backup
+    const savedFormData = localStorage.getItem('researchConnect_formData') || localStorage.getItem('researchConnect_formData_backup');
     if (savedFormData) {
       try {
         const formData = JSON.parse(savedFormData);
@@ -1712,7 +1719,12 @@ export default function SearchPage() {
   // Generate personalized email using PROVEN TEMPLATE
   const generatePersonalizedEmail = async () => {
     if (!selectedProfessorForEmail || !userFullName.trim() || (!resumeFile && !resumeUrl.trim())) {
-      alert('Please fill in your name and upload a resume or provide a resume link before generating an email.');
+      addNotification({
+        type: 'warning',
+        title: 'Missing Information',
+        message: 'Please fill in your name and upload a resume or provide a resume link before generating an email.',
+        icon: <AlertTriangle className="h-5 w-5" />
+      });
       return;
     }
 
@@ -1770,8 +1782,21 @@ ${userFullName}`;
 
       setGeneratedEmail(emailContent);
       setEditableEmail(emailContent);
+      
+      addNotification({
+        type: 'success',
+        title: 'Email Generated!',
+        message: `Personalized email for ${selectedProfessorForEmail.name} has been created successfully.`,
+        icon: <Mail className="h-5 w-5" />
+      });
     } catch (error) {
       console.error('Error generating email:', error);
+      addNotification({
+        type: 'error',
+        title: 'Generation Failed',
+        message: 'Failed to generate personalized email. Please try again.',
+        icon: <XCircle className="h-5 w-5" />
+      });
     } finally {
       setIsGeneratingEmail(false);
     }
@@ -1921,15 +1946,16 @@ ${userFullName}`;
   // Handle sending email directly (no scheduling)
   const handleSendEmailWithAI = async () => {
     if (!selectedProfessorForEmail || !userFullName.trim() || (!resumeFile && !resumeUrl.trim()) || !connectedAccountId) {
-      setEmailSentStatus({
-        success: false,
-        message: 'Missing required information: professor, name, resume, or Gmail connection'
+      addNotification({
+        type: 'error',
+        title: 'Missing Information',
+        message: 'Please fill in all required fields: professor, name, resume, and Gmail connection.',
+        icon: <XCircle className="h-5 w-5" />
       });
       return;
     }
 
     setIsSendingEmail(true);
-    setEmailSentStatus(null);
 
     try {
       // Use the enhanced email content (editable if edited, otherwise generated)
@@ -1962,20 +1988,19 @@ ${userFullName}`;
       const result = await response.json();
 
       if (result.success) {
-        setEmailSentStatus({
-          success: true,
-          message: `Email sent successfully to ${selectedProfessorForEmail.name}!`
+        addNotification({
+          type: 'success',
+          title: 'Email Sent Successfully!',
+          message: `Your personalized email has been sent to ${selectedProfessorForEmail.name}.`,
+          icon: <Mail className="h-5 w-5" />
         });
         
-        // Clear the email generation form or reset for next use
-        setTimeout(() => {
-          setEmailSentStatus(null);
-        }, 5000); // Auto-clear success message after 5 seconds
-        
       } else {
-        setEmailSentStatus({
-          success: false,
-          message: `Failed to send email: ${result.error || 'Unknown error'}`
+        addNotification({
+          type: 'error',
+          title: 'Email Send Failed',
+          message: `Failed to send email: ${result.error || 'Unknown error'}`,
+          icon: <XCircle className="h-5 w-5" />
         });
         
         // If it's an authentication error, suggest reconnecting
@@ -1984,14 +2009,23 @@ ${userFullName}`;
           setConnectedAccountId(null);
           localStorage.removeItem('composio_connected_account_id');
           localStorage.removeItem('composio_entity_id');
+          
+          addNotification({
+            type: 'warning',
+            title: 'Authentication Required',
+            message: 'Please reconnect your Gmail account to send emails.',
+            icon: <AlertTriangle className="h-5 w-5" />
+          });
         }
       }
       
     } catch (error) {
       console.error('Error sending email:', error);
-      setEmailSentStatus({
-        success: false,
-        message: 'Network error while sending email. Please try again.'
+      addNotification({
+        type: 'error',
+        title: 'Network Error',
+        message: 'Network error while sending email. Please try again.',
+        icon: <XCircle className="h-5 w-5" />
       });
     } finally {
       setIsSendingEmail(false);
@@ -2001,7 +2035,12 @@ ${userFullName}`;
   // Handle Gmail connection
   const handleConnectGmail = async () => {
     if (!selectedProfessorForEmail) {
-      alert('Please select a professor first');
+      addNotification({
+        type: 'warning',
+        title: 'No Professor Selected',
+        message: 'Please select a professor first before connecting Gmail.',
+        icon: <AlertTriangle className="h-5 w-5" />
+      });
       return;
     }
 
@@ -2053,9 +2092,11 @@ ${userFullName}`;
           if (popup && !popup.closed) {
             popup.close();
             setIsConnectingGmail(false);
-            setEmailSentStatus({
-              success: false,
-              message: 'Connection timeout. Please try again.'
+            addNotification({
+              type: 'error',
+              title: 'Connection Timeout',
+              message: 'Gmail connection timed out. Please try again.',
+              icon: <XCircle className="h-5 w-5" />
             });
           }
           clearInterval(checkPopup);
@@ -2067,9 +2108,11 @@ ${userFullName}`;
 
     } catch (error) {
       console.error('Error connecting Gmail:', error);
-      setEmailSentStatus({
-        success: false,
-        message: `Failed to connect Gmail: ${error instanceof Error ? error.message : 'Unknown error'}`
+      addNotification({
+        type: 'error',
+        title: 'Gmail Connection Failed',
+        message: `Failed to connect Gmail: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        icon: <XCircle className="h-5 w-5" />
       });
       setIsConnectingGmail(false);
     }
