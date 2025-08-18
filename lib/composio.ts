@@ -95,7 +95,7 @@ export class ComposioGmailService {
         appName: "gmail",
       });
 
-      const integrationItems = integrations.items || [];
+      const integrationItems = integrations?.items || [];
       const hasGmailIntegration = integrationItems.length > 0;
       
       return {

@@ -359,7 +359,7 @@ export function SignUpCard() {
                   transition={{ delay: 0.2 }}
                   className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-b from-white to-white/80"
                 >
-                  Welcome back
+                  Join Research Flow
                 </motion.h1>
                 
                 <motion.p
@@ -368,7 +368,7 @@ export function SignUpCard() {
                   transition={{ delay: 0.3 }}
                   className="text-white/60 text-xs"
                 >
-                  Sign in to continue to Uniflow
+                  Create your account to get started
                 </motion.p>
               </div>
 

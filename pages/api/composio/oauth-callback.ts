@@ -39,18 +39,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         connectedAccountId: connectedAccountId.toString(),
       });
 
-      if (connectedAccount.status === 'ACTIVE') {
+      if (connectedAccount?.status === 'ACTIVE') {
         // Connection successful
-        return res.redirect(`${baseUrl}/search?tab=email&oauth_success=true&connected_account_id=${connectedAccountId}&entity_id=${connectedAccount.entityId || entityId || ''}`);
+        return res.redirect(`${baseUrl}/search?tab=email&oauth_success=true&connected_account_id=${connectedAccountId}&entity_id=${connectedAccount?.entityId || entityId || ''}`);
       }
 
-      if (connectedAccount.status && connectedAccount.status.toString().toUpperCase().includes('PROGRESS')) {
+      if (connectedAccount?.status && connectedAccount.status.toString().toUpperCase().includes('PROGRESS')) {
         // Still establishing connection
-        return res.redirect(`${baseUrl}/search?tab=email&oauth_pending=true&connected_account_id=${connectedAccountId}&entity_id=${connectedAccount.entityId || entityId || ''}`);
+        return res.redirect(`${baseUrl}/search?tab=email&oauth_pending=true&connected_account_id=${connectedAccountId}&entity_id=${connectedAccount?.entityId || entityId || ''}`);
       }
 
       // Connection failed or other status
-      return res.redirect(`${baseUrl}/search?tab=email&oauth_error=Connection failed with status: ${connectedAccount.status}`);
+      return res.redirect(`${baseUrl}/search?tab=email&oauth_error=Connection failed with status: ${connectedAccount?.status}`);
 
     } catch (accountError) {
       console.error('Error checking connected account:', accountError);

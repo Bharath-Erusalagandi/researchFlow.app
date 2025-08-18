@@ -33,13 +33,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
 
     console.log('Gmail connection completed:', {
-      id: result.id,
-      status: result.status,
-      appName: result.appName
+      id: result?.id,
+      status: result?.status,
+      appName: result?.appName
     });
 
     // Redirect back to the search page with success
-    return res.redirect(`${baseUrl}/search?tab=email&oauth_success=true&connected_account_id=${result.id}&entity_id=${result.entityId || state || ''}`);
+    return res.redirect(`${baseUrl}/search?tab=email&oauth_success=true&connected_account_id=${result?.id || ''}&entity_id=${result?.entityId || state || ''}`);
 
   } catch (error) {
     console.error('Error in OAuth callback:', error);

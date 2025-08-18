@@ -22,7 +22,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
 
     // Check if there are any active Gmail integrations
-    const integrationItems = integrations.items || [];
+    const integrationItems = integrations?.items || [];
     const hasGmailIntegration = integrationItems.length > 0;
     
     // Get more details about the integrations if they exist

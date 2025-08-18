@@ -248,10 +248,10 @@ function generateSmartFallbackRecommendation(query: string, professors: Professo
   let recommendation = `Based on your search for "${query}", here are some excellent professors to consider:\n\n`;
   
   if (topProfessors.length >= 2) {
-    recommendation += `I'd particularly recommend reaching out to **${topProfessors[0].name}** at ${topProfessors[0].university_name}, who specializes in ${topProfessors[0].field_of_research}. `;
-    recommendation += `Also consider **${topProfessors[1].name}** at ${topProfessors[1].university_name}, whose work in ${topProfessors[1].field_of_research} might align well with your interests.\n\n`;
+    recommendation += `I'd particularly recommend reaching out to ${topProfessors[0].name} at ${topProfessors[0].university_name}, who specializes in ${topProfessors[0].field_of_research}. `;
+    recommendation += `Also consider ${topProfessors[1].name} at ${topProfessors[1].university_name}, whose work in ${topProfessors[1].field_of_research} might align well with your interests.\n\n`;
   } else {
-    recommendation += `I'd recommend starting with **${topProfessors[0].name}** at ${topProfessors[0].university_name}, who works in ${topProfessors[0].field_of_research}.\n\n`;
+    recommendation += `I'd recommend starting with ${topProfessors[0].name} at ${topProfessors[0].university_name}, who works in ${topProfessors[0].field_of_research}.\n\n`;
   }
 
   recommendation += fieldContext;
@@ -260,18 +260,30 @@ function generateSmartFallbackRecommendation(query: string, professors: Professo
   return recommendation;
 }
 
-// Read and parse CSV file
+// In-memory cache for CSV data with mtime guard
+let cachedProfessors: Professor[] | null = null;
+let cachedMtimeMs: number | null = null;
+
 const getProfessorsData = (): Professor[] => {
   try {
     const filePath = path.resolve(process.cwd(), 'data', 'professors.csv');
+    const stats = fs.statSync(filePath);
+    const mtimeMs = stats.mtimeMs;
+
+    if (cachedProfessors && cachedMtimeMs === mtimeMs) {
+      return cachedProfessors;
+    }
+
     const fileContent = fs.readFileSync(filePath, { encoding: 'utf-8' });
-    
+
     const records = parse(fileContent, {
       columns: true,
       skip_empty_lines: true
     });
-    
-    return records;
+
+    cachedProfessors = records;
+    cachedMtimeMs = mtimeMs;
+    return cachedProfessors || [];
   } catch (error) {
     console.error('Error reading professor data:', error);
     return [];
@@ -282,9 +294,45 @@ const getProfessorsData = (): Professor[] => {
 async function getAISuggestion(query: string, professors: Professor[]): Promise<string> {
   try {
     const GROQ_API_KEY = process.env.GROQ_API_KEY;
+    const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY || process.env.DS_API_KEY || process.env.NEXT_PUBLIC_DEEPSEEK_API_KEY;
     
     if (!GROQ_API_KEY) {
       console.error('GROQ_API_KEY not configured');
+      // Try DeepSeek if available
+      if (DEEPSEEK_API_KEY) {
+        try {
+          const deepseekUrl = 'https://api.deepseek.com/v1/chat/completions';
+          const prompt = `A user is searching for professors researching: "${query}". Based on the provided professors list, suggest 1-2 who are the best match and why, plus a short, friendly email opener. Keep under 200 words, no markdown. Professors: ${JSON.stringify(professors.map(p => ({ name: p.name, field: p.field_of_research, university: p.university_name })))}.`;
+          const resp = await axios.post(
+            deepseekUrl,
+            {
+              model: 'deepseek-chat',
+              messages: [
+                { role: 'system', content: 'You are a helpful academic research assistant who recommends professors and suggests concise outreach openers.' },
+                { role: 'user', content: prompt }
+              ],
+              temperature: 0.7,
+              max_tokens: 300
+            },
+            { headers: { 'Authorization': `Bearer ${DEEPSEEK_API_KEY}`, 'Content-Type': 'application/json' } }
+          );
+          const deepseekResponse = resp.data.choices?.[0]?.message?.content?.trim() || '';
+          if (deepseekResponse) {
+            // Remove markdown formatting including asterisks
+            return deepseekResponse
+              .replace(/\*\*(.*?)\*\*/g, '$1')  // Remove bold markdown **text**
+              .replace(/\*(.*?)\*/g, '$1')     // Remove italic markdown *text*
+              .replace(/#{1,6}\s*/g, '')       // Remove headers # ## ###
+              .replace(/^\s*[-*+]\s+/gm, '')   // Remove bullet points
+              .replace(/^\s*\d+\.\s+/gm, '')   // Remove numbered lists
+              .trim();
+          }
+          return generateSmartFallbackRecommendation(query, professors);
+        } catch (dsErr) {
+          console.error('DeepSeek suggestion call failed, using fallback recommendation');
+          return generateSmartFallbackRecommendation(query, professors);
+        }
+      }
       // Provide intelligent fallback recommendation
       return generateSmartFallbackRecommendation(query, professors);
     }
@@ -335,7 +383,15 @@ async function getAISuggestion(query: string, professors: Professor[]): Promise<
       }
     );
 
-    return response.data.choices[0].message.content.trim();
+    const aiResponse = response.data.choices?.[0]?.message?.content?.trim() || 'No suggestion available';
+    // Remove markdown formatting including asterisks
+    return aiResponse
+      .replace(/\*\*(.*?)\*\*/g, '$1')  // Remove bold markdown **text**
+      .replace(/\*(.*?)\*/g, '$1')     // Remove italic markdown *text*
+      .replace(/#{1,6}\s*/g, '')       // Remove headers # ## ###
+      .replace(/^\s*[-*+]\s+/gm, '')   // Remove bullet points
+      .replace(/^\s*\d+\.\s+/gm, '')   // Remove numbered lists
+      .trim();
   } catch (error: any) {
     console.error('Error getting AI suggestion:', error);
     
@@ -348,7 +404,40 @@ async function getAISuggestion(query: string, professors: Professor[]): Promise<
       return "Our AI recommendation service is temporarily down for maintenance. Please explore the professor results below, and the AI suggestions will be back online shortly.";
     }
     
-    return "I couldn't generate personalized recommendations at this time. Please explore the professor results below and consider reaching out to those whose research aligns with your interests.";
+    // Last-ditch: try DeepSeek if available
+    try {
+      const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY || process.env.DS_API_KEY || process.env.NEXT_PUBLIC_DEEPSEEK_API_KEY;
+      if (DEEPSEEK_API_KEY) {
+        const deepseekUrl = 'https://api.deepseek.com/v1/chat/completions';
+        const prompt = `A user is searching for professors researching: "${query}". Based on the provided professors list, suggest 1-2 who are the best match and why, plus a short, friendly email opener. Keep under 200 words, no markdown. Professors: ${JSON.stringify(professors.map(p => ({ name: p.name, field: p.field_of_research, university: p.university_name })))}.`;
+        const resp = await axios.post(
+          deepseekUrl,
+          {
+            model: 'deepseek-chat',
+            messages: [
+              { role: 'system', content: 'You are a helpful academic research assistant who recommends professors and suggests concise outreach openers.' },
+              { role: 'user', content: prompt }
+            ],
+            temperature: 0.7,
+            max_tokens: 300
+          },
+          { headers: { 'Authorization': `Bearer ${DEEPSEEK_API_KEY}`, 'Content-Type': 'application/json' } }
+        );
+        const deepseekResponse2 = resp.data.choices?.[0]?.message?.content?.trim() || '';
+        if (deepseekResponse2) {
+          // Remove markdown formatting including asterisks
+          return deepseekResponse2
+            .replace(/\*\*(.*?)\*\*/g, '$1')  // Remove bold markdown **text**
+            .replace(/\*(.*?)\*/g, '$1')     // Remove italic markdown *text*
+            .replace(/#{1,6}\s*/g, '')       // Remove headers # ## ###
+            .replace(/^\s*[-*+]\s+/gm, '')   // Remove bullet points
+            .replace(/^\s*\d+\.\s+/gm, '')   // Remove numbered lists
+            .trim();
+        }
+        return generateSmartFallbackRecommendation(query, professors);
+      }
+    } catch (_) {}
+    return "AI recommendations are temporarily unavailable because the daily limit has been reached. You can still browse the matched professors below. Try again later for AI-powered picks.";
   }
 }
 
@@ -356,10 +445,49 @@ async function getAISuggestion(query: string, professors: Professor[]): Promise<
 async function getRelevantProfessors(query: string, allProfessors: Professor[]): Promise<Professor[]> {
   try {
     const GROQ_API_KEY = process.env.GROQ_API_KEY;
+    const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY || process.env.DS_API_KEY || process.env.NEXT_PUBLIC_DEEPSEEK_API_KEY;
     
     if (!GROQ_API_KEY) {
       console.error('GROQ_API_KEY not configured');
-      // Fallback to basic search if no API key
+      // Try DeepSeek if available, else fallback
+      if (DEEPSEEK_API_KEY) {
+        try {
+          const deepseekUrl = 'https://api.deepseek.com/v1/chat/completions';
+          const prompt = `Based on this user input: "${query}", return the most relevant professors from this dataset as a JSON array. Include close matches or similar subfields. Response MUST be ONLY a valid JSON array with fields: name, field_of_research, university_name, email, official_url. Limit to 10. Dataset: ${JSON.stringify(allProfessors)}`;
+          const resp = await axios.post(
+            deepseekUrl,
+            {
+              model: 'deepseek-chat',
+              messages: [
+                { role: 'system', content: 'Match professors to research queries. Output ONLY a valid JSON array.' },
+                { role: 'user', content: prompt }
+              ],
+              temperature: 0.2,
+              max_tokens: 4000
+            },
+            { headers: { 'Authorization': `Bearer ${DEEPSEEK_API_KEY}`, 'Content-Type': 'application/json' } }
+          );
+          const content = resp.data.choices?.[0]?.message?.content;
+          const jsonMatch = content?.match(/\[[\s\S]*\]/);
+          if (jsonMatch) {
+            const parsed = JSON.parse(jsonMatch[0]);
+            const normalized = parsed.map((aiItem: any) => {
+              const emailLower = (aiItem.email || '').toLowerCase();
+              const nameLower = (aiItem.name || '').toLowerCase();
+              const uniLower = (aiItem.university_name || '').toLowerCase();
+              const match = allProfessors.find(p =>
+                (p.email && p.email.toLowerCase() === emailLower) ||
+                (p.name.toLowerCase() === nameLower && p.university_name.toLowerCase() === uniLower)
+              );
+              return match || aiItem;
+            });
+            return normalized;
+          }
+        } catch (dsErr) {
+          console.error('DeepSeek relevant call failed, using basic fallback');
+        }
+      }
+      // Fallback to basic search if no working AI
       return basicSearchFallback(query, allProfessors);
     }
     
@@ -404,13 +532,30 @@ async function getRelevantProfessors(query: string, allProfessors: Professor[]):
     );
 
     // Parse the response from Groq
-    const content = response.data.choices[0].message.content;
+    const content = response.data.choices?.[0]?.message?.content;
+    
+    if (!content) {
+      console.error('No content in Groq response');
+      return basicSearchFallback(query, allProfessors);
+    }
     
     // Extract JSON array from the response
     const jsonMatch = content.match(/\[[\s\S]*\]/);
     
     if (jsonMatch) {
-      return JSON.parse(jsonMatch[0]);
+      // Parse and map AI-selected rows back to our canonical CSV records so we keep consistent shapes
+      const parsed = JSON.parse(jsonMatch[0]);
+      const normalized = parsed.map((aiItem: any) => {
+        const emailLower = (aiItem.email || '').toLowerCase();
+        const nameLower = (aiItem.name || '').toLowerCase();
+        const uniLower = (aiItem.university_name || '').toLowerCase();
+        const match = allProfessors.find(p =>
+          (p.email && p.email.toLowerCase() === emailLower) ||
+          (p.name.toLowerCase() === nameLower && p.university_name.toLowerCase() === uniLower)
+        );
+        return match || aiItem;
+      });
+      return normalized;
     } else {
       console.error('Could not parse JSON from Groq response');
       return basicSearchFallback(query, allProfessors);
@@ -427,66 +572,223 @@ async function getRelevantProfessors(query: string, allProfessors: Professor[]):
       console.log('Groq API server error, falling back to basic search');
     }
     
-    // Fallback: basic filtering if Groq AI fails
+    // Try DeepSeek as secondary AI fallback
+    try {
+      const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY || process.env.DS_API_KEY || process.env.NEXT_PUBLIC_DEEPSEEK_API_KEY;
+      if (DEEPSEEK_API_KEY) {
+        const deepseekUrl = 'https://api.deepseek.com/v1/chat/completions';
+        const prompt = `Based on this user input: "${query}", return the most relevant professors from this dataset as a JSON array. Include close matches or similar subfields. Response MUST be ONLY a valid JSON array with fields: name, field_of_research, university_name, email, official_url. Limit to 10. Dataset: ${JSON.stringify(allProfessors)}`;
+        const resp = await axios.post(
+          deepseekUrl,
+          {
+            model: 'deepseek-chat',
+            messages: [
+              { role: 'system', content: 'Match professors to research queries. Output ONLY a valid JSON array.' },
+              { role: 'user', content: prompt }
+            ],
+            temperature: 0.2,
+            max_tokens: 4000
+          },
+          { headers: { 'Authorization': `Bearer ${DEEPSEEK_API_KEY}`, 'Content-Type': 'application/json' } }
+        );
+        const content = resp.data.choices?.[0]?.message?.content;
+        const jsonMatch = content?.match(/\[[\s\S]*\]/);
+        if (jsonMatch) {
+          const parsed = JSON.parse(jsonMatch[0]);
+          const normalized = parsed.map((aiItem: any) => {
+            const emailLower = (aiItem.email || '').toLowerCase();
+            const nameLower = (aiItem.name || '').toLowerCase();
+            const uniLower = (aiItem.university_name || '').toLowerCase();
+            const match = allProfessors.find(p =>
+              (p.email && p.email.toLowerCase() === emailLower) ||
+              (p.name.toLowerCase() === nameLower && p.university_name.toLowerCase() === uniLower)
+            );
+            return match || aiItem;
+          });
+          return normalized;
+        }
+      }
+    } catch (_) {}
+    // Fallback: basic filtering if both AI calls fail
     return basicSearchFallback(query, allProfessors);
   }
 }
 
-// Basic search fallback when Groq API is unavailable
+// Basic search fallback when Groq API is unavailable (kept simple but inclusive)
 function basicSearchFallback(query: string, allProfessors: Professor[]): Professor[] {
-  return allProfessors.filter(professor => {
-    const searchTerms = query.toLowerCase().split(' ');
-    const fieldMatches = searchTerms.some(term => 
-      professor.field_of_research.toLowerCase().includes(term)
-    );
-    const nameMatches = searchTerms.some(term => 
-      professor.name.toLowerCase().includes(term)
-    );
-    const uniMatches = searchTerms.some(term => 
-      professor.university_name.toLowerCase().includes(term)
-    );
-    
-    return fieldMatches || nameMatches || uniMatches;
-  }).slice(0, 10);
+  const terms = query.toLowerCase().split(/\s+/).filter(Boolean);
+  const includesMatch = (source: string) => terms.some(t => source.includes(t));
+  return allProfessors.filter(p =>
+    includesMatch(p.field_of_research.toLowerCase()) ||
+    includesMatch(p.name.toLowerCase()) ||
+    includesMatch(p.university_name.toLowerCase())
+  );
 }
 
 // Enhanced basic search with better matching - now searches ALL professors
 function enhancedBasicSearch(query: string, allProfessors: Professor[]): Professor[] {
-  const searchTerms = query.toLowerCase().split(/\s+/).filter(term => term.length > 1);
-  
-  // Score each professor for relevance
+  // Normalization to catch variants like "&" vs "and", punctuation, etc.
+  const normalize = (s: string) => s
+    .toLowerCase()
+    .replace(/&/g, ' and ')
+    .replace(/[^a-z0-9;\s]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  // Synonyms and common typos/abbreviations seen in the dataset/user queries
+  const synonymMap: Record<string, string[]> = {
+    ai: ['artificial intelligence'],
+    cs: ['computer science'],
+    comp: ['computer science'],
+    cv: ['computer vision'],
+    nlp: ['natural language processing'],
+    bio: ['biology', 'biotechnology', 'bioengineering'],
+    biochem: ['biochemistry', 'chemistry and biochemistry'],
+    biochemistry: ['chemistry and biochemistry'],
+    biochemtry: ['biochemistry', 'chemistry and biochemistry'],
+    chem: ['chemistry'],
+    neuro: ['neuroscience'],
+    stats: ['statistics'],
+    ml: ['machine learning']
+  };
+
+  const expandTerms = (terms: string[]) => {
+    const expanded = new Set<string>();
+    terms.forEach(t => {
+      expanded.add(t);
+      const syns = synonymMap[t];
+      if (syns) syns.forEach(s => expanded.add(normalize(s)));
+    });
+    return Array.from(expanded);
+  };
+
+  const searchTerms = expandTerms(normalize(query).split(/\s+/).filter(term => term.length > 1));
+
+  // Lightweight fuzzy matching for near-typos
+  function levenshtein(a: string, b: string): number {
+    const m = a.length, n = b.length;
+    const dp: number[][] = Array.from({ length: m + 1 }, () => Array(n + 1).fill(0));
+    for (let i = 0; i <= m; i++) dp[i][0] = i;
+    for (let j = 0; j <= n; j++) dp[0][j] = j;
+    for (let i = 1; i <= m; i++) {
+      for (let j = 1; j <= n; j++) {
+        const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+        dp[i][j] = Math.min(
+          dp[i - 1][j] + 1,
+          dp[i][j - 1] + 1,
+          dp[i - 1][j - 1] + cost
+        );
+      }
+    }
+    return dp[m][n];
+  }
+
+  // Popular/high-intent topics should surface more results and rank higher
+  const popularTopics = new Set<string>([
+    'machine learning', 'artificial intelligence', 'deep learning', 'computer vision',
+    'natural language processing', 'nlp', 'data science', 'genomics', 'genetics',
+    'bioinformatics', 'biotechnology'
+  ]);
+
   const scoredProfessors = allProfessors.map(professor => {
-    const fieldLower = professor.field_of_research.toLowerCase();
-    const nameLower = professor.name.toLowerCase();
-    const uniLower = professor.university_name.toLowerCase();
+    const fieldLower = normalize(professor.field_of_research || '');
+    const nameLower = normalize(professor.name || '');
+    const uniLower = normalize(professor.university_name || '');
+    const fieldWords = fieldLower.split(/[;\s,]+/).filter(Boolean);
+
+    let score = 0;
+    for (const term of searchTerms) {
+      if (!term) continue;
+      // Direct/partial matches
+      if (fieldLower.includes(term)) score += fieldLower === term ? 30 : 15;
+      if (nameLower.includes(term)) score += 12;
+      if (uniLower.includes(term)) score += 5;
+
+      // Fuzzy proximity for common typos (only for moderately long terms)
+      if (term.length >= 5) {
+        for (const w of fieldWords) {
+          if (w.length >= 5 && levenshtein(term, w) <= 2) {
+            score += 8;
+            break;
+          }
+        }
+      }
+
+      // Popular topic boost — encourage broader result sets for common interests
+      for (const pop of popularTopics) {
+        if (fieldLower.includes(pop) || term === pop) {
+          score += 10; // extra lift for very popular areas
+        }
+      }
+    }
+
+    // Slight boost if multiple distinct terms hit the same professor
+    if (score > 0 && searchTerms.length > 1) score += 5;
+
+    return { professor, score };
+  })
+  .filter(item => item.score > 0)
+  .sort((a, b) => b.score - a.score)
+  .map(item => item.professor);
+
+  // Do not hard-cap at 10 or 25; return all matches to reflect the full database (safeguard at 500)
+  return scoredProfessors.slice(0, 500);
+}
+
+// Very lenient search to ensure we get at least 30-35 results
+function veryLenientBasicSearch(query: string, allProfessors: Professor[]): Professor[] {
+  const normalize = (s: string) => s
+    .toLowerCase()
+    .replace(/&/g, ' and ')
+    .replace(/[^a-z0-9;\s]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  const searchTerms = normalize(query).split(/\s+/).filter(term => term.length > 2);
+  
+  if (searchTerms.length === 0) {
+    // If no valid search terms, return a random sampling of professors
+    const shuffled = [...allProfessors].sort(() => 0.5 - Math.random());
+    return shuffled.slice(0, 35);
+  }
+
+  const scoredProfessors = allProfessors.map(professor => {
+    const fieldLower = normalize(professor.field_of_research || '');
+    const nameLower = normalize(professor.name || '');
+    const uniLower = normalize(professor.university_name || '');
     
     let score = 0;
-    
-    searchTerms.forEach(term => {
-      // Exact field matches get highest score
-      if (fieldLower.includes(term)) {
-        score += fieldLower === term ? 20 : 10; // Exact match vs partial
-      }
-      // Name matches get high score (for professor searches)
-      if (nameLower.includes(term)) {
-        score += nameLower.includes(term) ? 15 : 8;
-      }
-      // University matches get lower score
-      if (uniLower.includes(term)) {
-        score += 3;
+    for (const term of searchTerms) {
+      // Very lenient matching - even single character matches in field names
+      if (fieldLower.includes(term)) score += 10;
+      if (nameLower.includes(term)) score += 8;
+      if (uniLower.includes(term)) score += 5;
+      
+      // Partial word matching
+      const fieldWords = fieldLower.split(/[;\s,]+/).filter(Boolean);
+      for (const word of fieldWords) {
+        if (word.includes(term) || term.includes(word)) {
+          score += 3;
+        }
       }
       
-      // Bonus for multiple term matches in same field
-      const fieldWords = fieldLower.split(/[;\s,]+/);
-      const matchingWords = fieldWords.filter(word => word.includes(term)).length;
-      if (matchingWords > 1) score += 5;
-    });
+      // Very loose similarity - any word that starts with the same letter and has similar length
+      for (const word of fieldWords) {
+        if (word.length > 3 && term.length > 3 && 
+            word[0] === term[0] && 
+            Math.abs(word.length - term.length) <= 2) {
+          score += 1;
+        }
+      }
+    }
+    
+    // Give a small base score to everyone to ensure some results
+    score += 0.1;
     
     return { professor, score };
   })
   .filter(item => item.score > 0)
   .sort((a, b) => b.score - a.score)
-  .slice(0, 25) // Increased to 25 for better variety
   .map(item => item.professor);
 
   return scoredProfessors;
@@ -540,10 +842,54 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     try {
       // Try Groq AI first for intelligent matching
       relevantProfessors = await getRelevantProfessors(sanitizedQuery, allProfessors);
+      // Ensure coverage: union with enhanced basic results so all relevant CSV professors are reflected
+      const basic = enhancedBasicSearch(sanitizedQuery, allProfessors);
+      const seen = new Set<string>();
+      const key = (p: Professor) => `${(p.email || '').toLowerCase()}|${p.name.toLowerCase()}|${p.university_name.toLowerCase()}`;
+      const united: Professor[] = [];
+      [...relevantProfessors, ...basic].forEach(p => {
+        const k = key(p);
+        if (!seen.has(k)) {
+          seen.add(k);
+          united.push(p);
+        }
+      });
+      relevantProfessors = united;
+      
+      // Ensure we always have at least 30-35 professors by doing a more lenient search if needed
+      if (relevantProfessors.length < 30) {
+        const veryLenientSearch = veryLenientBasicSearch(sanitizedQuery, allProfessors);
+        veryLenientSearch.forEach(p => {
+          const k = key(p);
+          if (!seen.has(k) && relevantProfessors.length < 35) {
+            seen.add(k);
+            relevantProfessors.push(p);
+          }
+        });
+      }
     } catch (error) {
       console.log('Groq AI failed, using enhanced basic search');
       // Fallback to enhanced basic search
       relevantProfessors = enhancedBasicSearch(sanitizedQuery, allProfessors);
+      
+      // Ensure we have enough results in fallback mode too
+      if (relevantProfessors.length < 30) {
+        const veryLenientSearch = veryLenientBasicSearch(sanitizedQuery, allProfessors);
+        const seen = new Set<string>();
+        const key = (p: Professor) => `${(p.email || '').toLowerCase()}|${p.name.toLowerCase()}|${p.university_name.toLowerCase()}`;
+        
+        // Add existing results to seen set
+        relevantProfessors.forEach(p => seen.add(key(p)));
+        
+        // Add more results from very lenient search
+        veryLenientSearch.forEach(p => {
+          const k = key(p);
+          if (!seen.has(k) && relevantProfessors.length < 35) {
+            seen.add(k);
+            relevantProfessors.push(p);
+          }
+        });
+      }
     }
     
     // If no results found, provide helpful suggestions

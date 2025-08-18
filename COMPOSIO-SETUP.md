@@ -21,13 +21,13 @@ npm install composio-core
 
 Your `.env.local` file has been updated with the Composio API key:
 ```bash
-COMPOSIO_API_KEY=37tqexxyqqrjg9w685when
+COMPOSIO_API_KEY=<your-composio-api-key>
 ```
 
 **Important**: For the Composio CLI to work, you also need to set this as a global environment variable:
 ```bash
-export COMPOSIO_API_KEY=37tqexxyqqrjg9w685when
-echo 'export COMPOSIO_API_KEY=37tqexxyqqrjg9w685when' >> ~/.zshrc
+export COMPOSIO_API_KEY=<your-composio-api-key>
+echo 'export COMPOSIO_API_KEY=<your-composio-api-key>' >> ~/.zshrc
 ```
 
 ### 3. Gmail Integration Setup
@@ -142,15 +142,15 @@ Check browser console for detailed logs about:
 ### Gmail Not Connected
 **Error**: "Gmail tools not available"
 **Solution**: 
-1. Set global environment variable: `export COMPOSIO_API_KEY=37tqexxyqqrjg9w685when`
+1. Set global environment variable: `export COMPOSIO_API_KEY=<your-composio-api-key>`
 2. Run `composio add gmail` and complete authentication
 
 ### API Key Issues
 **Error**: "🔑 API Key is not provided"
 **Solution**: 
 1. Verify `COMPOSIO_API_KEY` in `.env.local`
-2. Set global environment variable: `export COMPOSIO_API_KEY=37tqexxyqqrjg9w685when`
-3. Add to shell profile: `echo 'export COMPOSIO_API_KEY=37tqexxyqqrjg9w685when' >> ~/.zshrc`
+2. Set global environment variable: `export COMPOSIO_API_KEY=<your-composio-api-key>`
+3. Add to shell profile: `echo 'export COMPOSIO_API_KEY=<your-composio-api-key>' >> ~/.zshrc`
 
 ### API Endpoint Issues
 **Error**: 404 or connection refused

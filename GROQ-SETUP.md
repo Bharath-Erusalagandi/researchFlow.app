@@ -19,9 +19,9 @@ This integration uses **Groq AI** (ultra-fast LLM inference) with **Composio** t
 Open your `.env.local` file and update the Groq API key:
 
 ```bash
-COMPOSIO_API_KEY=abp5czr4z72geqi1gi5f8
+COMPOSIO_API_KEY=<your-composio-api-key>
 NEXT_PUBLIC_BASE_URL=http://localhost:3002
-GROQ_API_KEY=gsk_your_actual_groq_api_key_here
+GROQ_API_KEY=<your-groq-api-key>
 ```
 
 ### 3. Restart Development Server

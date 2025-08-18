@@ -71,6 +71,7 @@ export const ProfessorCard: React.FC<ProfessorCardProps> = ({
           )}
           disabled={isSaved}
           type="button"
+          data-tutorial="save-button"
         >
           {isSaved ? 'Saved' : 'Save'}
         </button>

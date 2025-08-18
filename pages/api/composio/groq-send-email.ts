@@ -49,11 +49,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       connectedAccountId: connectedAccountId,
     });
 
-    if (connectedAccount.status !== 'ACTIVE') {
+    if (!connectedAccount || connectedAccount.status !== 'ACTIVE') {
       return res.status(400).json({
         success: false,
         error: 'Gmail connection is not active. Please reconnect your Gmail account.',
-        status: connectedAccount.status
+        status: connectedAccount?.status
       });
     }
 

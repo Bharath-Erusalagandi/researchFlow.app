@@ -57,11 +57,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     console.log(`Using redirect URL: ${redirectUrl}`);
 
     const connectionRequest = await toolset.client.connectedAccounts.initiate({
-      appName: appName,
-      redirectUri: redirectUrl,
-      entityId: userId.toString(),
-      authMode: authScheme,
-      authConfig: {},
+      integrationId: appName,
+      data: {
+        appName: appName,
+        redirectUri: redirectUrl,
+        entityId: userId.toString(),
+        authMode: authScheme,
+        authConfig: {},
+      }
     });
 
     // Connection request created successfully

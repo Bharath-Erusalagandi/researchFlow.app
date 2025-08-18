@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { GraduationCap, User, Mail, BookOpen, Award, ArrowUp, Square, Tag, Home, FileText, Search as SearchIcon, Settings, LogOut, AlertCircle, Check, Heart, Brain, PenTool, Send, Copy, Loader2, ExternalLink, Upload, Link as LinkIcon, Edit3, Clock, Trash2, ChevronRight, ChevronLeft, Shuffle, X, Info, AlertTriangle, XCircle } from 'lucide-react';
+import { GraduationCap, User, Mail, BookOpen, Award, ArrowUp, Square, Home, FileText, Search as SearchIcon, Settings, LogOut, AlertCircle, Check, Heart, Brain, PenTool, Send, Copy, Loader2, ExternalLink, Upload, Link as LinkIcon, Edit3, Clock, Trash2, ChevronRight, ChevronLeft, Shuffle, X, Info, AlertTriangle, XCircle } from 'lucide-react';
 import { IconSend, IconMail, IconLoader2 as TablerLoader2 } from '@tabler/icons-react';
 import { getTimeBasedGreeting } from '@/lib/utils';
 // Removed PromptInput components - now using AIInputWithLoading
@@ -15,23 +15,12 @@ import { ProfessorCard } from '@/components/ui/professor-card';
 import { TextShimmer } from '@/components/ui/text-shimmer';
 import { AIInputWithLoading } from '@/components/ui/ai-input-with-loading';
 import { Progress } from '@/components/ui/progress';
+import { TutorialOverlay } from '@/components/ui/tutorial-overlay';
+import { searchPageTutorialSteps, quickTutorialSteps } from '@/lib/tutorial-steps';
 
 
 
-// Popular search tags
-const SUGGESTED_TAGS = [
-  "Machine Learning",
-  "Genetics",
-  "Climate Science",
-  "Neuroscience",
-  "Quantum Physics",
-  "Computer Vision",
-  "Biotechnology",
-  "Artificial Intelligence",
-  "Sociology",
-  "Psychology",
-  "CRISPR"
-];
+// Popular tags removed as per request
 
 // Professor interface matching our data structure
 interface Professor {
@@ -472,6 +461,23 @@ export default function SearchPage() {
   const [aiSuggestion, setAISuggestion] = useState<string>("");
   const [savedProfessors, setSavedProfessors] = useState<string[]>([]);
   
+  // Search History State - Chat-like functionality
+  type SearchSession = {
+    id: string;
+    query: string;
+    timestamp: number;
+    professors: Professor[];
+    aiSuggestion: string;
+  };
+  
+  const [searchHistory, setSearchHistory] = useState<SearchSession[]>([]);
+  const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
+  const [showSearchHistory, setShowSearchHistory] = useState(false);
+  
+  // Tutorial state
+  const [showTutorial, setShowTutorial] = useState(false);
+  const [tutorialType, setTutorialType] = useState<'full' | 'quick'>('full');
+  
   // Notification state
   const [notifications, setNotifications] = useState<Array<{
     id: string;
@@ -485,7 +491,7 @@ export default function SearchPage() {
   const [showTabSwitchModal, setShowTabSwitchModal] = useState(false);
   const [modalProfessor, setModalProfessor] = useState<Professor | null>(null);
   const [dontAskAgain, setDontAskAgain] = useState(false);
-  const [isProcessingEmail, setIsProcessingEmail] = useState(false); // Prevent multiple triggers
+  const [processingEmailForProfessor, setProcessingEmailForProfessor] = useState<string | null>(null); // Track which professor is being processed
 
   
   // Personalized email tab state
@@ -529,20 +535,47 @@ export default function SearchPage() {
     // First, check URL parameters to determine intended tab
     const urlParams = new URLSearchParams(window.location.search);
     const urlTab = urlParams.get('tab');
+    const sessionId = urlParams.get('session');
     
-    const savedQuery = localStorage.getItem('researchConnect_searchQuery');
-    const savedLastSearchedTerm = localStorage.getItem('researchConnect_lastSearchedTerm');
-    const savedProfessorsResults = localStorage.getItem('researchConnect_professors');
-    const savedSuggestion = localStorage.getItem('researchConnect_aiSuggestion');
-    const savedHasSearched = localStorage.getItem('researchConnect_hasSearched');
+    // Load search history from localStorage
+    const savedHistory = localStorage.getItem('researchConnect_searchHistory');
+    if (savedHistory) {
+      try {
+        const history = JSON.parse(savedHistory);
+        setSearchHistory(history);
+      } catch (error) {
+        console.error('Error loading search history:', error);
+      }
+    }
+    
+    // If there's a specific session ID in URL, load that session
+    if (sessionId && savedHistory) {
+      try {
+        const history = JSON.parse(savedHistory);
+        const session = history.find((s: SearchSession) => s.id === sessionId);
+        if (session) {
+          setCurrentSessionId(sessionId);
+          setSearchQuery(session.query);
+          setLastSearchedTerm(session.query);
+          setFilteredProfessors(session.professors);
+          setAISuggestion(session.aiSuggestion);
+          setHasSearched(true);
+        }
+      } catch (error) {
+        console.error('Error loading specific session:', error);
+      }
+    } else {
+      // Always start with blank search for new sessions
+      setSearchQuery("");
+      setLastSearchedTerm("");
+      setFilteredProfessors([]);
+      setAISuggestion("");
+      setHasSearched(false);
+      setCurrentSessionId(null);
+    }
+    
     const savedSelectedProfessor = localStorage.getItem('selectedProfessorForEmail');
     const savedActiveTab = localStorage.getItem('researchConnect_activeTab');
-    
-    if (savedQuery) setSearchQuery(savedQuery);
-    if (savedLastSearchedTerm) setLastSearchedTerm(savedLastSearchedTerm);
-    if (savedProfessorsResults) setFilteredProfessors(JSON.parse(savedProfessorsResults));
-    if (savedSuggestion) setAISuggestion(savedSuggestion);
-    if (savedHasSearched === 'true') setHasSearched(true);
     
     // Load saved/bookmarked professors
     const savedBookmarkedProfs = JSON.parse(localStorage.getItem('savedProfessors') || '[]');
@@ -564,6 +597,24 @@ export default function SearchPage() {
     }
     
     setActiveTab(targetTab);
+
+    // Check if this is a first-time user and show tutorial
+    const hasSeenTutorial = localStorage.getItem('researchConnect_hasSeenTutorial');
+    const isFirstVisitEver = localStorage.getItem('researchConnect_firstVisit') === null;
+    const skipTutorial = urlParams.get('skip_tutorial') === 'true';
+    
+    // Only show tutorial on very first visit ever
+    if (!hasSeenTutorial && isFirstVisitEver && !skipTutorial) {
+      // Mark that user has visited
+      localStorage.setItem('researchConnect_firstVisit', 'true');
+      // Delay tutorial to let the page load completely
+      setTimeout(() => {
+        setShowTutorial(true);
+      }, 2000);
+    } else if (isFirstVisitEver) {
+      // Mark first visit even if tutorial is skipped
+      localStorage.setItem('researchConnect_firstVisit', 'true');
+    }
 
     // Form data is now loaded in a separate useEffect to avoid conflicts and ensure persistence
 
@@ -830,7 +881,31 @@ export default function SearchPage() {
       setFilteredProfessors(professors);
       setHasSearched(true);
       
-      // Save results to localStorage
+      // Create new search session and save to history
+      const sessionId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
+      const newSession: SearchSession = {
+        id: sessionId,
+        query: searchTerm,
+        timestamp: Date.now(),
+        professors: professors,
+        aiSuggestion: suggestion
+      };
+      
+      // Update search history (keep last 20 searches)
+      setSearchHistory(prevHistory => {
+        const updatedHistory = [newSession, ...prevHistory.slice(0, 19)];
+        localStorage.setItem('researchConnect_searchHistory', JSON.stringify(updatedHistory));
+        return updatedHistory;
+      });
+      
+      setCurrentSessionId(sessionId);
+      
+      // Update URL to include session ID
+      const url = new URL(window.location.href);
+      url.searchParams.set('session', sessionId);
+      window.history.replaceState({}, document.title, url.toString());
+      
+      // Save results to localStorage (keeping for backwards compatibility)
       localStorage.setItem('researchConnect_professors', JSON.stringify(professors));
       localStorage.setItem('researchConnect_hasSearched', 'true');
     } catch (error: any) {
@@ -875,6 +950,89 @@ export default function SearchPage() {
     }
   };
 
+  // Function to load a previous search session
+  const loadSearchSession = (session: SearchSession) => {
+    setCurrentSessionId(session.id);
+    setSearchQuery(session.query);
+    setLastSearchedTerm(session.query);
+    setFilteredProfessors(session.professors);
+    setAISuggestion(session.aiSuggestion);
+    setHasSearched(true);
+    
+    // Update URL to include session ID
+    const url = new URL(window.location.href);
+    url.searchParams.set('session', session.id);
+    window.history.replaceState({}, document.title, url.toString());
+    
+    // Close search history sidebar on mobile
+    setShowSearchHistory(false);
+  };
+
+  // Function to start a new search (clear current session)
+  const startNewSearch = () => {
+    setCurrentSessionId(null);
+    setSearchQuery("");
+    setLastSearchedTerm("");
+    setFilteredProfessors([]);
+    setAISuggestion("");
+    setHasSearched(false);
+    
+    // Update URL to remove session ID
+    const url = new URL(window.location.href);
+    url.searchParams.delete('session');
+    window.history.replaceState({}, document.title, url.toString());
+    
+    // Close search history sidebar on mobile
+    setShowSearchHistory(false);
+  };
+
+  // Function to delete a search session
+  const deleteSearchSession = (sessionId: string) => {
+    setSearchHistory(prevHistory => {
+      const updatedHistory = prevHistory.filter(session => session.id !== sessionId);
+      localStorage.setItem('researchConnect_searchHistory', JSON.stringify(updatedHistory));
+      return updatedHistory;
+    });
+    
+    // If the deleted session is the current one, start a new search
+    if (currentSessionId === sessionId) {
+      startNewSearch();
+    }
+  };
+
+  // Tutorial control functions
+  const handleTutorialComplete = () => {
+    setShowTutorial(false);
+    localStorage.setItem('researchConnect_hasSeenTutorial', 'true');
+    
+    addNotification({
+      id: 'tutorial-complete',
+      type: 'success',
+      title: 'Tutorial Complete!',
+      message: 'You\'re ready to start finding amazing professors. Happy researching!',
+      icon: <GraduationCap className="h-5 w-5" />
+    });
+  };
+
+  const handleTutorialSkip = () => {
+    setShowTutorial(false);
+    localStorage.setItem('researchConnect_hasSeenTutorial', 'true');
+    
+    addNotification({
+      id: 'tutorial-skipped',
+      type: 'info',
+      title: 'Tutorial Skipped',
+      message: 'You can always restart the tutorial from your profile settings.',
+      icon: <Info className="h-5 w-5" />
+    });
+  };
+
+  // Function to manually start tutorial (for settings)
+  const startTutorial = (type: 'full' | 'quick' = 'full') => {
+    setTutorialType(type);
+    setShowTutorial(true);
+  };
+
   const handleSaveProfessor = (professor: Professor) => {
     const savedProfs = JSON.parse(localStorage.getItem('savedProfessors') || '[]');
     const professorData = {
@@ -913,12 +1071,14 @@ export default function SearchPage() {
   };
 
   const handlePersonalizedEmail = (professor: Professor) => {
-    // Prevent multiple triggers
-    if (isProcessingEmail) {
+    const professorId = professor.id?.toString() || professor.name;
+    
+    // Prevent multiple triggers for the same professor
+    if (processingEmailForProfessor === professorId) {
       return;
     }
     
-    setIsProcessingEmail(true);
+    setProcessingEmailForProfessor(professorId);
     
     // Store the selected professor data for the email tab
     setSelectedProfessorForEmail(professor);
@@ -944,19 +1104,19 @@ export default function SearchPage() {
         }, 100);
         // Reset processing state after a longer cooldown
         setTimeout(() => {
-          setIsProcessingEmail(false);
+          setProcessingEmailForProfessor(null);
         }, 3000);
       }, 3000); // Increased from 1500ms to 3000ms
     } else if (autoSwitchPreference === 'false') {
       // Don't show modal, just stay on current tab
       setTimeout(() => {
-        setIsProcessingEmail(false);
+        setProcessingEmailForProfessor(null);
       }, 3000);
     } else {
       // Show custom modal after a longer delay to let user read the notification
       setTimeout(() => {
         // Only show modal if it's not already showing and we're still processing
-        if (!showTabSwitchModal && isProcessingEmail) {
+        if (!showTabSwitchModal && processingEmailForProfessor === professorId) {
           setModalProfessor(professor);
           setShowTabSwitchModal(true);
         }
@@ -1037,7 +1197,7 @@ export default function SearchPage() {
       id: 'location',
       title: 'Where are you located?',
       subtitle: 'This helps with collaboration logistics',
-      icon: <Tag className="h-6 w-6" />,
+      icon: <Home className="h-6 w-6" />,
       value: opportunityType,
       setValue: setOpportunityType,
       type: 'text',
@@ -1087,7 +1247,13 @@ export default function SearchPage() {
       localStorage.removeItem('cardSystemProgress');
       // Show success message
       setTimeout(() => {
-        alert('🎉 Setup complete! Your information has been saved and you can now generate personalized emails.');
+        addNotification({
+          id: 'setup-complete',
+          type: 'success',
+          title: 'Setup Complete!',
+          message: 'Your information has been saved and you can now generate personalized emails.',
+          icon: <GraduationCap className="h-5 w-5" />
+        });
       }, 500);
     }
   };
@@ -1455,8 +1621,13 @@ export default function SearchPage() {
           
           {/* Close button */}
           <button
-            onClick={() => onRemove(notification.id)}
-            className="flex-shrink-0 p-1.5 rounded-lg hover:bg-white/15 transition-all duration-200 group"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onRemove(notification.id);
+            }}
+            className="flex-shrink-0 p-1.5 rounded-lg hover:bg-white/15 transition-all duration-200 group cursor-pointer"
+            type="button"
           >
             <X className="h-4 w-4 text-white/60 group-hover:text-white transition-colors" />
           </button>
@@ -1496,7 +1667,7 @@ export default function SearchPage() {
       setActiveTab('email');
       setShowTabSwitchModal(false);
       setModalProfessor(null);
-      setIsProcessingEmail(false); // Reset processing state
+      setProcessingEmailForProfessor(null); // Reset processing state
       // Save preference if "don't ask again" is checked
       if (dontAskAgain) {
         localStorage.setItem('researchConnect_autoSwitchToEmail', 'true');
@@ -1509,7 +1680,7 @@ export default function SearchPage() {
     const handleCancel = () => {
       setShowTabSwitchModal(false);
       setModalProfessor(null);
-      setIsProcessingEmail(false); // Reset processing state
+      setProcessingEmailForProfessor(null); // Reset processing state
       // Save preference if "don't ask again" is checked
       if (dontAskAgain) {
         localStorage.setItem('researchConnect_autoSwitchToEmail', 'false');
@@ -1624,23 +1795,12 @@ export default function SearchPage() {
   const TypingText = ({ text, speed = 30 }: { text: string; speed?: number }) => {
     const [displayedText, setDisplayedText] = useState('');
     const [isComplete, setIsComplete] = useState(false);
-    const [hasStarted, setHasStarted] = useState(false);
-    const [textHash, setTextHash] = useState('');
     
     useEffect(() => {
       if (!text) return;
       
       // Create a hash of the text to detect actual changes
       const currentHash = btoa(text.substring(0, 50));
-      
-      // Only reset if the text actually changed
-      if (textHash !== currentHash) {
-        console.log('TypingText: Text changed, resetting animation');
-        setTextHash(currentHash);
-        setHasStarted(false);
-        setDisplayedText('');
-        setIsComplete(false);
-      }
       
       // Check if this specific AI suggestion was already fully displayed before
       const suggestionKey = `researchConnect_aiSuggestionDisplayed_${currentHash}`;
@@ -1650,13 +1810,10 @@ export default function SearchPage() {
         // If already displayed before, show immediately without animation
         setDisplayedText(text);
         setIsComplete(true);
-        setHasStarted(true);
         return;
       }
       
-      if (hasStarted) return;
-      
-      setHasStarted(true);
+      // Start typing animation
       setDisplayedText('');
       setIsComplete(false);
       let i = 0;
@@ -1674,12 +1831,12 @@ export default function SearchPage() {
       }, speed);
       
       return () => clearInterval(timer);
-    }, [text, speed, hasStarted, textHash]);
+    }, [text, speed]);
     
     return (
       <span className="text-white text-base leading-relaxed">
         {displayedText}
-        {!isComplete && hasStarted && (
+        {!isComplete && (
           <motion.span
             animate={{ opacity: [0, 1, 0] }}
             transition={{ duration: 0.8, repeat: Infinity }}
@@ -1705,6 +1862,7 @@ export default function SearchPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3, delay: 0.1 }}
         className="mb-8 max-w-4xl mx-auto w-full"
+        data-tutorial="ai-recommendation"
       >
         <div className="flex flex-col">
           <h3 className="text-lg font-medium text-white mb-3">Professor Recommendation</h3>
@@ -2195,6 +2353,116 @@ ${userFullName}`;
           ))}
         </AnimatePresence>
       </div>
+
+      {/* Search History Sidebar */}
+      <AnimatePresence>
+        {showSearchHistory && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+              onClick={() => setShowSearchHistory(false)}
+            />
+            
+            {/* Sidebar */}
+            <motion.div
+              initial={{ x: -300 }}
+              animate={{ x: 0 }}
+              exit={{ x: -300 }}
+              transition={{ type: "spring", damping: 20, stiffness: 300 }}
+              className="fixed left-0 top-0 h-full w-80 bg-[#1a1a1a]/95 backdrop-blur-xl border-r border-white/10 z-50 flex flex-col"
+            >
+              {/* Header */}
+              <div className="p-4 border-b border-white/10">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-lg font-semibold text-white">Search History</h2>
+                  <button
+                    onClick={() => setShowSearchHistory(false)}
+                    className="p-2 rounded-lg hover:bg-white/10 text-white/60 hover:text-white transition-colors"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+                
+                {/* New Search Button */}
+                <button
+                  onClick={startNewSearch}
+                  className="w-full mt-3 flex items-center gap-2 px-3 py-2 bg-[#0CF2A0] text-black rounded-lg hover:bg-[#0CF2A0]/90 transition-colors font-medium"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
+                  </svg>
+                  New Search
+                </button>
+                
+                {/* Tutorial Button */}
+                <button
+                  onClick={() => startTutorial('full')}
+                  className="w-full mt-2 flex items-center gap-2 px-3 py-2 bg-white/10 text-white rounded-lg hover:bg-white/20 transition-colors"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  Tutorial
+                </button>
+              </div>
+              
+              {/* Search History List */}
+              <div className="flex-1 overflow-y-auto p-4 space-y-2">
+                {searchHistory.length === 0 ? (
+                  <div className="text-center text-white/40 py-8">
+                    <svg className="w-12 h-12 mx-auto mb-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                    <p>No search history yet</p>
+                    <p className="text-sm mt-1">Your searches will appear here</p>
+                  </div>
+                ) : (
+                  searchHistory.map((session) => (
+                    <div
+                      key={session.id}
+                      className={`p-3 rounded-lg border transition-all cursor-pointer group ${
+                        currentSessionId === session.id
+                          ? 'bg-[#0CF2A0]/20 border-[#0CF2A0]/30 text-white'
+                          : 'bg-white/5 border-white/10 hover:bg-white/10 text-white/80 hover:text-white'
+                      }`}
+                      onClick={() => loadSearchSession(session)}
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium truncate">{session.query}</p>
+                          <p className="text-sm opacity-60 mt-1">
+                            {session.professors.length} professors found
+                          </p>
+                          <p className="text-xs opacity-40 mt-1">
+                            {new Date(session.timestamp).toLocaleDateString()} at {new Date(session.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </p>
+                        </div>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            deleteSearchSession(session.id);
+                          }}
+                          className="opacity-0 group-hover:opacity-100 ml-2 p-1 rounded text-white/40 hover:text-red-400 transition-all"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
       
       {/* Custom Modal */}
       <AnimatePresence>
@@ -2280,6 +2548,7 @@ ${userFullName}`;
                       ? 'bg-[#0CF2A0] text-black shadow-lg'
                       : 'text-gray-300 hover:text-white hover:bg-white/5'
                   }`}
+                  data-tutorial="email-tab"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   transition={{ duration: 0.2 }}
@@ -2468,8 +2737,39 @@ ${userFullName}`;
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.5, delay: 0.3 }}
-                  className="flex justify-center w-full max-w-4xl mx-auto relative"
+                  className="flex items-center justify-center w-full max-w-4xl mx-auto relative gap-4"
                 >
+                  {/* Search History Button */}
+                  <motion.button
+                    onClick={() => setShowSearchHistory(true)}
+                    className="flex-shrink-0 p-3 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-[#0CF2A0]/30 transition-all duration-300 text-white/60 hover:text-white group relative"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    title="Search History"
+                  >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    {searchHistory.length > 0 && (
+                      <span className="absolute -top-1 -right-1 bg-[#0CF2A0] text-black text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+                        {searchHistory.length}
+                      </span>
+                    )}
+                  </motion.button>
+
+                  {/* Tutorial Button */}
+                  <motion.button
+                    onClick={() => startTutorial('quick')}
+                    className="flex-shrink-0 p-3 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-[#0CF2A0]/30 transition-all duration-300 text-white/60 hover:text-white group relative"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    title="Quick Tutorial (Ctrl+/)"
+                  >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </motion.button>
+
                   <AIInputWithLoading
                     value={searchQuery}
                     onChange={setSearchQuery}
@@ -2477,53 +2777,13 @@ ${userFullName}`;
                     disabled={isLoading}
                     isLoading={isLoading}
                     placeholder="Search research topics, professors, or universities..."
-                    className="w-full"
+                    className="flex-1"
                     minHeight={60}
                     maxHeight={120}
                   />
                 </motion.div>
                 
-                {/* Suggested Tags */}
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.4 }}
-                  className="flex justify-center flex-wrap gap-3 mt-8 max-w-4xl mx-auto px-2 text-center"
-                >
-                  <div className="w-full flex justify-center items-center mb-3">
-                    <Tag className="h-5 w-5 text-[#0CF2A0] mr-2" />
-                    <span className="text-base text-gray-300">Popular Topics</span>
-                  </div>
-                  <div className="flex flex-wrap justify-center gap-3 w-full">
-                    {SUGGESTED_TAGS.map((tag, index) => (
-                      <motion.button
-                        key={tag}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          handleSearch(tag);
-                        }}
-                        onTouchEnd={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                        }}
-                        className="text-base font-medium text-gray-300 bg-[#1a1a1a] border border-gray-700/50 px-4 py-3 rounded-full hover:border-[#0CF2A0]/50 hover:text-[#0CF2A0] hover:bg-[#0CF2A0]/10 transition-all touch-manipulation mobile-touch-target"
-                        whileHover={{ scale: 1.05, y: -2 }}
-                        whileTap={{ scale: 0.95 }}
-                        initial={{ opacity: 0, scale: 0.8 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ 
-                          duration: 0.3,
-                          delay: 0.45 + (index * 0.03),
-                          type: "spring",
-                          stiffness: 400
-                        }}
-                      >
-                        {tag}
-                      </motion.button>
-                    ))}
-                  </div>
-                </motion.div>
+                {/* Popular Topics section removed */}
               </section>
 
               {/* Results Section */}
@@ -2547,7 +2807,7 @@ ${userFullName}`;
                     {renderAISuggestion()}
                     
                     {/* Professor Cards */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 professor-cards-container">
                       {filteredProfessors.map((professor, index) => {
                         const isSaved = savedProfessors.includes(professor.id?.toString() || '');
                         
@@ -2557,7 +2817,7 @@ ${userFullName}`;
                             professor={professor}
                             index={index}
                             isSaved={isSaved}
-                            isProcessing={isProcessingEmail}
+                            isProcessing={processingEmailForProfessor === (professor.id?.toString() || professor.name)}
                             onSave={handleSaveProfessor}
                             onPersonalizedEmail={handlePersonalizedEmail}
                           />
@@ -3496,7 +3756,15 @@ INSTRUCTIONS:
           ) : null}
         </AnimatePresence>
       </main>
-      
+
+      {/* Tutorial Overlay */}
+      <TutorialOverlay
+        steps={tutorialType === 'full' ? searchPageTutorialSteps : quickTutorialSteps}
+        isVisible={showTutorial}
+        onComplete={handleTutorialComplete}
+        onSkip={handleTutorialSkip}
+        tutorialKey="search-page"
+      />
 
     </div>
   );

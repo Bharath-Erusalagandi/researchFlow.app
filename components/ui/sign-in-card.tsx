@@ -244,24 +244,13 @@ export function SignInCard() {
             
             {/* Glass card background */}
             <div className="relative bg-black/40 backdrop-blur-xl rounded-2xl p-6 sm:p-8 border border-white/[0.05] shadow-2xl overflow-hidden">
-              {/* Logo and header */}
-              <div className="mb-8 text-center">
-                <div className="flex justify-center mb-6">
-                  <img 
-                    src="/logo without text.png" 
-                    alt="Research Flow Logo" 
-                    className="h-16 w-auto"
-                  />
-                </div>
-                <h1 className="text-display text-3xl md:text-4xl font-bold text-white mb-3" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", system-ui, sans-serif' }}>
-                  Welcome Back
-                </h1>
-                <p className="text-subheading text-lg text-gray-300 mb-2" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", system-ui, sans-serif' }}>
-                  Sign in to access your research dashboard
-                </p>
-                <p className="text-caption text-gray-400" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", system-ui, sans-serif' }}>
-                  Connect with academic excellence
-                </p>
+              {/* Logo */}
+              <div className="flex justify-center mb-6">
+                <img 
+                  src="/logo without text.png" 
+                  alt="Research Flow Logo" 
+                  className="h-8 w-auto opacity-80"
+                />
               </div>
 
               {/* Custom Google Sign-In Button */}

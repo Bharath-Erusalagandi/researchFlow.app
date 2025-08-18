@@ -3,12 +3,12 @@ import dynamic from 'next/dynamic';
 import { Footer } from '../components/ui/footer-section';
 import GlobalHeader from '../components/layout/global-header';
 
-// Use dynamic import with no SSR to avoid hydration issues with framer-motion
+// SSR the hero for better SEO/LCP; keep loading state minimal
 const NexusHero = dynamic(
   () => import('../components/blocks/hero-section-nexus'),
   { 
-    ssr: false,
-    loading: () => <div className="min-h-screen bg-black flex items-center justify-center"><div className="text-white">Loading...</div></div>
+    ssr: true,
+    loading: () => <div className="min-h-[50vh] bg-black flex items-center justify-center"><div className="text-white">Loading...</div></div>
   }
 );
 

@@ -1,158 +1,334 @@
 name,field_of_research,university_name,email,official_url
-Dr. Monther Abu-Remaileh,Chemical Engineering; Genetics,Stanford University,monther@stanford.edu,https://engineering.stanford.edu/people/monther-abu-remaileh
-Dr. Sara Achour,Computer Science; Electrical Engineering,Stanford University,sachour@stanford.edu,https://engineering.stanford.edu/people/sara-achour
-Dr. Maneesh Agrawala,Computer Science; Electrical Engineering,Stanford University,maneesh@stanford.edu,https://engineering.stanford.edu/people/maneesh-agrawala
-Dr. Alex Aiken,Computer Science; Communications; Particle Physics,Stanford University,aiken@stanford.edu,https://engineering.stanford.edu/people/alex-aiken
-Dr. Juan Alonso,Aeronautics and Astronautics,Stanford University,jjalonso@stanford.edu,https://engineering.stanford.edu/people/juan-alonso
-Dr. Nima Anari,Computer Science,Stanford University,anari@stanford.edu,https://engineering.stanford.edu/people/nima-anari
-Dr. Eric Appel,Materials Science and Engineering,Stanford University,eappel@stanford.edu,https://engineering.stanford.edu/people/eric-appel
-Dr. Amin Arbabian,Electrical Engineering,Stanford University,arbabian@stanford.edu,https://engineering.stanford.edu/people/amin-arbabian
-Dr. Paul Alivisatos,Chemistry; Materials Chemistry; Physical Chemistry,University of Chicago,president@uchicago.edu,https://chemistry.uchicago.edu/faculty
-Dr. John Anderson,Chemistry; Catalysis; Inorganic Chemistry; Materials Chemistry,University of Chicago,jtanderson@uchicago.edu,https://chemistry.uchicago.edu/faculty
-Dr. Laurie Butler,Chemistry; Physical Chemistry,University of Chicago,l-butler@uchicago.edu,https://chemistry.uchicago.edu/faculty
-Dr. Bryan Dickinson,Chemistry; Chemical Biology; Biochemistry,University of Chicago,dickinson@uchicago.edu,https://chemistry.uchicago.edu/faculty
-Dr. Guangbin Dong,Chemistry; Organic Chemistry; Catalysis,University of Chicago,gbdong@uchicago.edu,https://chemistry.uchicago.edu/faculty
-"Dr. Kit Hansell Bowen, Jr.",Chemistry; Experimental Chemical Physics,Johns Hopkins University,kbowen@jhu.edu,https://chemistry.jhu.edu/people/kit-hansell-bowen-jr/
-Dr. Art Bragg,Chemistry; Experimental Physical Chemistry; Spectroscopy,Johns Hopkins University,artbragg@jhu.edu,https://chemistry.jhu.edu/people/art-bragg/
-Dr. Lan Cheng,Chemistry; Theoretical and Computational Chemistry,Johns Hopkins University,lcheng24@jhu.edu,https://chemistry.jhu.edu/people/lan-cheng/
-Dr. Howard Fairbrother,Chemistry; Surface Chemistry; Environmental Chemistry; Materials Science,Johns Hopkins University,howardf@jhu.edu,https://chemistry.jhu.edu/people/howard-fairbrother/
-Dr. John C. Ayers,Earth Sciences; Geochemistry; Experimental Petrology; Sustainability Science,Vanderbilt University,john.c.ayers@vanderbilt.edu,https://as.vanderbilt.edu/earth-environmental-sciences/faculty/
-Dr. Husile Bai,Earth Sciences; Atmospheric Sciences; Climate Dynamics; Earth System Modeling,Vanderbilt University,husile.bai@vanderbilt.edu,https://as.vanderbilt.edu/earth-environmental-sciences/faculty/
-Dr. Ralf Bennartz,Earth Sciences; Atmospheric Physics; Climate Science; Meteorology,Vanderbilt University,ralf.bennartz@vanderbilt.edu,https://as.vanderbilt.edu/earth-environmental-sciences/faculty/
-Dr. Lily Claiborne,Earth Sciences; Geology; Geoscience Education,Vanderbilt University,lily.l.claiborne@vanderbilt.edu,https://as.vanderbilt.edu/earth-environmental-sciences/faculty/
-Dr. Larisa R.G. DeSantis,Earth Sciences; Paleobiology; Ecology; Conservation,Vanderbilt University,larisa.desantis@vanderbilt.edu,https://as.vanderbilt.edu/earth-environmental-sciences/faculty/
-Dr. Adam Cohen,Chemistry; Chemical Biology; Biophysics,Harvard University,cohen@chemistry.harvard.edu,https://www.chemistry.harvard.edu/people/faculty-lecturers/faculty
-Dr. Peter Littlewood,Physics,University of Chicago,littlewood@uchicago.edu,https://physics.uchicago.edu/people/#faculty
-Dr. David Awschalom,Physics; Quantum Information Science,University of Chicago,awsch@uchicago.edu,https://physics.uchicago.edu/people/#faculty
-Dr. Edward Blucher,Physics; Particle Physics,University of Chicago,blucher@uchicago.edu,https://physics.uchicago.edu/people/#faculty
-Dr. Marcela Carena,Physics; Theoretical Physics,University of Chicago,carena@uchicago.edu,https://physics.uchicago.edu/people/#faculty
-Dr. John E. Carlstrom,Physics; Astrophysics,University of Chicago,jcarlstrom@uchicago.edu,https://physics.uchicago.edu/people/#faculty
-Dr. Cheng Chin,Physics; Atomic Physics,University of Chicago,cchin@uchicago.edu,https://physics.uchicago.edu/people/#faculty
-Dr. Vassilis Angelopoulos,Earth Sciences; Space Physics; Planetary Science,"University of California, Los Angeles",vassilis@ucla.edu,https://catalog.registrar.ucla.edu/browse/Departments/EarthPlanetaryandSpaceSciences/Faculty-Roster
-Dr. Jonathan M. Aurnou,Earth Sciences; Geophysics; Planetary Science,"University of California, Los Angeles",jona@epss.ucla.edu,https://catalog.registrar.ucla.edu/browse/Departments/EarthPlanetaryandSpaceSciences/Faculty-Roster
-Dr. Caroline D. Beghein,Earth Sciences; Seismology; Geophysics,"University of California, Los Angeles",cbeghein@epss.ucla.edu,https://catalog.registrar.ucla.edu/browse/Departments/EarthPlanetaryandSpaceSciences/Faculty-Roster
-Dr. David K. Jacobs,Earth Sciences; Paleobiology; Evolutionary Biology,"University of California, Los Angeles",djacobs@ucla.edu,https://catalog.registrar.ucla.edu/browse/Departments/EarthPlanetaryandSpaceSciences/Faculty-Roster
-Dr. David C. Jewitt,Earth Sciences; Planetary Science; Astronomy,"University of California, Los Angeles",jewitt@epss.ucla.edu,https://catalog.registrar.ucla.edu/browse/Departments/EarthPlanetaryandSpaceSciences/Faculty-Roster
-Dr. Chibueze Amanchukwu,Materials for Sustainability; Molecular Engineering,University of Chicago,amanchukwu@uchicago.edu,https://pme.uchicago.edu/faculty/chibueze-amanchukwu
-Dr. Maria Apostolaki,"Design and construction of networked systems; security, blockchain and machine learning",Princeton University,apostolaki@princeton.edu,https://engineering.princeton.edu/faculty/maria-apostolaki
-Dr. Craig Arnold,Laser processing and transport in materials with particular emphasis on shaping laser-material interactions,Princeton University,arnold@princeton.edu,https://engineering.princeton.edu/faculty/craig-arnold
-Dr. Sanjeev Arora,Theoretical computer science and theoretical machine learning; computational complexity; data science,Princeton University,arora@princeton.edu,https://engineering.princeton.edu/faculty/sanjeev-arora
-Dr. Clifford Brangwynne,RNA and protein organization in living cells; Biomolecular Condensates; Gene Expression; Aggregation Diseases,Princeton University,cbrangwy@princeton.edu,https://engineering.princeton.edu/faculty/clifford-brangwynne
-Dr. Miles P. Blencowe,Physics; Quantum Physics; Condensed Matter Physics,Dartmouth College,miles.p.blencowe@dartmouth.edu,https://physics.dartmouth.edu/people
-Dr. Rufus Boyack,Physics; Condensed Matter Physics; Quantum Physics,Dartmouth College,rufus.boyack@dartmouth.edu,https://physics.dartmouth.edu/people
-Dr. Robert R. Caldwell,Physics; Theoretical Physics; Cosmology,Dartmouth College,robert.r.caldwell@dartmouth.edu,https://physics.dartmouth.edu/people
+Dr. Alan C. Ashton,Computer Science,Brigham Young University,aca@cs.byu.edu,https://cs.byu.edu/faculty/alan-ashton
+Dr. Brian D. Woodfield,Chemistry and Biochemistry,Brigham Young University,woodfield@chem.byu.edu,https://chemistry.byu.edu/Pages/brian-woodfield.aspx
+Dr. Daniel H. Robertson,Chemical Engineering,Brigham Young University,drobertson@byu.edu,https://www.cheme.byu.edu/daniel-robertson
+Dr. David M. Emery,Chemical Engineering,Brigham Young University,david_emery@byu.edu,https://www.cheme.byu.edu/david-emery
+Dr. John D. Lamb,Chemistry and Biochemistry,Brigham Young University,john_lamb@byu.edu,https://chemistry.byu.edu/Pages/john-lamb.aspx
+Dr. Richard I. Norman,Chemistry and Biochemistry,Brigham Young University,rinorman@byu.edu,https://chemistry.byu.edu/Pages/richard-norman.aspx
+Dr. Alison DeLong,Biology,Brown University,alison_delong@brown.edu,https://mcb.brown.edu/people/alison-delong
+Dr. Federica Accornero,Biology; Molecular Biology,Brown University,federica_accornero@brown.edu,https://mcb.brown.edu/people/federica-accornero
+Dr. Juan Alfonzo,Biology; Molecular Biology,Brown University,juan_alfonzo@brown.edu,https://mcb.brown.edu/people/juan-alfonzo
+Dr. Linda M. Abriola,Groundwater hydrology; Soil remediation,Brown University,Linda_Abriola@brown.edu,https://engineering.brown.edu/people/linda-m-abriola
+Dr. Michelle Dawson,Biology; Molecular Biology,Brown University,michelle_dawson@brown.edu,https://mcb.brown.edu/people/michelle-dawson
+Dr. Nora Ayanian,Robotics; Multi-robot Systems,Brown University,Nora_Ayanian@brown.edu,https://engineering.brown.edu/people/nora-ayanian
+Dr. Walter Atwood,Biology; Molecular Biology; Neurology,Brown University,walter_atwood@brown.edu,https://mcb.brown.edu/people/walter-atwood
+Dr. Animashree Anandkumar,Large-scale Machine Learning,California Institute of Technology,anima@caltech.edu,https://www.eas.caltech.edu/people/anima
+Dr. Brian M. Stoltz,Chemistry,California Institute of Technology,stoltz@caltech.edu,https://cce.caltech.edu/people/brian-stoltz
+Dr. David A. Tirrell,Chemistry and Chemical Engineering,California Institute of Technology,tirrell@caltech.edu,https://cce.caltech.edu/people/david-tirrell
+Dr. Dennis A. Dougherty,Chemistry,California Institute of Technology,dadougherty@caltech.edu,https://cce.caltech.edu/people/dennis-dougherty
+Dr. Frances H. Arnold,Chemical Engineering; Biochemistry,California Institute of Technology,frances@cheme.caltech.edu,https://cce.caltech.edu/people/frances-h-arnold
+Dr. Garnet K. Chan,Chemistry; Theoretical Chemistry,California Institute of Technology,gkc1000@caltech.edu,https://cce.caltech.edu/people/garnet-k-chan
+Dr. Geoffrey Blake,Chemistry; Cosmochemistry,California Institute of Technology,gab@gps.caltech.edu,https://cce.caltech.edu/people/geoffrey-blake
+Dr. Harry B. Gray,Chemistry,California Institute of Technology,hbgray@caltech.edu,https://cce.caltech.edu/people/harry-gray
+Dr. Jacqueline K. Barton,Chemistry,California Institute of Technology,jkbarton@caltech.edu,https://cce.caltech.edu/people/jacqueline-barton
+Dr. John F. Brady,Chemical Engineering; Computational Chemistry,California Institute of Technology,jfb@cheme.caltech.edu,https://cce.caltech.edu/people/john-f-brady
+Dr. Judith L. Campbell,Chemistry; Biology,California Institute of Technology,jcampbel@caltech.edu,https://cce.caltech.edu/people/judith-l-campbell
+Dr. Sarah Reisman,Chemistry,California Institute of Technology,reisman@caltech.edu,https://cce.caltech.edu/people/sarah-reisman
+Dr. Shasha Chong,Chemistry; Biochemistry,California Institute of Technology,schong@caltech.edu,https://cce.caltech.edu/people/shasha-chong
+Dr. Theodor Agapie,Chemistry; Inorganic Chemistry,California Institute of Technology,agapie@caltech.edu,https://cce.caltech.edu/people/theodor-agapie
+Dr. Yaser S. Abu-Mostafa,Artificial Intelligence; Medical Applications,California Institute of Technology,yaser@caltech.edu,https://www.eas.caltech.edu/people/yaser
+Dr. Brett P. Fors,Chemistry; Organic Chemistry,Cornell University,bpf46@cornell.edu,https://chemistry.cornell.edu/faculty
+Dr. David B. Zax,Chemistry; Physical Chemistry,Cornell University,dbz1@cornell.edu,https://chemistry.cornell.edu/faculty
+Dr. Geoffrey Abers,Earth and Atmospheric Sciences,Cornell University,abers@cornell.edu,https://www.engineering.cornell.edu/faculty-directory/geoffrey-abers
+Dr. Hunter Adams,Electrical and Computer Engineering,Cornell University,vha3@cornell.edu,https://www.engineering.cornell.edu/faculty-directory/hunter-adams
+Dr. Jayadev Acharya,Electrical and Computer Engineering,Cornell University,acharya@cornell.edu,https://www.engineering.cornell.edu/faculty-directory/jayadev-acharya
+Dr. John F. Abel,Civil and Environmental Engineering,Cornell University,jfa5@cornell.edu,https://www.engineering.cornell.edu/faculty-directory/john-f-abel
+Dr. Mohamed Abdelfattah,Electrical and Computer Engineering,Cornell University,mohamed@cornell.edu,https://www.engineering.cornell.edu/faculty-directory/mohamed-abdelfattah
+Dr. Nicholas L. Abbott,Chemical and Biomolecular Engineering,Cornell University,nla34@cornell.edu,https://www.engineering.cornell.edu/faculty-directory/nicholas-l-abbott
+Dr. Nozomi Ando,Chemistry; Biophysical Chemistry,Cornell University,nando@cornell.edu,https://chemistry.cornell.edu/faculty
+Dr. Peng Chen,Chemistry; Analytical Chemistry,Cornell University,pc252@cornell.edu,https://chemistry.cornell.edu/faculty
+Dr. Steven Graham Adie,Biomedical Engineering,Cornell University,sga42@cornell.edu,https://www.engineering.cornell.edu/faculty-directory/steven-graham-adie
+Dr. Tristan Lambert,Chemistry; Organic Chemistry,Cornell University,thl36@cornell.edu,https://chemistry.cornell.edu/faculty
 Dr. Brian Charles Chaboyer,Physics; Astronomy; Astrophysics,Dartmouth College,brian.c.chaboyer@dartmouth.edu,https://physics.dartmouth.edu/people
-Dr. Chandrasekhar Ramanathan,Physics; Quantum Information Science; Condensed Matter Physics,Dartmouth College,chandrasekhar.ramanathan@dartmouth.edu,https://physics.dartmouth.edu/people
-Dr. David Alvarez-Melis,Computer Science,Harvard University,dam@seas.harvard.edu,https://seas.harvard.edu/person/david-alvarez-melis
-Dr. Nada Amin,Computer Science; Programming Languages,Harvard University,namin@seas.harvard.edu,https://seas.harvard.edu/person/nada-amin
-Dr. Jay Ague,Earth Sciences; Mineralogy; Meteoritics,Yale University,jay.ague@yale.edu,https://earth.yale.edu/faculty
-Dr. David Bercovici,Earth Sciences; Planetary Sciences; Carbon Capture,Yale University,david.bercovici@yale.edu,https://earth.yale.edu/faculty
-Dr. Ruth E. Blake,Earth Sciences; Geochemistry,Yale University,ruth.blake@yale.edu,https://earth.yale.edu/faculty
-Dr. David Evans,Earth Sciences; Geology,Yale University,david.evans@yale.edu,https://earth.yale.edu/faculty
-Dr. Alexey Fedorov,Earth Sciences; Ocean Sciences; Atmospheric Sciences,Yale University,alexey.fedorov@yale.edu,https://earth.yale.edu/faculty
-Dr. C. Brenhin Keller,Earth Sciences; Geology; Geochemistry; Geochronology,Dartmouth College,brenhin.keller@dartmouth.edu,https://faculty-directory.dartmouth.edu/c-brenhin-keller
-Dr. Mukul Sharma,Earth Sciences; Geochemistry; Planetary Science; Climate Science,Dartmouth College,mukul.sharma@dartmouth.edu,https://faculty-directory.dartmouth.edu/mukul-sharma
-Dr. Erich Osterberg,Earth Sciences; Paleoclimatology; Climate Dynamics; Atmospheric Chemistry,Dartmouth College,Erich.C.Osterberg@dartmouth.edu,https://faculty-directory.dartmouth.edu/erich-osterberg
-Dr. Jonathan Block,Mathematics; K-Theory; Differential Geometry,University of Pennsylvania,blockj@math.upenn.edu,https://www.math.upenn.edu/people/jonathan-block
-Dr. Ching-Li Chai,Mathematics; Algebraic Number Theory; Arithmetic Algebraic Geometry,University of Pennsylvania,chai@math.upenn.edu,https://www.math.upenn.edu/people/ching-li-chai
-Dr. Ted Chinburg,Mathematics; Number Theory; Algebraic Geometry,University of Pennsylvania,ted@math.upenn.edu,https://www.math.upenn.edu/people/ted-chinburg
-Dr. Hal Abelson,Computer Science; Artificial Intelligence; Educational Technology,Massachusetts Institute of Technology,hal@mit.edu,https://www.eecs.mit.edu/people/faculty-cs/hal-abelson/
-Dr. Fadel Adib,Computer Science; Systems and Networking,Massachusetts Institute of Technology,fadel@mit.edu,https://www.eecs.mit.edu/people/faculty-cs/fadel-adib/
-Dr. Anant Agarwal,Computer Science; Computer Architecture; Programming Languages,Massachusetts Institute of Technology,agarwal@mit.edu,https://www.eecs.mit.edu/people/faculty-cs/anant-agarwal/
-Dr. Pulkit Agrawal,Artificial Intelligence; Machine Learning; Robotics,Massachusetts Institute of Technology,pulkitag@mit.edu,https://www.eecs.mit.edu/people/faculty-cs/pulkit-agrawal/
-Dr. Mohammad Alizadeh,Computer Science; Systems and Networking; Security,Massachusetts Institute of Technology,alizadeh@mit.edu,https://www.eecs.mit.edu/people/faculty-cs/mohammad-alizadeh/
-Dr. Saman Amarasinghe,Computer Science; Programming Languages; Computer Architecture,Massachusetts Institute of Technology,samana@mit.edu,https://www.eecs.mit.edu/people/faculty-cs/saman-amarasinghe/
-Dr. Hari Balakrishnan,Computer Science; Systems and Networking; Security,Massachusetts Institute of Technology,hari@csail.mit.edu,https://www.eecs.mit.edu/people/faculty-cs/hari-balakrishnan/
-Dr. Adam Belay,Computer Science; Computer Architecture; Systems and Networking,Massachusetts Institute of Technology,abelay@csail.mit.edu,https://www.eecs.mit.edu/people/faculty-cs/adam-belay/
-Dr. Robert Berwick,Computer Science; Computational Linguistics; Artificial Intelligence,Massachusetts Institute of Technology,berwick@csail.mit.edu,https://www.eecs.mit.edu/people/faculty-cs/robert-berwick/
-Dr. Michael Carbin,Computer Science; Programming Languages; Security,Massachusetts Institute of Technology,mcarbin@csail.mit.edu,https://www.eecs.mit.edu/people/faculty-cs/michael-carbin/
+Dr. C. Brenhin Keller,Earth Sciences; Geology; Geochemistry,Dartmouth College,brenhin.keller@dartmouth.edu,https://faculty-directory.dartmouth.edu/c-brenhin-keller
+Dr. Chandrasekhar Ramanathan,Physics; Quantum Information Science,Dartmouth College,chandrasekhar.ramanathan@dartmouth.edu,https://physics.dartmouth.edu/people
+Dr. Erich Osterberg,Earth Sciences; Paleoclimatology; Climate Dynamics,Dartmouth College,Erich.C.Osterberg@dartmouth.edu,https://faculty-directory.dartmouth.edu/erich-osterberg
+Dr. Jonathan Block,Mathematics; K-Theory,Dartmouth College,blockj@math.upenn.edu,https://www.math.upenn.edu/people/jonathan-block
+Dr. Margie Ackerman,Protein Engineering; Vaccine Technology,Dartmouth College,margaret.e.ackerman@dartmouth.edu,https://engineering.dartmouth.edu/community/faculty/margie-ackerman
+Dr. Miles P. Blencowe,Physics; Quantum Physics,Dartmouth College,miles.p.blencowe@dartmouth.edu,https://physics.dartmouth.edu/people
+Dr. Mukul Sharma,Earth Sciences; Geochemistry; Planetary Science,Dartmouth College,mukul.sharma@dartmouth.edu,https://faculty-directory.dartmouth.edu/mukul-sharma
+Dr. Robert R. Caldwell,Physics; Theoretical Physics; Cosmology,Dartmouth College,robert.r.caldwell@dartmouth.edu,https://physics.dartmouth.edu/people
+Dr. Rufus Boyack,Physics; Condensed Matter Physics,Dartmouth College,rufus.boyack@dartmouth.edu,https://physics.dartmouth.edu/people
+Dr. Abdul Ibriham Barakt,Engineering,Duke University,abdul.barakt@duke.edu,https://pratt.duke.edu/people/abdul-ibriham-barakt
+Dr. Alexandra Badea,Radiology; Alzheimer's Disease; Brain Imaging,Duke University,alexandra.badea@duke.edu,https://pratt.duke.edu/people/alexandra-badea
+Dr. Aravind Asokan,Surgery; Virology; RNA Biology,Duke University,aravind.asokan@duke.edu,https://pratt.duke.edu/people/aravind-asokan
+Dr. Cristian Tudorel Badea,Radiology; Spectral CT,Duke University,Cristian.Badea@duke.edu,https://pratt.duke.edu/people/cristian-tudorel-badea
 Dr. Ehsan Abadi,Radiology,Duke University,ehsan.abadi@duke.edu,https://pratt.duke.edu/people/ehsan-abadi
-Dr. Monica Agrawal,Biostatistics & Bioinformatics,Duke University,monica.agrawal@duke.edu,https://pratt.duke.edu/people/monica-agrawal
+Dr. Gaurav Arya,Mechanical Engineering and Materials Science,Duke University,gaurav.arya@duke.edu,https://pratt.duke.edu/people/gaurav-arya
+Dr. Jason Amsden,Electrical and Computer Engineering,Duke University,jason.amsden@duke.edu,https://pratt.duke.edu/people/jason-amsden
 Dr. John Carmen Peter Allessio,Engineering Graduate and Professional Programs,Duke University,john.allessio@duke.edu,https://pratt.duke.edu/people/john-carmen-peter-allessio
 Dr. Katharine Marie Amato,Engineering Graduate and Professional Programs,Duke University,kmamato@duke.edu,https://pratt.duke.edu/people/katharine-marie-amato
-Dr. Jason Amsden,Electrical and Computer Engineering,Duke University,jason.amsden@duke.edu,https://pratt.duke.edu/people/jason-amsden
-Dr. Wilkins Aquino,Mechanical Engineering and Materials Science,Duke University,wilkins.aquino@duke.edu,https://pratt.duke.edu/people/wilkins-aquino
-Dr. Gaurav Arya,Mechanical Engineering and Materials Science; Molecular modeling; Polymer physics,Duke University,gaurav.arya@duke.edu,https://pratt.duke.edu/people/gaurav-arya
-Dr. Aravind Asokan,Surgery; Virology; RNA Biology; Viral Engineering,Duke University,aravind.asokan@duke.edu,https://pratt.duke.edu/people/aravind-asokan
-Dr. Alexandra Badea,Radiology; Alzheimer's Disease; Brain Imaging; MRI,Duke University,alexandra.badea@duke.edu,https://pratt.duke.edu/people/alexandra-badea
-Dr. Cristian Tudorel Badea,Radiology; Spectral CT; Cardiac CT; Image Reconstruction,Duke University,Cristian.Badea@duke.edu,https://pratt.duke.edu/people/cristian-tudorel-badea
+Dr. Monica Agrawal,Biostatistics & Bioinformatics,Duke University,monica.agrawal@duke.edu,https://pratt.duke.edu/people/monica-agrawal
 Dr. Sonia Bansal,Engineering,Duke University,sonia.bansal@duke.edu,https://pratt.duke.edu/people/sonia-bansal
-Dr. Abdul Ibriham Barakt,Engineering,Duke University,abdul.barakt@duke.edu,https://pratt.duke.edu/people/abdul-ibriham-barakt
-Dr. David L. Goldsby,Earth Sciences; Geophysics; Rock Mechanics,University of Pennsylvania,dgoldsby@sas.upenn.edu,https://earth.sas.upenn.edu/people/faculty
-Dr. Douglas J. Jerolmack,Earth Sciences; Environmental Science; Mechanical Engineering,University of Pennsylvania,sediment@sas.upenn.edu,https://earth.sas.upenn.edu/people/faculty
-Dr. Jane E. Dmochowski,Earth Sciences; Environmental Science; Sustainability,University of Pennsylvania,janeed@sas.upenn.edu,https://earth.sas.upenn.edu/people/faculty
-Dr. Reto Gieré,Earth Sciences; Mineralogy; Environmental Geochemistry,University of Pennsylvania,giere@sas.upenn.edu,https://earth.sas.upenn.edu/people/faculty
-Dr. Jon Hawkings,Earth Sciences; Biogeochemistry; Climate Science,University of Pennsylvania,jonhawk@sas.upenn.edu,https://earth.sas.upenn.edu/people/faculty
-Dr. Douglas Adams,Mechanical Engineering; National Security,Vanderbilt University,douglas.adams@vanderbilt.edu,https://engineering.vanderbilt.edu/people/douglas-adams
-Dr. Hiba Baroud,Civil and Environmental Engineering; Computer Science; Sustainability,Vanderbilt University,hiba.baroud@vanderbilt.edu,https://engineering.vanderbilt.edu/people/hiba-baroud
-Dr. Yarrow Axford,Earth Sciences; Climate Science; Paleoclimatology,Northwestern University,axford@northwestern.edu,https://www.earth.northwestern.edu/our-people/faculty/
-Dr. Patricia A. Beddows,Earth Sciences; Environmental Sciences; Hydrogeology,Northwestern University,patricia@earth.northwestern.edu,https://www.earth.northwestern.edu/our-people/faculty/
-Dr. Craig Bina,Earth Sciences; Geophysics; Mineral Physics,Northwestern University,craig@earth.northwestern.edu,https://www.earth.northwestern.edu/our-people/faculty/
-Dr. Daniel Horton,Earth Sciences; Climate Science; Atmospheric Science,Northwestern University,daniel.horton@northwestern.edu,https://www.earth.northwestern.edu/our-people/faculty/
-Dr. Suzan van der Lee,Earth Sciences; Seismology; Geophysics,Northwestern University,suzan@northwestern.edu,https://www.earth.northwestern.edu/our-people/faculty/
-Dr. Nicholas L. Abbott,Chemical and Biomolecular Engineering,Cornell University,nla34@cornell.edu,https://www.engineering.cornell.edu/faculty-directory/nicholas-l-abbott
-Dr. Mohamed Abdelfattah,Electrical and Computer Engineering,Cornell University,mohamed@cornell.edu,https://www.engineering.cornell.edu/faculty-directory/mohamed-abdelfattah
-Dr. John F. Abel,Civil and Environmental Engineering,Cornell University,jfa5@cornell.edu,https://www.engineering.cornell.edu/faculty-directory/john-f-abel
-Dr. Geoffrey Abers,Earth and Atmospheric Sciences; Geological Sciences,Cornell University,abers@cornell.edu,https://www.engineering.cornell.edu/faculty-directory/geoffrey-abers
-Dr. Jayadev Acharya,Electrical and Computer Engineering,Cornell University,acharya@cornell.edu,https://www.engineering.cornell.edu/faculty-directory/jayadev-acharya
-Dr. Hunter Adams,Electrical and Computer Engineering,Cornell University,vha3@cornell.edu,https://www.engineering.cornell.edu/faculty-directory/hunter-adams
-Dr. Steven Graham Adie,Biomedical Engineering,Cornell University,sga42@cornell.edu,https://www.engineering.cornell.edu/faculty-directory/steven-graham-adie
-Dr. Pieter Abbeel,"Artificial Intelligence; Control, Intelligent Systems, and Robotics","University of California, Berkeley",pabbeel@cs.berkeley.edu,https://www2.eecs.berkeley.edu/Faculty/Homepages/abbeel.html
-Dr. Elad Alon,"Integrated Circuits; Design, Modeling and Analysis; Computer Architecture & Engineering","University of California, Berkeley",elad@eecs.berkeley.edu,https://www2.eecs.berkeley.edu/Faculty/Homepages/elad.html
-Dr. Federica Accornero,Biology; Molecular Biology; Cell Biology; Biochemistry,Brown University,federica_accornero@brown.edu,https://mcb.brown.edu/people/federica-accornero
-Dr. Juan Alfonzo,Biology; Molecular Biology; Cell Biology; Biochemistry,Brown University,juan_alfonzo@brown.edu,https://mcb.brown.edu/people/juan-alfonzo
-Dr. Walter Atwood,Biology; Molecular Biology; Cell Biology; Medical Science; Neurology,Brown University,walter_atwood@brown.edu,https://mcb.brown.edu/people/walter-atwood
-Dr. Michelle Dawson,Biology; Molecular Biology; Cell Biology; Biochemistry,Brown University,michelle_dawson@brown.edu,https://mcb.brown.edu/people/michelle-dawson
-Dr. Alison DeLong,Biology,Brown University,alison_delong@brown.edu,https://mcb.brown.edu/people/alison-delong
-Dr. John Joseph Carrasco,Physics,Northwestern University,carrasco@northwestern.edu,https://physics.northwestern.edu/people/faculty/core-faculty/
-Dr. Venkat Chandrasekhar,Physics,Northwestern University,v-chandrasekhar@northwestern.edu,https://physics.northwestern.edu/people/faculty/core-faculty/
-Dr. Eric Dahl,Physics,Northwestern University,cdahl@northwestern.edu,https://physics.northwestern.edu/people/faculty/core-faculty/
-Dr. Michelle Driscoll,Physics,Northwestern University,michelle.driscoll@northwestern.edu,https://physics.northwestern.edu/people/faculty/core-faculty/
-Dr. Pulak Dutta,Physics,Northwestern University,pdutta@northwestern.edu,https://physics.northwestern.edu/people/faculty/core-faculty/
-Dr. YuFeng (Kevin) Chen,"Robotics; Systems Theory, Control, and Autonomy",Massachusetts Institute of Technology,yufengc@mit.edu,https://www.eecs.mit.edu/people/yufeng-kevin-chen/
-Dr. Dylan Hadfield-Menell,Artificial Intelligence; Human-AI Interaction,Massachusetts Institute of Technology,dylanhm@mit.edu,https://www.eecs.mit.edu/people/dylan-hadfield-menell/
-Dr. Phillip Isola,Artificial Intelligence and Machine Learning; Computer Vision,Massachusetts Institute of Technology,phillipi@mit.edu,https://www.eecs.mit.edu/people/phillip-isola/
-Dr. Maneesh Agrawala,Computer Science; Computer Graphics; Human-Computer Interaction; Visualization,Stanford University,maneesh@cs.stanford.edu,https://engineering.stanford.edu/people/maneesh-agrawala
-Dr. Yaser S. Abu-Mostafa,Artificial Intelligence (AI) and Machine Learning (ML); Medical Applications,California Institute of Technology,sdeleon@caltech.edu,https://www.eas.caltech.edu/people/yaser
-Dr. Animashree (Anima) Anandkumar,Large-scale Machine Learning; Non-convex Optimization; High-dimensional Statistics; Tensor Algorithms,California Institute of Technology,arangelf@caltech.edu,https://www.eas.caltech.edu/people/anima
-Dr. Yair Amir,Critical infrastructure; Large-scale survivable and secure distributed systems; Cloud networking; Overlay and wireless mesh networks,Johns Hopkins University,yairamir@jhu.edu,https://engineering.jhu.edu/faculty/yair-amir/
-Dr. Raman Arora,Machine learning; Statistical signal processing; Stochastic approximation algorithms; Applications to speech and language processing,Johns Hopkins University,rarora8@jhu.edu,https://engineering.jhu.edu/faculty/raman-arora/
-Dr. Vladimir Braverman,Machine learning; Algorithms; Health care applications,Johns Hopkins University,vbraver1@jhu.edu,https://engineering.jhu.edu/faculty/vladimir-braverman/
-Dr. Firooz Aflatouni,Electrical and Systems Engineering; Electronic Photonic Microsystems; Integrated Electronic-Photonic Co-Design,University of Pennsylvania,firooz@seas.upenn.edu,https://directory.seas.upenn.edu/firooz-aflatouni/
-Dr. Linda M. Abriola,Groundwater hydrology; Soil and groundwater remediation; Mathematical modeling of multiphase flow and transport in porous media; Engineered nanoparticle transport and reactivity,Brown University,Linda_Abriola@brown.edu,https://engineering.brown.edu/people/linda-m-abriola
-Dr. Nora Ayanian,Robotics; Multi-robot and multi-agent systems; Aerial robotics; Multi-robot mapping; Heterogeneous robots; Social computation for robotics; Mixed reality for robotics,Brown University,Nora_Ayanian@brown.edu,https://engineering.brown.edu/people/nora-ayanian
-Dr. Margie Ackerman,Protein engineering; Biotherapeutics; Vaccine technology; Engineering immune responses,Dartmouth College,margaret.e.ackerman@dartmouth.edu,https://engineering.dartmouth.edu/community/faculty/margie-ackerman
-Dr. Ahmed Alaa,Machine Learning; Artificial Intelligence; Healthcare Applications,"University of California, Berkeley",amalaa@berkeley.edu,https://www2.eecs.berkeley.edu/Faculty/Lists/faculty.html
-Dr. Behnaam Aazhang,Electrical and Computer Engineering; Neuroengineering,Rice University,aaz@rice.edu,https://profiles.rice.edu/faculty/behnaam-aazhang
-Dr. Sabia Abidi,Bioengineering,Rice University,sabia.abidi@rice.edu,https://profiles.rice.edu/faculty/sabia-abidi
-Dr. Uyiosa Abusomwan,Engineering Management,Rice University,uyiosa.abusomwan@rice.edu,https://profiles.rice.edu/faculty/uyiosa-abusomwan
-Dr. Ghanashyam Acharya,Materials Science and NanoEngineering,Rice University,ga8@rice.edu,https://profiles.rice.edu/faculty/ghanashyam-acharya
-Dr. Jason Adams,Chemical and Biomolecular Engineering,Rice University,jason.adams@rice.edu,https://profiles.rice.edu/faculty/jason-adams
-Dr. Pulickel Ajayan,Materials Science and Engineering,Rice University,ajayan@rice.edu,https://profiles.rice.edu/faculty/pulickel-ajayan
-Dr. Caroline Ajo-Franklin,BioSciences; Synthetic Biology,Rice University,cajo-franklin@rice.edu,https://profiles.rice.edu/faculty/caroline-ajo-franklin
-Dr. John E. Akin,Mechanical Engineering; Computational and Applied Mathematics,Rice University,akin@rice.edu,https://profiles.rice.edu/faculty/john-e-akin
-Dr. Yuhang Xing,Finance,Rice University,yuhang.xing@rice.edu,https://profiles.rice.edu/faculty/yuhang-xing
-Dr. Daan van Knippenberg,Management; Organizational Behavior,Rice University,daan.van.knippenberg@rice.edu,https://profiles.rice.edu/faculty/daan-van-knippenberg
-Dr. Dmitry Abanin,Physics; Condensed Matter Theory,Princeton University,dabanin@princeton.edu,https://phy.princeton.edu/people/dmitry-abanin
-Dr. Michael Aizenman,Physics; Mathematical Physics,Princeton University,aizenman@princeton.edu,https://phy.princeton.edu/people/michael-aizenman
-Dr. Robert Austin,Physics; Biological Physics,Princeton University,austin@princeton.edu,https://phy.princeton.edu/people/robert-austin
-Dr. Waseem Bakr,Physics; Atomic Physics,Princeton University,wbakr@princeton.edu,https://phy.princeton.edu/people/waseem-bakr
-Dr. Bogdan A. Bernevig,Physics; Condensed Matter Theory,Princeton University,bernevig@princeton.edu,https://phy.princeton.edu/people/bogdan-bernevig
-Dr. William Bialek,Physics; Biological Physics; Mathematical Physics,Princeton University,wbialek@princeton.edu,https://phy.princeton.edu/people/william-bialek
-Dr. Theodor Agapie,Chemistry; Inorganic Chemistry; Electrochemistry,California Institute of Technology,agapie@caltech.edu,https://cce.caltech.edu/people/theodor-agapie
-Dr. Frances H. Arnold,Chemical Engineering; Biochemistry; Bioengineering,California Institute of Technology,frances@cheme.caltech.edu,https://cce.caltech.edu/people/frances-h-arnold
-Dr. Geoffrey Blake,Chemistry; Cosmochemistry; Environmental Chemistry,California Institute of Technology,gab@gps.caltech.edu,https://cce.caltech.edu/people/geoffrey-blake
-Dr. John F. Brady,Chemical Engineering; Computational Chemistry,California Institute of Technology,jfb@cheme.caltech.edu,https://cce.caltech.edu/people/john-f-brady
-Dr. Judith L. Campbell,Chemistry; Biology; Biochemistry,California Institute of Technology,jcampbel@caltech.edu,https://cce.caltech.edu/people/judith-l-campbell
-Dr. Garnet K. Chan,Chemistry; Theoretical Chemistry; Computational Chemistry,California Institute of Technology,gkc1000@caltech.edu,https://cce.caltech.edu/people/garnet-k-chan
-Dr. Shasha Chong,Chemistry; Biochemistry; Physical Chemistry,California Institute of Technology,schong@caltech.edu,https://cce.caltech.edu/people/shasha-chong
+Dr. Wilkins Aquino,Mechanical Engineering and Materials Science,Duke University,wilkins.aquino@duke.edu,https://pratt.duke.edu/people/wilkins-aquino
+Dr. Adam Cohen,Chemistry; Chemical Biology; Biophysics,Harvard University,cohen@chemistry.harvard.edu,https://www.chemistry.harvard.edu/people/faculty-lecturers/faculty
+Dr. Alan Aspuru-Guzik,Chemistry and Chemical Biology,Harvard University,aspuru@chemistry.harvard.edu,https://chemistry.harvard.edu/people/faculty-lecturers/faculty
+Dr. Alán Aspuru-Guzik,Chemistry and Chemical Biology,Harvard University,aspuru@chemistry.harvard.edu,https://chemistry.harvard.edu/people/faculty-lecturers/faculty
+Dr. Cynthia M. Friend,Chemistry and Chemical Biology,Harvard University,cfriend@chemistry.harvard.edu,https://chemistry.harvard.edu/people/faculty-lecturers/faculty
+Dr. Daniel G. Nocera,Chemistry and Chemical Biology,Harvard University,nocera@chemistry.harvard.edu,https://chemistry.harvard.edu/people/faculty-lecturers/faculty
+Dr. David Alvarez-Melis,Computer Science,Harvard University,dam@seas.harvard.edu,https://seas.harvard.edu/person/david-alvarez-melis
+Dr. David R. Liu,Chemistry and Chemical Biology,Harvard University,dliu@chemistry.harvard.edu,https://chemistry.harvard.edu/people/faculty-lecturers/faculty
+Dr. Emily C. Balskus,Chemistry and Chemical Biology,Harvard University,balskus@chemistry.harvard.edu,https://chemistry.harvard.edu/people/faculty-lecturers/faculty
+Dr. Eric N. Jacobsen,Chemistry and Chemical Biology,Harvard University,jacobsen@chemistry.harvard.edu,https://chemistry.harvard.edu/people/faculty-lecturers/faculty
+Dr. George M. Whitesides,Chemistry and Chemical Biology,Harvard University,gwhitesides@chemistry.harvard.edu,https://chemistry.harvard.edu/people/faculty-lecturers/faculty
+Dr. Matthew D. Shair,Chemistry and Chemical Biology,Harvard University,mshair@chemistry.harvard.edu,https://chemistry.harvard.edu/people/faculty-lecturers/faculty
+Dr. Nada Amin,Computer Science; Programming Languages,Harvard University,namin@seas.harvard.edu,https://seas.harvard.edu/person/nada-amin
+Dr. Ted Betley,Chemistry and Chemical Biology,Harvard University,betley@chemistry.harvard.edu,https://chemistry.harvard.edu/people/faculty-lecturers/faculty
+Dr. Xiaowei Zhuang,Chemistry and Chemical Biology; Physics,Harvard University,zhuang@chemistry.harvard.edu,https://chemistry.harvard.edu/people/faculty-lecturers/faculty
+Dr. Xiaoyang Li,Chemistry and Chemical Biology,Harvard University,xiaoyang_li@chemistry.harvard.edu,https://chemistry.harvard.edu/people/faculty-lecturers/faculty
+Dr. Art Bragg,Chemistry; Experimental Physical Chemistry; Spectroscopy,Johns Hopkins University,artbragg@jhu.edu,https://chemistry.jhu.edu/people/art-bragg/
+Dr. Charles L. Bennett,Physics; Astrophysics,Johns Hopkins University,cbennett@jhu.edu,https://physics-astronomy.jhu.edu/people/
+Dr. Daniel Beller,Physics; Soft Condensed Matter,Johns Hopkins University,dbeller@jhu.edu,https://physics-astronomy.jhu.edu/people/
+Dr. Howard Fairbrother,Chemistry; Surface Chemistry; Environmental Chemistry; Materials Science,Johns Hopkins University,howardf@jhu.edu,https://chemistry.jhu.edu/people/howard-fairbrother/
+Dr. Ibrahima Bah,Physics; String Theory,Johns Hopkins University,ibah@jhu.edu,https://physics-astronomy.jhu.edu/people/
+Dr. Jonathan A. Bagger,Physics; Particle Theory,Johns Hopkins University,bagger@jhu.edu,https://physics-astronomy.jhu.edu/people/
+Dr. Kit Hansell Bowen Jr,Chemistry; Experimental Chemical Physics,Johns Hopkins University,kbowen@jhu.edu,https://chemistry.jhu.edu/people/kit-hansell-bowen-jr/
+Dr. Lan Cheng,Chemistry; Theoretical and Computational Chemistry,Johns Hopkins University,lcheng24@jhu.edu,https://chemistry.jhu.edu/people/lan-cheng/
 Dr. N. Peter Armitage,Physics; Experimental Condensed Matter Physics,Johns Hopkins University,npa@jhu.edu,https://physics-astronomy.jhu.edu/people/
-Dr. Jonathan A. Bagger,Physics; Particle Theory; Supersymmetry,Johns Hopkins University,bagger@jhu.edu,https://physics-astronomy.jhu.edu/people/
-Dr. Ibrahima Bah,Physics; Theoretical Physics; String Theory,Johns Hopkins University,ibah@jhu.edu,https://physics-astronomy.jhu.edu/people/
-Dr. Daniel Beller,Physics; Soft Condensed Matter Physics,Johns Hopkins University,dbeller@jhu.edu,https://physics-astronomy.jhu.edu/people/
-Dr. Charles L. Bennett,Physics; Astrophysics; Cosmology,Johns Hopkins University,cbennett@jhu.edu,https://physics-astronomy.jhu.edu/people/
-Dr. Tristan Lambert,Chemistry; Organic Chemistry; Catalysis; Materials,Cornell University,thl36@cornell.edu,https://chemistry.cornell.edu/faculty
-Dr. Peng Chen,Chemistry; Analytical Chemistry; Bioinorganic Chemistry; Physical Chemistry,Cornell University,pc252@cornell.edu,https://chemistry.cornell.edu/faculty
-Dr. Nozomi Ando,Chemistry; Biophysical Chemistry; Chemical Biology,Cornell University,nando@cornell.edu,https://chemistry.cornell.edu/faculty
-Dr. Brett P. Fors,Chemistry; Organic Chemistry; Polymer Chemistry,Cornell University,bpf46@cornell.edu,https://chemistry.cornell.edu/faculty
-Dr. David B. Zax,Chemistry; Physical Chemistry; NMR Spectroscopy,Cornell University,dbz1@cornell.edu,https://chemistry.cornell.edu/faculty
+Dr. Raman Arora,Machine Learning,Johns Hopkins University,rarora8@jhu.edu,https://engineering.jhu.edu/faculty/raman-arora/
+Dr. Vladimir Braverman,Machine Learning; Health Care,Johns Hopkins University,vbraver1@jhu.edu,https://engineering.jhu.edu/faculty/vladimir-braverman/
+Dr. Yair Amir,Critical Infrastructure; Distributed Systems,Johns Hopkins University,yairamir@jhu.edu,https://engineering.jhu.edu/faculty/yair-amir/
+Dr. Adam Belay,Computer Science; Computer Architecture,Massachusetts Institute of Technology,abelay@csail.mit.edu,https://www.eecs.mit.edu/people/faculty-cs/adam-belay/
+Dr. Anant Agarwal,Computer Science; Computer Architecture,Massachusetts Institute of Technology,agarwal@mit.edu,https://www.eecs.mit.edu/people/faculty-cs/anant-agrawal/
+Dr. Angela Belcher,Materials Science; Biological Engineering,Massachusetts Institute of Technology,belcher@mit.edu,https://belcher.mit.edu
+Dr. Charles H. Cooney,Chemical Engineering,Massachusetts Institute of Technology,cooney@mit.edu,https://web.mit.edu/cooney
+Dr. Daniela Rus,Electrical Engineering and Computer Science,Massachusetts Institute of Technology,rus@csail.mit.edu,https://people.csail.mit.edu/daniela
+Dr. Dylan Hadfield-Menell,Artificial Intelligence; Human-AI Interaction,Massachusetts Institute of Technology,dylanhm@mit.edu,https://www.eecs.mit.edu/people/dylan-hadfield-menell/
+Dr. Emery Brown,Brain and Cognitive Sciences; Health Sciences and Technology,Massachusetts Institute of Technology,enrb@mit.edu,https://www.mit.edu/~brown
+Dr. Fadel Adib,Computer Science; Systems and Networking,Massachusetts Institute of Technology,fadel@mit.edu,https://www.eecs.mit.edu/people/faculty-cs/fadel-adib/
+Dr. Gregory C. Rutledge,Chemical Engineering,Massachusetts Institute of Technology,rutledge@mit.edu,https://web.mit.edu/rutledge
+Dr. Hal Abelson,Computer Science; Artificial Intelligence,Massachusetts Institute of Technology,hal@mit.edu,https://www.eecs.mit.edu/people/faculty-cs/hal-abelson/
+Dr. Hari Balakrishnan,Computer Science; Systems and Networking,Massachusetts Institute of Technology,hari@csail.mit.edu,https://www.eecs.mit.edu/people/faculty-cs/hari-balakrishnan/
+Dr. Klavs F. Jensen,Chemical Engineering,Massachusetts Institute of Technology,kfjensen@mit.edu,https://web.mit.edu/kfjensen
+Dr. Kristala L. J. Prather,Chemical Engineering,Massachusetts Institute of Technology,klprather@mit.edu,https://web.mit.edu/klprather
+Dr. Manolis Kellis,Electrical Engineering and Computer Science,Massachusetts Institute of Technology,manoli@mit.edu,https://www.csail.mit.edu/user/1617
+Dr. Michael Carbin,Computer Science; Programming Languages,Massachusetts Institute of Technology,mcarbin@csail.mit.edu,https://www.eecs.mit.edu/people/faculty-cs/michael-carbin/
+Dr. Mohammad Alizadeh,Computer Science; Systems and Networking,Massachusetts Institute of Technology,alizadeh@mit.edu,https://www.eecs.mit.edu/people/faculty-cs/mohammad-alizadeh/
+Dr. Paula T. Hammond,Chemical Engineering,Massachusetts Institute of Technology,hammond@mit.edu,https://hammond.mit.edu
+Dr. Phillip Isola,Artificial Intelligence; Computer Vision,Massachusetts Institute of Technology,phillipi@mit.edu,https://www.eecs.mit.edu/people/phillip-isola/
+Dr. Polina Golland,Electrical Engineering and Computer Science,Massachusetts Institute of Technology,polina@csail.mit.edu,https://people.csail.mit.edu/polina
+Dr. Pulkit Agrawal,Artificial Intelligence; Machine Learning,Massachusetts Institute of Technology,pulkitag@mit.edu,https://www.eecs.mit.edu/people/faculty-cs/pulkit-agrawal/
+Dr. Regina Barzilay,Electrical Engineering and Computer Science,Massachusetts Institute of Technology,regina@csail.mit.edu,https://people.csail.mit.edu/regina
+Dr. Robert Berwick,Computer Science; Computational Linguistics,Massachusetts Institute of Technology,berwick@csail.mit.edu,https://www.eecs.mit.edu/people/faculty-cs/robert-berwick/
+Dr. Robert C. Armstrong,Chemical Engineering,Massachusetts Institute of Technology,rcarmstr@mit.edu,https://web.mit.edu/cheme
+Dr. Robert Langer,Chemical Engineering; Medicine,Massachusetts Institute of Technology,rlanger@mit.edu,https://web.mit.edu/langerlab
+Dr. Robert S. Langer,Chemical Engineering,Massachusetts Institute of Technology,rlanger@mit.edu,https://web.mit.edu/langerlab
+Dr. Saman Amarasinghe,Computer Science; Programming Languages,Massachusetts Institute of Technology,samana@mit.edu,https://www.eecs.mit.edu/people/faculty-cs/saman-amarasinghe/
+Dr. Sangeeta N. Bhatia,Health Sciences and Technology,Massachusetts Institute of Technology,sbhatia@mit.edu,https://bhatialab.mit.edu
+Dr. Tim Berners-Lee,Electrical Engineering and Computer Science,Massachusetts Institute of Technology,timbl@mit.edu,https://www.w3.org/People/Berners-Lee
+Dr. Vladimir Bulović,Electrical Engineering and Computer Science,Massachusetts Institute of Technology,vladimir@mit.edu,https://bulovic.mit.edu
+Dr. Yet-Ming Chiang,Materials Science and Engineering,Massachusetts Institute of Technology,ychiang@mit.edu,https://web.mit.edu/cmse
+Dr. YuFeng (Kevin) Chen,"Robotics; Systems Theory, Control, and Autonomy",Massachusetts Institute of Technology,yufengc@mit.edu,https://www.eecs.mit.edu/people/yufeng-kevin-chen/
+Dr. Chad A. Mirkin,Chemistry; Materials Science and Engineering; Medicine,Northwestern University,chadnano@northwestern.edu,https://mirkin-group.northwestern.edu
+Dr. Craig Bina,Earth Sciences; Geophysics,Northwestern University,craig@earth.northwestern.edu,https://www.earth.northwestern.edu/our-people/faculty/
+Dr. Daniel Horton,Earth Sciences; Climate Science,Northwestern University,daniel.horton@northwestern.edu,https://www.earth.northwestern.edu/our-people/faculty/
+Dr. Emily A. Weiss,Chemistry,Northwestern University,e-weiss@northwestern.edu,https://chemistry.northwestern.edu/people/emily-weiss
+Dr. Eric Dahl,Physics,Northwestern University,cdahl@northwestern.edu,https://physics.northwestern.edu/people/faculty/core-faculty/
+Dr. Guillermo A. Ameer,Biomedical Engineering,Northwestern University,g-ameer@northwestern.edu,https://www.mccormick.northwestern.edu/biomedical/guillermo-ameer
+Dr. John Joseph Carrasco,Physics,Northwestern University,carrasco@northwestern.edu,https://physics.northwestern.edu/people/faculty/core-faculty/
+Dr. Joseph T. Hupp,Chemistry,Northwestern University,j-hupp@northwestern.edu,https://chemistry.northwestern.edu/people/joseph-hupp
+Dr. Michael R. Wasielewski,Chemistry,Northwestern University,m-wasielewski@northwestern.edu,https://chemistry.northwestern.edu/people/michael-wasielewski
+Dr. Michelle Driscoll,Physics,Northwestern University,michelle.driscoll@northwestern.edu,https://physics.northwestern.edu/people/faculty/core-faculty/
+Dr. Milan Mrksich,Chemistry; Biomedical Engineering,Northwestern University,milan.mrksich@northwestern.edu,https://www.mccormick.northwestern.edu/biomedical/milan-mrksich
+Dr. Omar Farha,Chemistry,Northwestern University,o-farha@northwestern.edu,https://chemistry.northwestern.edu/people/omar-farha
+Dr. Patricia A. Beddows,Earth Sciences; Environmental Sciences,Northwestern University,patricia@earth.northwestern.edu,https://www.earth.northwestern.edu/our-people/faculty/
+Dr. Pulak Dutta,Physics,Northwestern University,pdutta@northwestern.edu,https://physics.northwestern.edu/people/faculty/core-faculty/
+Dr. Richard B. Silverman,Chemistry; Molecular Biosciences,Northwestern University,silverman@northwestern.edu,https://chemistry.northwestern.edu/people/richard-silverman
+Dr. Robert A. Linsenmeier,Biomedical Engineering; Neurobiology,Northwestern University,rlinsenmeier@northwestern.edu,https://www.mccormick.northwestern.edu/biomedical/robert-linsenmeier
+Dr. Samuel I. Stupp,Materials Science and Engineering; Chemistry; Medicine,Northwestern University,s-stupp@northwestern.edu,https://stupp.northwestern.edu
+Dr. Suzan van der Lee,Earth Sciences; Seismology,Northwestern University,suzan@northwestern.edu,https://www.earth.northwestern.edu/our-people/faculty/
+Dr. Teri W. Odom,Chemistry; Materials Science and Engineering,Northwestern University,todom@northwestern.edu,https://chemistry.northwestern.edu/people/teri-odom
+Dr. Thomas J. Meade,Chemistry; Molecular Biosciences; Biomedical Engineering,Northwestern University,t-meade@northwestern.edu,https://www.mccormick.northwestern.edu/biomedical/thomas-meade
+Dr. Tobin J. Marks,Chemistry; Materials Science and Engineering,Northwestern University,t-marks@northwestern.edu,https://marks-group.northwestern.edu
+Dr. Venkat Chandrasekhar,Physics,Northwestern University,v-chandrasekhar@northwestern.edu,https://physics.northwestern.edu/people/faculty/core-faculty/
+Dr. Vipul Bansal,Biomedical Engineering,Northwestern University,v-bansal@northwestern.edu,https://www.mccormick.northwestern.edu/biomedical/vipul-bansal
+Dr. William R. Dichtel,Chemistry,Northwestern University,w-dichtel@northwestern.edu,https://chemistry.northwestern.edu/people/william-dichtel
+Dr. Yarrow Axford,Earth Sciences; Climate Science,Northwestern University,axford@northwestern.edu,https://www.earth.northwestern.edu/our-people/faculty/
+Dr. Abigail G. Doyle,Chemistry,Princeton University,agdoyle@princeton.edu,https://chemistry.princeton.edu/faculty/abigail-doyle
+Dr. Bogdan A. Bernevig,Physics; Condensed Matter Theory,Princeton University,bernevig@princeton.edu,https://phy.princeton.edu/people/bogdan-bernevig
+Dr. Clifford Brangwynne,RNA and protein organization in living cells,Princeton University,cbrangwy@princeton.edu,https://engineering.princeton.edu/faculty/clifford-brangwynne
+Dr. Craig Arnold,Laser processing and transport in materials,Princeton University,arnold@princeton.edu,https://engineering.princeton.edu/faculty/craig-arnold
+Dr. David W. C. MacMillan,Chemistry,Princeton University,dmacmill@princeton.edu,https://chemistry.princeton.edu/faculty/david-macmillan
+Dr. Dmitry Abanin,Physics; Condensed Matter Theory,Princeton University,dabanin@princeton.edu,https://phy.princeton.edu/people/dmitry-abanin
+Dr. Erik J. Sorensen,Chemistry,Princeton University,ejs@princeton.edu,https://chemistry.princeton.edu/faculty/erik-sorensen
+Dr. Haw Yang,Chemistry,Princeton University,hawyang@princeton.edu,https://chemistry.princeton.edu/faculty/haw-yang
+Dr. John T. Groves,Chemistry,Princeton University,jgroves@princeton.edu,https://chemistry.princeton.edu/faculty/john-groves
+Dr. Maria Apostolaki,"Design and construction of networked systems; security, blockchain and machine learning",Princeton University,apostolaki@princeton.edu,https://engineering.princeton.edu/faculty/maria-apostolaki
+Dr. Michael Aizenman,Physics; Mathematical Physics,Princeton University,aizenman@princeton.edu,https://phy.princeton.edu/people/michael-aizenman
+Dr. Paul J. Chirik,Chemistry,Princeton University,pchirik@princeton.edu,https://chemistry.princeton.edu/faculty/paul-chirik
+Dr. Robert Austin,Physics; Biological Physics,Princeton University,austin@princeton.edu,https://phy.princeton.edu/people/robert-austin
+Dr. Sanjeev Arora,Theoretical computer science; computational complexity,Princeton University,arora@princeton.edu,https://engineering.princeton.edu/faculty/sanjeev-arora
+Dr. Waseem Bakr,Physics; Atomic Physics,Princeton University,wbakr@princeton.edu,https://phy.princeton.edu/people/waseem-bakr
+Dr. William Bialek,Physics; Biological Physics,Princeton University,wbialek@princeton.edu,https://phy.princeton.edu/people/william-bialek
+Dr. Behnaam Aazhang,Electrical and Computer Engineering; Neuroengineering,Rice University,aaz@rice.edu,https://profiles.rice.edu/faculty
+Dr. Caroline Ajo-Franklin,Synthetic Biology,Rice University,cajo-franklin@rice.edu,https://profiles.rice.edu/faculty
+Dr. Daan van Knippenberg,Management; Organizational Behavior,Rice University,daan.van.knippenberg@rice.edu,https://profiles.rice.edu/faculty
+Dr. Ghanashyam Acharya,Materials Science and NanoEngineering,Rice University,ga8@rice.edu,https://profiles.rice.edu/faculty
+Dr. Jason Adams,Chemical and Biomolecular Engineering,Rice University,jason.adams@rice.edu,https://profiles.rice.edu/faculty
+Dr. John E. Akin,Mechanical Engineering; Applied Mathematics,Rice University,akin@rice.edu,https://profiles.rice.edu/faculty
+Dr. Pulickel Ajayan,Materials Science and Engineering,Rice University,ajayan@rice.edu,https://profiles.rice.edu/faculty
+Dr. Sabia Abidi,Bioengineering,Rice University,sabia.abidi@rice.edu,https://profiles.rice.edu/faculty
+Dr. Uyiosa Abusomwan,Engineering Management,Rice University,uyiosa.abusomwan@rice.edu,https://profiles.rice.edu/faculty
+Dr. Yuhang Xing,Finance,Rice University,yuhang.xing@rice.edu,https://profiles.rice.edu/faculty
+Dr. Alex Aiken,Computer Science; Communications; Particle Physics,Stanford University,aiken@stanford.edu,https://engineering.stanford.edu/people/alex-aiken
+Dr. Allison Okamura,Mechanical Engineering,Stanford University,aokamura@stanford.edu,https://collab.stanford.edu
+Dr. Amin Arbabian,Electrical Engineering,Stanford University,arbabian@stanford.edu,https://engineering.stanford.edu/people/amin-arbabian
+Dr. Andrew Ng,Computer Science; Artificial Intelligence,Stanford University,ang@cs.stanford.edu,https://ai.stanford.edu/~ang
+Dr. Brian Kobilka,Medicine; Molecular and Cellular Physiology,Stanford University,kobilka@stanford.edu,https://kobilka.stanford.edu
+Dr. Christopher Manning,Computer Science; Linguistics,Stanford University,manning@stanford.edu,https://nlp.stanford.edu/~manning
+Dr. Daphne Koller,Computer Science; Artificial Intelligence,Stanford University,koller@stanford.edu,https://profiles.stanford.edu/daphne-koller
+Dr. David Cheriton,Computer Science,Stanford University,cheriton@cs.stanford.edu,https://cs.stanford.edu/people/cheriton
+Dr. Edward I. Solomon,Chemistry,Stanford University,edward.solomon@stanford.edu,https://solomon.stanford.edu
+Dr. Eric Appel,Materials Science and Engineering,Stanford University,eappel@stanford.edu,https://engineering.stanford.edu/people/eric-appel
+Dr. Eric Mazur,Applied Physics; Electrical Engineering,Stanford University,mazur@stanford.edu,https://web.stanford.edu/group/mazur
+Dr. Fei-Fei Li,Computer Science; Artificial Intelligence,Stanford University,feifeili@stanford.edu,https://profiles.stanford.edu/fei-fei-li
+Dr. Gordon Wetzstein,Electrical Engineering,Stanford University,gordon.wetzstein@stanford.edu,https://web.stanford.edu/group/computationalimaging
+Dr. Jennifer Widom,Computer Science,Stanford University,widom@cs.stanford.edu,https://cs.stanford.edu/people/widom
+Dr. John Hennessy,Computer Science,Stanford University,hennessy@cs.stanford.edu,https://profiles.stanford.edu/john-hennessy
+Dr. Juan Alonso,Aeronautics and Astronautics,Stanford University,jjalonso@stanford.edu,https://engineering.stanford.edu/people/juan-alonso
+Dr. Jure Leskovec,Computer Science; Artificial Intelligence,Stanford University,jure@cs.stanford.edu,https://cs.stanford.edu/~jure
+Dr. Justin R. Klesmith,Chemistry,Stanford University,jklesmith@stanford.edu,https://chemistry.stanford.edu/people/justin-klesmith
+Dr. Krishna Shenoy,Neurobiology; Electrical Engineering,Stanford University,shenoy@stanford.edu,https://shenoy.people.stanford.edu
+Dr. Kwabena Boahen,Electrical Engineering,Stanford University,boahen@stanford.edu,https://www.stanford.edu/group/brainsinsilicon
+Dr. Lynette Cegelski,Chemistry,Stanford University,lcegelski@stanford.edu,https://cegelski.stanford.edu
+Dr. Maneesh Agrawala,Computer Science; Computer Graphics; Human-Computer Interaction; Visualization,Stanford University,maneesh@cs.stanford.edu,https://engineering.stanford.edu/people/maneesh-agrawala
+Dr. Mark Horowitz,Electrical Engineering,Stanford University,horowitz@stanford.edu,https://ee.stanford.edu/people/mark-horowitz
+Dr. Maryam Mirzakhani,Mathematics,Stanford University,mirzakhani@math.stanford.edu,https://math.stanford.edu/people/maryam-mirzakhani
+Dr. Michael Levitt,Structural Biology,Stanford University,michael.levitt@stanford.edu,https://levitt.stanford.edu
+Dr. Monther Abu-Remaileh,Chemical Engineering; Genetics,Stanford University,monther@stanford.edu,https://engineering.stanford.edu/people/monther-abu-remaileh
+Dr. Nima Anari,Computer Science,Stanford University,anari@stanford.edu,https://engineering.stanford.edu/people/nima-anari
+Dr. Paul A. Wender,Chemistry,Stanford University,wender@stanford.edu,https://wendergroup.stanford.edu
+Dr. Paul Milgrom,Economics,Stanford University,milgrom@stanford.edu,https://web.stanford.edu/~milgrom
+Dr. Peter Norvig,Computer Science; Artificial Intelligence,Stanford University,norvig@stanford.edu,https://norvig.com
+Dr. Richard N. Zare,Chemistry,Stanford University,zare@stanford.edu,https://zarelab.stanford.edu
+Dr. Robert M. Waymouth,Chemistry,Stanford University,waymouth@stanford.edu,https://waymouthgroup.stanford.edu
+Dr. Sara Achour,Computer Science; Electrical Engineering,Stanford University,sachour@stanford.edu,https://engineering.stanford.edu/people/sara-achour
+Dr. Shanhui Fan,Electrical Engineering,Stanford University,fan@stanford.edu,https://fangroup.stanford.edu
+Dr. Stephen Boyd,Electrical Engineering,Stanford University,boyd@stanford.edu,https://web.stanford.edu/~boyd
+Dr. Steven G. Boxer,Chemistry,Stanford University,sboxer@stanford.edu,https://boxer.stanford.edu
+Dr. Subhasish Mitra,Electrical Engineering,Stanford University,subh@stanford.edu,https://web.stanford.edu/~subh
+Dr. Sylvia Plevritis,Radiology; Biomedical Data Science,Stanford University,plevritis@stanford.edu,https://med.stanford.edu/profiles/sylvia-plevritis
+Dr. Thomas Sudhof,Molecular and Cellular Physiology,Stanford University,ts1@stanford.edu,https://sudhoflab.stanford.edu
+Dr. William Newsome,Neurobiology,Stanford University,newsome@stanford.edu,https://newsome.stanford.edu
+Dr. Yi Cui,Materials Science and Engineering,Stanford University,yicui@stanford.edu,https://profiles.stanford.edu/yi-cui
+Dr. Zhenan Bao,Chemical Engineering,Stanford University,zbao@stanford.edu,https://baolab.stanford.edu
+Dr. A. Paul Alivisatos,Chemistry; Materials Science,University of California,Berkeley,alivisatos@berkeley.edu
+Dr. Carolyn R. Bertozzi,Chemistry; Molecular and Cell Biology,University of California,Berkeley,crbertozzi@berkeley.edu
+Dr. Christopher J. Chang,Chemistry; Molecular and Cell Biology,University of California,Berkeley,chrischang@berkeley.edu
+Dr. David E. Wemmer,Chemistry,University of California,Berkeley,wemmer@berkeley.edu
+Dr. Dean F. Toste,Chemistry,University of California,Berkeley,dtoste@berkeley.edu
+Dr. F. Dean Toste,Chemistry,University of California,Berkeley,fdtoste@berkeley.edu
+Dr. Jennifer A. Doudna,Chemistry; Molecular and Cell Biology,University of California,Berkeley,doudna@berkeley.edu
+Dr. John F. Hartwig,Chemistry,University of California,Berkeley,hartwig@berkeley.edu
+Dr. Marcin P. Majewski,Chemistry,University of California,Berkeley,majewski@berkeley.edu
+Dr. Matthew B. Francis,Chemistry,University of California,Berkeley,mbfrancis@berkeley.edu
+Dr. Michael A. Marletta,Chemistry; Molecular and Cell Biology,University of California,Berkeley,marletta@berkeley.edu
+Dr. Omar M. Yaghi,Chemistry; Materials Science,University of California,Berkeley,yaghi@berkeley.edu
+Dr. Peidong Yang,Chemistry; Materials Science,University of California,Berkeley,p_yang@berkeley.edu
+Dr. Ahmed Alaa,Machine Learning; Healthcare,"University of California, Berkeley",amalaa@berkeley.edu,https://www2.eecs.berkeley.edu/Faculty/Lists/faculty.html
+Dr. Elad Alon,"Integrated Circuits; Design, Modeling and Analysis","University of California, Berkeley",elad@eecs.berkeley.edu,https://www2.eecs.berkeley.edu/Faculty/Homepages/elad.html
+Dr. Pieter Abbeel,"Artificial Intelligence; Control, Intelligent Systems, and Robotics","University of California, Berkeley",pabbeel@cs.berkeley.edu,https://www2.eecs.berkeley.edu/Faculty/Homepages/abbeel.html
+Dr. Caroline D. Beghein,Earth Sciences; Seismology; Geophysics,"University of California, Los Angeles",cbeghein@epss.ucla.edu,https://catalog.registrar.ucla.edu/browse/Departments/EarthPlanetaryandSpaceSciences/Faculty-Roster
+Dr. David C. Jewitt,Earth Sciences; Planetary Science; Astronomy,"University of California, Los Angeles",jewitt@epss.ucla.edu,https://catalog.registrar.ucla.edu/browse/Departments/EarthPlanetaryandSpaceSciences/Faculty-Roster
+Dr. David K. Jacobs,Earth Sciences; Paleobiology; Evolutionary Biology,"University of California, Los Angeles",djacobs@ucla.edu,https://catalog.registrar.ucla.edu/browse/Departments/EarthPlanetaryandSpaceSciences/Faculty-Roster
+Dr. Jonathan M. Aurnou,Earth Sciences; Geophysics; Planetary Science,"University of California, Los Angeles",jona@epss.ucla.edu,https://catalog.registrar.ucla.edu/browse/Departments/EarthPlanetaryandSpaceSciences/Faculty-Roster
+Dr. Vassilis Angelopoulos,Earth Sciences; Space Physics; Planetary Science,"University of California, Los Angeles",vassilis@ucla.edu,https://catalog.registrar.ucla.edu/browse/Departments/EarthPlanetaryandSpaceSciences/Faculty-Roster
+Dr. Bryan Dickinson,Chemistry; Chemical Biology; Biochemistry,University of Chicago,dickinson@uchicago.edu,https://chemistry.uchicago.edu/people/faculty
+Dr. Cheng Chin,Physics; Atomic Physics,University of Chicago,cchin@uchicago.edu,https://physics.uchicago.edu/people/#faculty
+Dr. Chibueze Amanchukwu,Materials for Sustainability; Molecular Engineering,University of Chicago,amanchukwu@uchicago.edu,https://pme.uchicago.edu/faculty/chibueze-amanchukwu
+Dr. David Awschalom,Physics; Quantum Information Science,University of Chicago,awsch@uchicago.edu,https://physics.uchicago.edu/people/#faculty
+Dr. Edward Blucher,Physics; Particle Physics,University of Chicago,blucher@uchicago.edu,https://physics.uchicago.edu/people/#faculty
+Dr. Guangbin Dong,Chemistry; Organic Chemistry; Catalysis,University of Chicago,gbdong@uchicago.edu,https://chemistry.uchicago.edu/people/faculty
+Dr. John Anderson,Chemistry; Catalysis; Inorganic Chemistry; Materials Chemistry,University of Chicago,jtanderson@uchicago.edu,https://chemistry.uchicago.edu/faculty
+Dr. John E. Carlstrom,Physics; Astrophysics,University of Chicago,jcarlstrom@uchicago.edu,https://physics.uchicago.edu/people/#faculty
+Dr. Laurie Butler,Chemistry; Physical Chemistry,University of Chicago,l-butler@uchicago.edu,https://chemistry.uchicago.edu/faculty
+Dr. Marcela Carena,Physics; Theoretical Physics,University of Chicago,carena@uchicago.edu,https://physics.uchicago.edu/people/#faculty
+Dr. Paul Alivisatos,Chemistry; Materials Chemistry; Physical Chemistry,University of Chicago,president@uchicago.edu,https://chemistry.uchicago.edu/faculty
+Dr. Peter Littlewood,Physics,University of Chicago,littlewood@uchicago.edu,https://physics.uchicago.edu/people/#faculty
+Dr. Catherine J. Murphy,Chemistry,University of Illinois Urbana-Champaign,murphy@illinois.edu,https://chemistry.illinois.edu/faculty/catherine-murphy
+Dr. Jeffrey S. Moore,Chemistry; Materials Science and Engineering,University of Illinois Urbana-Champaign,jmoore@illinois.edu,https://chemistry.illinois.edu/faculty/jeffrey-moore
+Dr. Jonathan V. Sweedler,Chemistry,University of Illinois Urbana-Champaign,jsweedle@illinois.edu,https://chemistry.illinois.edu/faculty/jonathan-sweedler
+Dr. Martin D. Burke,Chemistry,University of Illinois Urbana-Champaign,mburke@illinois.edu,https://chemistry.illinois.edu/faculty/martin-burke
+Dr. Scott E. Denmark,Chemistry,University of Illinois Urbana-Champaign,sdenmark@illinois.edu,https://chemistry.illinois.edu/faculty/scott-denmark
+Dr. Wilfred A. van der Donk,Chemistry,University of Illinois Urbana-Champaign,vddonk@illinois.edu,https://chemistry.illinois.edu/faculty/wilfred-van-der-donk
+Dr. Yi Lu,Chemistry; Biochemistry,University of Illinois Urbana-Champaign,yi-lu@illinois.edu,https://chemistry.illinois.edu/faculty/yi-lu
+Dr. Anne M. McNeil,Chemistry; Macromolecular Science and Engineering,University of Michigan,mcneil@umich.edu,https://lsa.umich.edu/chemistry/people/faculty/anne-mcneil.html
+Dr. Joerg Lahann,Chemical Engineering; Materials Science and Engineering,University of Michigan,lahann@umich.edu,https://che.engin.umich.edu/people/joerg-lahann
+Dr. Melanie S. Sanford,Chemistry,University of Michigan,msanford@umich.edu,https://lsa.umich.edu/chemistry/people/faculty/melanie-sanford.html
+Dr. Nicholas A. Kotov,Chemical Engineering; Materials Science and Engineering,University of Michigan,kotov@umich.edu,https://che.engin.umich.edu/people/nicholas-kotov
+Dr. Ryan C. Bailey,Chemistry,University of Michigan,baileyrch@umich.edu,https://lsa.umich.edu/chemistry/people/faculty/ryan-bailey.html
+Dr. Sharon C. Glotzer,Materials Science and Engineering,University of Michigan,sglotzer@umich.edu,https://mse.engin.umich.edu/people/sharon-glotzer
+Dr. Suljo Linic,Chemical Engineering,University of Michigan,slinic@umich.edu,https://che.engin.umich.edu/people/suljo-linic
+Dr. Haifeng Gao,Chemistry; Chemical Engineering,University of Notre Dame,hgao@nd.edu,https://chemistry.nd.edu/people/haifeng-gao
+Dr. Jennifer Tank,Biological Sciences; Civil and Environmental Engineering,University of Notre Dame,jtank@nd.edu,https://biology.nd.edu/people/jennifer-tank
+Dr. Jeremy Fein,Civil and Environmental Engineering; Earth Sciences,University of Notre Dame,jfein@nd.edu,https://engineering.nd.edu/profiles/jeremy-fein
+Dr. Joan F. Brennecke,Chemical Engineering,University of Notre Dame,jbb@nd.edu,https://engineering.nd.edu/profiles/joan-brennecke
+Dr. Joshua Shrout,Civil and Environmental Engineering; Biological Sciences,University of Notre Dame,jshrout@nd.edu,https://engineering.nd.edu/profiles/joshua-shrout
+Dr. Ken Henderson,Chemistry,University of Notre Dame,khenders@nd.edu,https://chemistry.nd.edu/people/ken-henderson
+Dr. Marya Lieberman,Chemistry,University of Notre Dame,mlieberm@nd.edu,https://chemistry.nd.edu/people/marya-lieberman
+Dr. Patricia A. Maurice,Civil and Environmental Engineering; Earth Sciences,University of Notre Dame,pmaurice@nd.edu,https://engineering.nd.edu/profiles/patricia-maurice
+Dr. Paul Bohn,Chemistry; Chemical Engineering,University of Notre Dame,pbohn@nd.edu,https://chemistry.nd.edu/people/paul-bohn
+Dr. Prashant Kamat,Chemistry; Chemical Engineering,University of Notre Dame,pkamat@nd.edu,https://chemistry.nd.edu/people/prashant-kamat
+Dr. Seth N. Brown,Chemistry,University of Notre Dame,sbrown@nd.edu,https://chemistry.nd.edu/people/seth-brown
+Dr. Andrew G. Leach,Chemistry,University of Oxford,andrew.leach@chem.ox.ac.uk,https://www.chem.ox.ac.uk/profile/andrew-leach
+Dr. Charlotte K. Williams,Chemistry,University of Oxford,charlotte.williams@chem.ox.ac.uk,https://www.chem.ox.ac.uk/profile/charlotte-williams
+Dr. Fraser A. Armstrong,Chemistry,University of Oxford,fraser.armstrong@chem.ox.ac.uk,https://www.chem.ox.ac.uk/profile/fraser-armstrong
+Dr. Harry L. Anderson,Chemistry,University of Oxford,harry.anderson@chem.ox.ac.uk,https://www.chem.ox.ac.uk/profile/harry-anderson
+Dr. Richard G. Compton,Chemistry,University of Oxford,richard.compton@chem.ox.ac.uk,https://www.chem.ox.ac.uk/profile/richard-compton
+Dr. Timothy J. Donohoe,Chemistry,University of Oxford,timothy.donohoe@chem.ox.ac.uk,https://www.chem.ox.ac.uk/profile/timothy-donohoe
+Dr. Ching-Li Chai,Mathematics; Algebraic Number Theory,University of Pennsylvania,chai@math.upenn.edu,https://www.math.upenn.edu/people/ching-li-chai
+Dr. David L. Goldsby,Earth Sciences; Geophysics,University of Pennsylvania,dgoldsby@sas.upenn.edu,https://earth.sas.upenn.edu/people/faculty
+Dr. Douglas J. Jerolmack,Earth Sciences; Environmental Science,University of Pennsylvania,sediment@sas.upenn.edu,https://earth.sas.upenn.edu/people/faculty
+Dr. Firooz Aflatouni,Electronic Photonic Microsystems; Integrated Co-Design,University of Pennsylvania,firooz@seas.upenn.edu,https://directory.seas.upenn.edu/firooz-aflatouni/
+Dr. Jane E. Dmochowski,Earth Sciences; Environmental Science,University of Pennsylvania,janeed@sas.upenn.edu,https://earth.sas.upenn.edu/people/faculty
+Dr. Jon Hawkings,Earth Sciences; Biogeochemistry,University of Pennsylvania,jonhawk@sas.upenn.edu,https://earth.sas.upenn.edu/people/faculty
+Dr. Reto Gieré,Earth Sciences; Mineralogy,University of Pennsylvania,giere@sas.upenn.edu,https://earth.sas.upenn.edu/people/faculty
+Dr. Ted Chinburg,Mathematics; Number Theory,University of Pennsylvania,ted@math.upenn.edu,https://www.math.upenn.edu/people/ted-chinburg
+Dr. Chad M. Landis,Aerospace Engineering; Materials Science,University of Texas at Austin,landis@utexas.edu,https://www.ae.utexas.edu/people/faculty/faculty-directory/
+Dr. Efstathios Bakolas,Aerospace Engineering; Control Theory,University of Texas at Austin,bakolas@austin.utexas.edu,https://www.ae.utexas.edu/people/faculty/faculty-directory/
+Dr. Fabrizio Bisetti,Aerospace Engineering; Computational Engineering,University of Texas at Austin,fbisetti@utexas.edu,https://www.ae.utexas.edu/people/faculty/faculty-directory/
+Dr. John Foster,Aerospace Engineering; Petroleum Engineering,University of Texas at Austin,jfoster@austin.utexas.edu,https://www.ae.utexas.edu/people/faculty/faculty-directory/
+Dr. John-Paul Clarke,Aerospace Engineering; Aviation Systems,University of Texas at Austin,johnpaul@utexas.edu,https://www.ae.utexas.edu/people/faculty/faculty-directory/
+Dr. Laxminarayan L. Raja,Aerospace Engineering; Plasma Physics,University of Texas at Austin,lraja@mail.utexas.edu,https://www.ae.utexas.edu/people/faculty/faculty-directory/
+Dr. Leszek F. Demkowicz,Aerospace Engineering; Computational Engineering,University of Texas at Austin,leszek@oden.utexas.edu,https://www.ae.utexas.edu/people/faculty/faculty-directory/
+Dr. Lori Magruder,Aerospace Engineering; Space Research,University of Texas at Austin,lori.magruder@austin.utexas.edu,https://www.ae.utexas.edu/people/faculty/faculty-directory/
+Dr. Manuel Rausch,Aerospace Engineering; Biomedical Engineering,University of Texas at Austin,manuel.rausch@austin.utexas.edu,https://www.ae.utexas.edu/people/faculty/faculty-directory/
+Dr. Mark E. Mear,Aerospace Engineering; Engineering Mechanics,University of Texas at Austin,mear@mail.utexas.edu,https://www.ae.utexas.edu/people/faculty/faculty-directory/
+Dr. Moriba K. Jah,Aerospace Engineering; Space Situational Awareness,University of Texas at Austin,moriba@utexas.edu,https://www.ae.utexas.edu/people/faculty/faculty-directory/
+Dr. Noel T. Clemens,Aerospace Engineering; Fluid Dynamics,University of Texas at Austin,clemens@mail.utexas.edu,https://www.ae.utexas.edu/people/faculty/faculty-directory/
+Dr. Srinivas V. Bettadpur,Aerospace Engineering; Space Applications,University of Texas at Austin,srinivas@csr.utexas.edu,https://www.ae.utexas.edu/people/faculty/faculty-directory/
+Dr. Stelios Kyriakides,Aerospace Engineering; Solid Mechanics,University of Texas at Austin,skk@mail.utexas.edu,https://www.ae.utexas.edu/people/faculty/faculty-directory/
+Dr. Tan Bui-Thanh,Aerospace Engineering; Computational Engineering,University of Texas at Austin,tanbui@oden.utexas.edu,https://www.ae.utexas.edu/people/faculty/faculty-directory/
+Dr. Thomas J. Hughes,Aerospace Engineering; Computational Mechanics,University of Texas at Austin,hughes@oden.utexas.edu,https://www.ae.utexas.edu/people/faculty/faculty-directory/
+Dr. Alex K. Y. Jen,Materials Science and Engineering,University of Washington,ajen@uw.edu,https://www.mse.washington.edu/people/alex-jen
+Dr. Alshakim Nelson,Chemistry; Materials Science,University of Washington,alnelson@uw.edu,https://www.chem.washington.edu/people/alshakim-nelson
+Dr. Brandi Cossairt,Chemistry,University of Washington,cossairt@uw.edu,https://www.chem.washington.edu/people/brandi-cossairt
+Dr. Christine Luscombe,Materials Science and Engineering,University of Washington,luscombe@uw.edu,https://www.mse.washington.edu/people/christine-luscombe
+Dr. Cole DeForest,Chemical Engineering; Bioengineering,University of Washington,deforest@uw.edu,https://www.cheme.washington.edu/people/cole-deforest
+Dr. Dan Ratner,Bioengineering,University of Washington,dratner@uw.edu,https://www.bioe.washington.edu/people/dan-ratner
+Dr. François Baneyx,Chemical Engineering; Bioengineering,University of Washington,baneyx@uw.edu,https://www.cheme.washington.edu/people/francois-baneyx
+Dr. Jim Pfaendtner,Chemical Engineering,University of Washington,jpfaendt@uw.edu,https://www.cheme.washington.edu/people/jim-pfaendtner
+Dr. Mary Lidstrom,Chemical Engineering; Microbiology,University of Washington,lidstrom@uw.edu,https://www.cheme.washington.edu/people/mary-lidstrom
+Dr. Patrick Stayton,Bioengineering,University of Washington,stayton@uw.edu,https://www.bioe.washington.edu/people/pat-stayton
+Dr. Venkat Subramanian,Chemical Engineering,University of Washington,venkats@uw.edu,https://www.cheme.washington.edu/people/venkat-subramanian
+Dr. Clark Landis,Chemistry,University of Wisconsin-Madison,landis@chem.wisc.edu,https://chemistry.wisc.edu/staff/clark-landis
+Dr. John F. Berry,Chemistry,University of Wisconsin-Madison,berry@chem.wisc.edu,https://chemistry.wisc.edu/staff/john-berry
+Dr. Judith N. Burstyn,Chemistry,University of Wisconsin-Madison,jburstyn@chem.wisc.edu,https://chemistry.wisc.edu/staff/judith-burstyn
+Dr. Robert J. Hamers,Chemistry,University of Wisconsin-Madison,rhamers@chem.wisc.edu,https://chemistry.wisc.edu/staff/robert-hamers
+Dr. Samuel H. Gellman,Chemistry,University of Wisconsin-Madison,gellman@chem.wisc.edu,https://chemistry.wisc.edu/staff/samuel-gellman
+Dr. Shannon S. Stahl,Chemistry,University of Wisconsin-Madison,stahl@chem.wisc.edu,https://chemistry.wisc.edu/staff/shannon-stahl
+Dr. Song Jin,Chemistry,University of Wisconsin-Madison,jin@chem.wisc.edu,https://chemistry.wisc.edu/staff/song-jin
+Dr. Tehshik P. Yoon,Chemistry,University of Wisconsin-Madison,tyoon@chem.wisc.edu,https://chemistry.wisc.edu/staff/tehshik-yoon
+Dr. Thomas C. Brunold,Chemistry,University of Wisconsin-Madison,brunold@chem.wisc.edu,https://chemistry.wisc.edu/staff/thomas-brunold
+Dr. Douglas Adams,Mechanical Engineering; National Security,Vanderbilt University,douglas.adams@vanderbilt.edu,https://engineering.vanderbilt.edu/people/douglas-adams
+Dr. Hiba Baroud,Civil and Environmental Engineering; Sustainability,Vanderbilt University,hiba.baroud@vanderbilt.edu,https://engineering.vanderbilt.edu/people/hiba-baroud
+Dr. Husile Bai,Earth Sciences; Atmospheric Sciences; Climate Dynamics,Vanderbilt University,husile.bai@vanderbilt.edu,https://as.vanderbilt.edu/earth-environmental-sciences/faculty/
+Dr. John C. Ayers,Earth Sciences; Geochemistry; Experimental Petrology; Sustainability Science,Vanderbilt University,john.c.ayers@vanderbilt.edu,https://as.vanderbilt.edu/earth-environmental-sciences/faculty/
+Dr. Larisa R.G. DeSantis,Earth Sciences; Paleobiology; Ecology; Conservation,Vanderbilt University,larisa.desantis@vanderbilt.edu,https://as.vanderbilt.edu/earth-environmental-sciences/faculty/
+Dr. Lily Claiborne,Earth Sciences; Geology; Geoscience Education,Vanderbilt University,lily.l.claiborne@vanderbilt.edu,https://as.vanderbilt.edu/earth-environmental-sciences/faculty/
+Dr. Ralf Bennartz,Earth Sciences; Atmospheric Physics; Climate Science,Vanderbilt University,ralf.bennartz@vanderbilt.edu,https://as.vanderbilt.edu/earth-environmental-sciences/faculty/
+Dr. Alexey Fedorov,Earth Sciences; Ocean Sciences; Atmospheric Sciences,Yale University,alexey.fedorov@yale.edu,https://earth.yale.edu/faculty
+Dr. David Bercovici,Earth Sciences; Planetary Sciences; Carbon Capture,Yale University,david.bercovici@yale.edu,https://earth.yale.edu/faculty
+Dr. David Evans,Earth Sciences; Geology,Yale University,david.evans@yale.edu,https://earth.yale.edu/faculty
+Dr. Jay Ague,Earth Sciences; Mineralogy; Meteoritics,Yale University,jay.ague@yale.edu,https://earth.yale.edu/faculty
+Dr. Ruth E. Blake,Earth Sciences; Geochemistry,Yale University,ruth.blake@yale.edu,https://earth.yale.edu/faculty

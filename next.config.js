@@ -7,8 +7,7 @@ const nextConfig = {
   
   // Enable experimental features for better performance
   experimental: {
-    optimizeCss: true,
-    optimizeServerReact: true,
+    optimizePackageImports: ['framer-motion', '@tabler/icons-react', 'lucide-react'],
   },
 
   // Turbopack configuration (stable)

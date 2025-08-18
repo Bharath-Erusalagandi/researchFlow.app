@@ -35,12 +35,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         return res.status(200).json({
           success: true,
-          isConnected: connectedAccount.status === 'ACTIVE',
-          connectionStatus: connectedAccount.status,
-          connectedAccountId: connectedAccount.id,
-          entityId: (connectedAccount as any).entityId || null,
-          appName: connectedAccount.appName,
-          message: `Connection status: ${connectedAccount.status}`
+          isConnected: connectedAccount?.status === 'ACTIVE',
+          connectionStatus: connectedAccount?.status,
+          connectedAccountId: connectedAccount?.id,
+          entityId: (connectedAccount as any)?.entityId || null,
+          appName: connectedAccount?.appName,
+          message: `Connection status: ${connectedAccount?.status}`
         });
       } else {
         // Check if user/entity has any Gmail connections

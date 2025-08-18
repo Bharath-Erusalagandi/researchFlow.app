@@ -11,19 +11,19 @@ runConfig:
 env:
   # Supabase Configuration
   - variable: NEXT_PUBLIC_SUPABASE_URL
-    value: "https://vutajjxzfbiocaxmscbz.supabase.co"
+    value: "${SET_IN_HOSTING_PLATFORM}"
     availability:
       - BUILD
       - RUNTIME
   
   - variable: NEXT_PUBLIC_SUPABASE_ANON_KEY
-    value: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ1dGFqanh6ZmJpb2NheG1zY2J6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc1OTgwNjgsImV4cCI6MjA2MzE3NDA2OH0.oouUhiQC8Zpb1eTnX5cj7wwjZfLE_ZzhYKxMpp1GEmI"
+    value: "${SET_IN_HOSTING_PLATFORM}"
     availability:
       - BUILD
       - RUNTIME
   
   - variable: NEXT_PUBLIC_GOOGLE_CLIENT_ID
-    value: "52260082776-t645l465pv40h5b5mpkocrqerd5c1ao5.apps.googleusercontent.com"
+    value: "${SET_IN_HOSTING_PLATFORM}"
     availability:
       - BUILD
       - RUNTIME
