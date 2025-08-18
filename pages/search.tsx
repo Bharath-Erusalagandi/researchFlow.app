@@ -16,7 +16,7 @@ import { TextShimmer } from '@/components/ui/text-shimmer';
 import { AIInputWithLoading } from '@/components/ui/ai-input-with-loading';
 import { Progress } from '@/components/ui/progress';
 import { TutorialOverlay } from '@/components/ui/tutorial-overlay';
-import { searchPageTutorialSteps, quickTutorialSteps } from '@/lib/tutorial-steps';
+import { searchPageTutorialSteps, quickTutorialSteps, postSearchTutorialSteps } from '@/lib/tutorial-steps';
 
 
 
@@ -477,6 +477,7 @@ export default function SearchPage() {
   // Tutorial state
   const [showTutorial, setShowTutorial] = useState(false);
   const [tutorialType, setTutorialType] = useState<'full' | 'quick'>('full');
+  const [tutorialSteps, setTutorialSteps] = useState(searchPageTutorialSteps);
   
   // Notification state
   const [notifications, setNotifications] = useState<Array<{
@@ -908,6 +909,14 @@ export default function SearchPage() {
       // Save results to localStorage (keeping for backwards compatibility)
       localStorage.setItem('researchConnect_professors', JSON.stringify(professors));
       localStorage.setItem('researchConnect_hasSearched', 'true');
+      
+      // Continue tutorial if user just searched during tutorial
+      if (showTutorial && professors && professors.length > 0) {
+        // Add a small delay to let the UI update, then continue with post-search tutorial
+        setTimeout(() => {
+          setTutorialSteps(prev => [...prev, ...postSearchTutorialSteps]);
+        }, 1000);
+      }
     } catch (error: any) {
       console.error('Error searching professors:', error);
       
@@ -1028,6 +1037,8 @@ export default function SearchPage() {
   // Function to manually start tutorial (for settings)
   const startTutorial = (type: 'full' | 'quick' = 'full') => {
     setTutorialType(type);
+    // Reset tutorial steps to initial state when starting tutorial
+    setTutorialSteps(searchPageTutorialSteps);
     setShowTutorial(true);
   };
 
@@ -2754,18 +2765,7 @@ ${userFullName}`;
                     )}
                   </motion.button>
 
-                  {/* Tutorial Button */}
-                  <motion.button
-                    onClick={() => startTutorial('quick')}
-                    className="flex-shrink-0 p-3 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-[#0CF2A0]/30 transition-all duration-300 text-white/60 hover:text-white group relative"
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    title="Quick Tutorial (Ctrl+/)"
-                  >
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                  </motion.button>
+
 
                   <AIInputWithLoading
                     value={searchQuery}
@@ -2804,7 +2804,7 @@ ${userFullName}`;
                     {renderAISuggestion()}
                     
                     {/* Professor Cards */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 professor-cards-container">
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 professor-cards-container" data-tutorial="professor-cards-container">
                       {filteredProfessors.map((professor, index) => {
                         const isSaved = savedProfessors.includes(professor.id?.toString() || '');
                         
@@ -3756,7 +3756,7 @@ INSTRUCTIONS:
 
       {/* Tutorial Overlay */}
       <TutorialOverlay
-        steps={tutorialType === 'full' ? searchPageTutorialSteps : quickTutorialSteps}
+        steps={tutorialType === 'full' ? tutorialSteps : quickTutorialSteps}
         isVisible={showTutorial}
         onComplete={handleTutorialComplete}
         onSkip={handleTutorialSkip}

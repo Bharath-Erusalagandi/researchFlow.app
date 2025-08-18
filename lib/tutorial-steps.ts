@@ -9,25 +9,37 @@ export const searchPageTutorialSteps: TutorialStep[] = [
     position: 'center',
   },
   {
-    id: 'search-history',
-    title: 'Search History',
-    description: 'Click here to view your previous searches. Like ChatGPT, we save all your search sessions so you can easily return to past results.',
-    target: '[title="Search History"]',
-    position: 'right',
-    offset: { x: 10, y: 0 },
-  },
-  {
     id: 'search-input',
-    title: 'Search for Professors',
-    description: 'Type your research topic here! Try "machine learning", "cancer research", or "environmental science". We\'ll find 30+ relevant professors for you.',
+    title: 'Let\'s Start with a Search!',
+    description: 'Type your research topic here! Try "machine learning", "cancer research", or "environmental science". Go ahead and search now - we\'ll show you the other features once we have results!',
     target: '#ai-input-with-loading',
     position: 'bottom',
     offset: { x: 0, y: 10 },
   },
   {
+    id: 'search-prompt',
+    title: 'Please Search First',
+    description: 'Please type a research topic and search to continue the tutorial. We need to show you real professor results to demonstrate the features!',
+    target: '#ai-input-with-loading',
+    position: 'bottom',
+    offset: { x: 0, y: 10 },
+  },
+];
+
+// Steps to show after user has searched and has results
+export const postSearchTutorialSteps: TutorialStep[] = [
+  {
+    id: 'search-history',
+    title: 'Search History',
+    description: 'Great! Now you can see your search results. Click here anytime to view your previous searches - like ChatGPT, we save all your search sessions.',
+    target: '[title="Search History"]',
+    position: 'right',
+    offset: { x: 10, y: 0 },
+  },
+  {
     id: 'ai-recommendation',
     title: 'AI Recommendations',
-    description: 'After searching, our AI will analyze the results and recommend the best professors to contact, along with personalized outreach tips.',
+    description: 'Our AI has analyzed the results and recommends the best professors to contact, along with personalized outreach tips.',
     target: '[data-tutorial="ai-recommendation"]',
     position: 'top',
     offset: { x: 0, y: -10 },
@@ -36,7 +48,7 @@ export const searchPageTutorialSteps: TutorialStep[] = [
     id: 'professor-cards',
     title: 'Professor Profiles',
     description: 'Browse through professor profiles with their research areas, universities, and contact information. Click on any card to learn more!',
-    target: '.professor-cards-container',
+    target: '[data-tutorial="professor-cards-container"]',
     position: 'top',
     offset: { x: 0, y: -20 },
   },
@@ -59,7 +71,7 @@ export const searchPageTutorialSteps: TutorialStep[] = [
   {
     id: 'complete',
     title: 'You\'re All Set!',
-    description: 'That\'s it! Start by searching for your research topic. Remember, you can always restart this tutorial from your profile settings. Happy researching!',
+    description: 'That\'s it! You now know how to find professors, save them, and generate personalized emails. Remember, you can always restart this tutorial from the search history sidebar. Happy researching!',
     target: 'body',
     position: 'center',
   },
