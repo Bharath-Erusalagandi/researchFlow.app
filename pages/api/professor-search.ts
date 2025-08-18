@@ -715,11 +715,11 @@ function enhancedBasicSearch(query: string, allProfessors: Professor[]): Profess
       }
 
       // Popular topic boost — encourage broader result sets for common interests
-      for (const pop of popularTopics) {
+      Array.from(popularTopics).forEach(pop => {
         if (fieldLower.includes(pop) || term === pop) {
           score += 10; // extra lift for very popular areas
         }
-      }
+      });
     }
 
     // Slight boost if multiple distinct terms hit the same professor

@@ -1006,7 +1006,6 @@ export default function SearchPage() {
     localStorage.setItem('researchConnect_hasSeenTutorial', 'true');
     
     addNotification({
-      id: 'tutorial-complete',
       type: 'success',
       title: 'Tutorial Complete!',
       message: 'You\'re ready to start finding amazing professors. Happy researching!',
@@ -1019,7 +1018,6 @@ export default function SearchPage() {
     localStorage.setItem('researchConnect_hasSeenTutorial', 'true');
     
     addNotification({
-      id: 'tutorial-skipped',
       type: 'info',
       title: 'Tutorial Skipped',
       message: 'You can always restart the tutorial from your profile settings.',
@@ -1248,7 +1246,6 @@ export default function SearchPage() {
       // Show success message
       setTimeout(() => {
         addNotification({
-          id: 'setup-complete',
           type: 'success',
           title: 'Setup Complete!',
           message: 'Your information has been saved and you can now generate personalized emails.',
