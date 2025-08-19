@@ -913,10 +913,10 @@ function SearchPage() {
       
       // Continue tutorial if user just searched during tutorial
       if (showTutorial && professors && professors.length > 0) {
-        // Add a small delay to let the UI update, then continue with post-search tutorial
+        // Replace the initial tutorial steps with the complete flow including post-search steps
         setTimeout(() => {
-          setTutorialSteps(prev => [...prev, ...postSearchTutorialSteps]);
-        }, 1000);
+          setTutorialSteps([...searchPageTutorialSteps, ...postSearchTutorialSteps]);
+        }, 1500);
       }
     } catch (error: any) {
       console.error('Error searching professors:', error);
@@ -3762,6 +3762,7 @@ INSTRUCTIONS:
         onComplete={handleTutorialComplete}
         onSkip={handleTutorialSkip}
         tutorialKey="search-page"
+        autoAdvance={true}
       />
 
     </div>

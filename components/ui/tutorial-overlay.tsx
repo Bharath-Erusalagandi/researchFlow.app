@@ -19,6 +19,7 @@ interface TutorialOverlayProps {
   onComplete: () => void;
   onSkip: () => void;
   tutorialKey: string; // Unique key for this tutorial
+  autoAdvance?: boolean; // Whether to auto-advance when new steps are added
 }
 
 export function TutorialOverlay({ 
@@ -26,9 +27,26 @@ export function TutorialOverlay({
   isVisible, 
   onComplete, 
   onSkip, 
-  tutorialKey 
+  tutorialKey,
+  autoAdvance = false
 }: TutorialOverlayProps) {
   const [currentStep, setCurrentStep] = useState(0);
+  
+  // Handle step changes and auto-advance when new steps are added
+  const prevStepsLength = useRef(steps.length);
+  useEffect(() => {
+    if (steps.length > 0 && currentStep >= steps.length) {
+      setCurrentStep(steps.length - 1);
+    }
+    
+    // Auto-advance to next step when new steps are added (for tutorial continuation)
+    if (autoAdvance && steps.length > prevStepsLength.current && prevStepsLength.current > 0) {
+      // Move to the first new step
+      setCurrentStep(prevStepsLength.current);
+    }
+    
+    prevStepsLength.current = steps.length;
+  }, [steps.length, currentStep, autoAdvance]);
   const [targetElement, setTargetElement] = useState<Element | null>(null);
   const [targetRect, setTargetRect] = useState<DOMRect | null>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
@@ -38,7 +56,30 @@ export function TutorialOverlay({
     if (!isVisible || !steps[currentStep]) return;
 
     const findTarget = () => {
-      const target = document.querySelector(steps[currentStep].target);
+      const targetSelector = steps[currentStep].target;
+      let target = document.querySelector(targetSelector);
+      
+      // If target not found, try some fallback strategies
+      if (!target && targetSelector !== 'body') {
+        // Try waiting a bit for dynamic content
+        setTimeout(() => {
+          target = document.querySelector(targetSelector);
+          if (target) {
+            setTargetElement(target);
+            setTargetRect(target.getBoundingClientRect());
+          } else {
+            // Fallback to body for center positioning
+            console.warn(`Tutorial target not found: ${targetSelector}, falling back to body`);
+            const bodyTarget = document.querySelector('body');
+            if (bodyTarget) {
+              setTargetElement(bodyTarget);
+              setTargetRect(bodyTarget.getBoundingClientRect());
+            }
+          }
+        }, 500);
+        return;
+      }
+      
       if (target) {
         setTargetElement(target);
         setTargetRect(target.getBoundingClientRect());
@@ -160,18 +201,44 @@ export function TutorialOverlay({
         break;
     }
 
-    // Additional fallback: if position would still go off-screen, center it
+    // Additional fallback: if position would still go off-screen, adjust it
     if (typeof position.top === 'number' && typeof position.left === 'number') {
-      if (position.top < padding || 
-          position.top > viewportHeight - tooltipHeight - padding ||
-          position.left < padding || 
-          position.left > viewportWidth - tooltipWidth - padding) {
+      let adjustedTop = position.top;
+      let adjustedLeft = position.left;
+      let adjustedTransform = position.transform;
+      
+      // Check if off-screen and adjust
+      if (adjustedTop < padding) {
+        adjustedTop = padding;
+        adjustedTransform = 'translate(-50%, 0)';
+      } else if (adjustedTop > viewportHeight - tooltipHeight - padding) {
+        adjustedTop = viewportHeight - tooltipHeight - padding;
+        adjustedTransform = 'translate(-50%, 0)';
+      }
+      
+      if (adjustedLeft < padding) {
+        adjustedLeft = padding;
+        adjustedTransform = 'translate(0, -50%)';
+      } else if (adjustedLeft > viewportWidth - tooltipWidth - padding) {
+        adjustedLeft = viewportWidth - tooltipWidth - padding;
+        adjustedTransform = 'translate(0, -50%)';
+      }
+      
+      // If still problematic, center it
+      if (adjustedTop < padding || adjustedTop > viewportHeight - tooltipHeight - padding ||
+          adjustedLeft < padding || adjustedLeft > viewportWidth - tooltipWidth - padding) {
         return {
           top: '50%',
           left: '50%',
           transform: 'translate(-50%, -50%)',
         };
       }
+      
+      return {
+        top: adjustedTop,
+        left: adjustedLeft,
+        transform: adjustedTransform,
+      };
     }
 
     return position;
