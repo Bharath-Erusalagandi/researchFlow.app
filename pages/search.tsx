@@ -17,6 +17,7 @@ import { AIInputWithLoading } from '@/components/ui/ai-input-with-loading';
 import { Progress } from '@/components/ui/progress';
 import { TutorialOverlay } from '@/components/ui/tutorial-overlay';
 import { searchPageTutorialSteps, quickTutorialSteps, postSearchTutorialSteps } from '@/lib/tutorial-steps';
+import withAuth from '../components/withAuth';
 
 
 
@@ -444,7 +445,7 @@ const ProgressBarForm = ({
   );
 };
 
-export default function SearchPage() {
+function SearchPage() {
   const [activeTab, setActiveTab] = useState<TabType>('search');
   const [searchQuery, setSearchQuery] = useState("");
   const [lastSearchedTerm, setLastSearchedTerm] = useState(""); // Track the actual searched term
@@ -3765,4 +3766,6 @@ INSTRUCTIONS:
 
     </div>
   );
-} 
+}
+
+export default withAuth(SearchPage); 

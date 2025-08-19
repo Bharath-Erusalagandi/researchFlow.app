@@ -2,6 +2,7 @@ import React from 'react';
 import Head from 'next/head';
 import { BookOpen, Search, ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/router';
+import withAuth from '../components/withAuth';
 
 const ResearchPage = () => {
   const router = useRouter();
@@ -97,4 +98,4 @@ const ResearchPage = () => {
   );
 };
 
-export default ResearchPage; 
+export default withAuth(ResearchPage); 

@@ -2,6 +2,7 @@ import React from 'react';
 import Head from 'next/head';
 import { FileText, Search, Download, ExternalLink, ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/router';
+import withAuth from '../components/withAuth';
 
 const PublicationsPage = () => {
   const router = useRouter();
@@ -141,4 +142,4 @@ const PublicationsPage = () => {
   );
 };
 
-export default PublicationsPage; 
+export default withAuth(PublicationsPage); 

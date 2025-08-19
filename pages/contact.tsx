@@ -2,6 +2,7 @@ import React from 'react';
 import Head from 'next/head';
 import { Mail, Phone, MessageSquare, HelpCircle, ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/router';
+import withAuth from '../components/withAuth';
 
 const ContactPage = () => {
   const router = useRouter();
@@ -48,4 +49,4 @@ const ContactPage = () => {
   );
 };
 
-export default ContactPage; 
+export default withAuth(ContactPage); 

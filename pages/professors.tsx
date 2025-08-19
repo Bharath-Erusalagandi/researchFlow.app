@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { SpotlightCard } from '@/components/ui/spotlight-card';
+import withAuth from '../components/withAuth';
 
 interface SavedProfessor {
   id: number;
@@ -481,4 +482,4 @@ const ProfessorsPage = () => {
   );
 };
 
-export default ProfessorsPage; 
+export default withAuth(ProfessorsPage); 

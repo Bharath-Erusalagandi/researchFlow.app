@@ -87,34 +87,58 @@ export function TutorialOverlay({
 
     const step = steps[currentStep];
     const offset = step.offset || { x: 0, y: 0 };
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+    const tooltipWidth = Math.min(384, viewportWidth - 32); // max-w-sm = 384px, but respect mobile
+    const tooltipHeight = 250; // estimated height with padding
+    const padding = 16; // minimum padding from edges
+
     let position = {};
 
     switch (step.position) {
       case 'top':
         position = {
-          top: targetRect.top - 20 + offset.y,
-          left: targetRect.left + targetRect.width / 2 + offset.x,
+          top: Math.max(padding, targetRect.top - 20 + offset.y),
+          left: Math.min(
+            Math.max(padding, targetRect.left + targetRect.width / 2 + offset.x),
+            viewportWidth - tooltipWidth - padding
+          ),
           transform: 'translate(-50%, -100%)',
         };
         break;
       case 'bottom':
         position = {
-          top: targetRect.bottom + 20 + offset.y,
-          left: targetRect.left + targetRect.width / 2 + offset.x,
+          top: Math.min(
+            viewportHeight - tooltipHeight - padding,
+            targetRect.bottom + 20 + offset.y
+          ),
+          left: Math.min(
+            Math.max(padding, targetRect.left + targetRect.width / 2 + offset.x),
+            viewportWidth - tooltipWidth - padding
+          ),
           transform: 'translate(-50%, 0)',
         };
         break;
       case 'left':
         position = {
-          top: targetRect.top + targetRect.height / 2 + offset.y,
-          left: targetRect.left - 20 + offset.x,
+          top: Math.min(
+            Math.max(padding, targetRect.top + targetRect.height / 2 + offset.y),
+            viewportHeight - tooltipHeight - padding
+          ),
+          left: Math.max(padding, targetRect.left - 20 + offset.x),
           transform: 'translate(-100%, -50%)',
         };
         break;
       case 'right':
         position = {
-          top: targetRect.top + targetRect.height / 2 + offset.y,
-          left: targetRect.right + 20 + offset.x,
+          top: Math.min(
+            Math.max(padding, targetRect.top + targetRect.height / 2 + offset.y),
+            viewportHeight - tooltipHeight - padding
+          ),
+          left: Math.min(
+            targetRect.right + 20 + offset.x,
+            viewportWidth - tooltipWidth - padding
+          ),
           transform: 'translate(0, -50%)',
         };
         break;
@@ -126,6 +150,23 @@ export function TutorialOverlay({
           transform: 'translate(-50%, -50%)',
         };
         break;
+    }
+
+    // Additional fallback: if position would still go off-screen, center it
+    const positionNumeric = typeof position.top === 'number' ? position : {
+      top: typeof position.top === 'string' ? viewportHeight / 2 : position.top as number,
+      left: typeof position.left === 'string' ? viewportWidth / 2 : position.left as number
+    };
+
+    if (positionNumeric.top < padding || 
+        positionNumeric.top > viewportHeight - tooltipHeight - padding ||
+        positionNumeric.left < padding || 
+        positionNumeric.left > viewportWidth - tooltipWidth - padding) {
+      return {
+        top: '50%',
+        left: '50%',
+        transform: 'translate(-50%, -50%)',
+      };
     }
 
     return position;
@@ -180,7 +221,7 @@ export function TutorialOverlay({
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.9, y: 20 }}
           transition={{ duration: 0.3, delay: 0.1 }}
-          className="absolute bg-[#1a1a1a]/95 border border-white/30 rounded-xl shadow-2xl backdrop-blur-xl max-w-sm w-full mx-4"
+          className="absolute bg-[#1a1a1a]/95 border border-white/30 rounded-xl shadow-2xl backdrop-blur-xl max-w-sm w-full mx-4 max-h-[calc(100vh-2rem)] overflow-auto"
           style={getTooltipPosition()}
         >
           {/* Header */}
