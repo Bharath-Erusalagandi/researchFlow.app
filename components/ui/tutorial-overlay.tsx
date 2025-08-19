@@ -93,7 +93,15 @@ export function TutorialOverlay({
     const tooltipHeight = 250; // estimated height with padding
     const padding = 16; // minimum padding from edges
 
-    let position = {};
+    let position: {
+      top: number | string;
+      left: number | string;
+      transform: string;
+    } = {
+      top: '50%',
+      left: '50%',
+      transform: 'translate(-50%, -50%)',
+    };
 
     switch (step.position) {
       case 'top':
@@ -153,20 +161,17 @@ export function TutorialOverlay({
     }
 
     // Additional fallback: if position would still go off-screen, center it
-    const positionNumeric = typeof position.top === 'number' ? position : {
-      top: typeof position.top === 'string' ? viewportHeight / 2 : position.top as number,
-      left: typeof position.left === 'string' ? viewportWidth / 2 : position.left as number
-    };
-
-    if (positionNumeric.top < padding || 
-        positionNumeric.top > viewportHeight - tooltipHeight - padding ||
-        positionNumeric.left < padding || 
-        positionNumeric.left > viewportWidth - tooltipWidth - padding) {
-      return {
-        top: '50%',
-        left: '50%',
-        transform: 'translate(-50%, -50%)',
-      };
+    if (typeof position.top === 'number' && typeof position.left === 'number') {
+      if (position.top < padding || 
+          position.top > viewportHeight - tooltipHeight - padding ||
+          position.left < padding || 
+          position.left > viewportWidth - tooltipWidth - padding) {
+        return {
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+        };
+      }
     }
 
     return position;
