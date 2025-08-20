@@ -1635,10 +1635,10 @@ function SearchPage() {
               e.stopPropagation();
               onRemove(notification.id);
             }}
-            className="flex-shrink-0 p-1.5 rounded-lg hover:bg-white/15 transition-all duration-200 group cursor-pointer"
+            className="flex-shrink-0 p-1.5 rounded-lg hover:bg-white/15 transition-colors duration-150 group cursor-pointer transform-gpu will-change-transform active:scale-90"
             type="button"
           >
-            <X className="h-4 w-4 text-white/60 group-hover:text-white transition-colors" />
+            <X className="h-4 w-4 text-white/60 group-hover:text-white transition-colors duration-150" />
           </button>
         </div>
         
@@ -2879,7 +2879,7 @@ ${userFullName}`;
                 </motion.h1>
                 
                 <motion.p 
-                  className="text-base md:text-lg text-gray-400 max-w-3xl mx-auto mb-10"
+                  className="text-base md:text-lg text-gray-400 max-w-3xl mx-auto mb-8"
                   initial={{ opacity: 0, y: -20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.3, delay: 0.1 }}
@@ -2892,6 +2892,69 @@ ${userFullName}`;
                     "Provide your research details and we&apos;ll generate personalized emails to professors. Share your research title and abstract to create compelling outreach messages."
                   )}
                 </motion.p>
+
+                {/* Instructions Section */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: 0.2 }}
+                  className="mb-10 max-w-4xl mx-auto"
+                >
+                  <div className="bg-gradient-to-br from-[#0CF2A0]/10 to-blue-500/10 border border-[#0CF2A0]/20 rounded-2xl p-6 backdrop-blur-sm">
+                    <div className="flex items-start gap-4">
+                      <div className="flex-shrink-0 w-8 h-8 bg-[#0CF2A0]/20 rounded-full flex items-center justify-center mt-1">
+                        <Info className="h-4 w-4 text-[#0CF2A0]" />
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
+                          How to Use This Feature
+                        </h3>
+                        <div className="space-y-4 text-sm text-gray-300">
+                          <div className="flex items-start gap-3">
+                            <div className="w-6 h-6 bg-[#0CF2A0]/20 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                              <span className="text-[#0CF2A0] font-bold text-xs">1</span>
+                            </div>
+                            <div>
+                              <p className="font-medium text-white mb-1">Select a Professor</p>
+                              <p className="text-gray-400">First, go to the Search tab and click "Personalized Email" on any professor card to select them for email composition.</p>
+                            </div>
+                          </div>
+                          <div className="flex items-start gap-3">
+                            <div className="w-6 h-6 bg-[#0CF2A0]/20 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                              <span className="text-[#0CF2A0] font-bold text-xs">2</span>
+                            </div>
+                            <div>
+                              <p className="font-medium text-white mb-1">Fill Your Information</p>
+                              <p className="text-gray-400">Complete the interactive setup with your name, research details, university, and resume. This personalizes your email content.</p>
+                            </div>
+                          </div>
+                          <div className="flex items-start gap-3">
+                            <div className="w-6 h-6 bg-[#0CF2A0]/20 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                              <span className="text-[#0CF2A0] font-bold text-xs">3</span>
+                            </div>
+                            <div>
+                              <p className="font-medium text-white mb-1">Generate Email</p>
+                              <p className="text-gray-400">Click "Generate Personalized Email" to create a tailored message based on your research and the professor's expertise.</p>
+                            </div>
+                          </div>
+                          <div className="flex items-start gap-3">
+                            <div className="w-6 h-6 bg-[#0CF2A0]/20 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                              <span className="text-[#0CF2A0] font-bold text-xs">4</span>
+                            </div>
+                            <div>
+                              <p className="font-medium text-white mb-1">Send Your Email</p>
+                              <p className="text-gray-400">Connect your Gmail to send directly, or copy the email to your clipboard to send manually through your email client.</p>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="mt-4 p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+                          <p className="text-blue-300 text-sm font-medium mb-1">Pro Tip</p>
+                          <p className="text-blue-200 text-sm">Review and edit the generated email before sending to add your personal touch and ensure accuracy.</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
 
                 {/* Enhanced Selected Professor Info Card */}
                 {selectedProfessorForEmail && (

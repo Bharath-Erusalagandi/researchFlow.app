@@ -57,17 +57,15 @@ export const ProfessorCard: React.FC<ProfessorCardProps> = ({
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
-            onSave(professor);
-          }}
-          onTouchEnd={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
+            if (!isSaved) {
+              onSave(professor);
+            }
           }}
           className={cn(
-            "px-3 py-2 sm:px-4 sm:py-2 rounded-lg text-sm font-medium transition-all duration-300 flex-shrink-0 touch-manipulation min-h-[40px] min-w-[60px]",
+            "px-3 py-2 sm:px-4 sm:py-2 rounded-lg text-sm font-medium transition-colors duration-200 flex-shrink-0 touch-manipulation min-h-[40px] min-w-[60px] transform-gpu will-change-transform",
             isSaved
               ? 'bg-green-600/20 text-green-400 cursor-not-allowed'
-              : 'bg-gray-700/50 text-gray-300 hover:bg-[#0CF2A0]/20 hover:text-[#0CF2A0]'
+              : 'bg-gray-700/50 text-gray-300 hover:bg-[#0CF2A0]/20 hover:text-[#0CF2A0] active:scale-95'
           )}
           disabled={isSaved}
           type="button"
