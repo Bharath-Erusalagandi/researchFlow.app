@@ -16,7 +16,9 @@ import { TextShimmer } from '@/components/ui/text-shimmer';
 import { AIInputWithLoading } from '@/components/ui/ai-input-with-loading';
 import { Progress } from '@/components/ui/progress';
 import { TutorialOverlay } from '@/components/ui/tutorial-overlay';
+import { EmailTutorialOverlay } from '@/components/ui/email-tutorial-overlay';
 import { searchPageTutorialSteps, quickTutorialSteps, postSearchTutorialSteps } from '@/lib/tutorial-steps';
+import { cookies } from '@/lib/cookies';
 import withAuth from '../components/withAuth';
 
 
@@ -479,6 +481,9 @@ function SearchPage() {
   const [showTutorial, setShowTutorial] = useState(false);
   const [tutorialType, setTutorialType] = useState<'full' | 'quick'>('full');
   const [tutorialSteps, setTutorialSteps] = useState(searchPageTutorialSteps);
+
+  // Email tutorial state
+  const [showEmailTutorial, setShowEmailTutorial] = useState(false);
   
   // Notification state
   const [notifications, setNotifications] = useState<Array<{
@@ -2893,68 +2898,40 @@ ${userFullName}`;
                   )}
                 </motion.p>
 
-                {/* Instructions Section */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.2 }}
-                  className="mb-10 max-w-4xl mx-auto"
-                >
-                  <div className="bg-gradient-to-br from-[#0CF2A0]/10 to-blue-500/10 border border-[#0CF2A0]/20 rounded-2xl p-6 backdrop-blur-sm">
-                    <div className="flex items-start gap-4">
-                      <div className="flex-shrink-0 w-8 h-8 bg-[#0CF2A0]/20 rounded-full flex items-center justify-center mt-1">
-                        <Info className="h-4 w-4 text-[#0CF2A0]" />
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
-                          How to Use This Feature
-                        </h3>
-                        <div className="space-y-4 text-sm text-gray-300">
-                          <div className="flex items-start gap-3">
-                            <div className="w-6 h-6 bg-[#0CF2A0]/20 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                              <span className="text-[#0CF2A0] font-bold text-xs">1</span>
-                            </div>
-                            <div>
-                              <p className="font-medium text-white mb-1">Select a Professor</p>
-                              <p className="text-gray-400">First, go to the Search tab and click "Personalized Email" on any professor card to select them for email composition.</p>
-                            </div>
-                          </div>
-                          <div className="flex items-start gap-3">
-                            <div className="w-6 h-6 bg-[#0CF2A0]/20 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                              <span className="text-[#0CF2A0] font-bold text-xs">2</span>
-                            </div>
-                            <div>
-                              <p className="font-medium text-white mb-1">Fill Your Information</p>
-                              <p className="text-gray-400">Complete the interactive setup with your name, research details, university, and resume. This personalizes your email content.</p>
-                            </div>
-                          </div>
-                          <div className="flex items-start gap-3">
-                            <div className="w-6 h-6 bg-[#0CF2A0]/20 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                              <span className="text-[#0CF2A0] font-bold text-xs">3</span>
-                            </div>
-                            <div>
-                              <p className="font-medium text-white mb-1">Generate Email</p>
-                              <p className="text-gray-400">Click "Generate Personalized Email" to create a tailored message based on your research and the professor's expertise.</p>
-                            </div>
-                          </div>
-                          <div className="flex items-start gap-3">
-                            <div className="w-6 h-6 bg-[#0CF2A0]/20 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                              <span className="text-[#0CF2A0] font-bold text-xs">4</span>
-                            </div>
-                            <div>
-                              <p className="font-medium text-white mb-1">Send Your Email</p>
-                              <p className="text-gray-400">Connect your Gmail to send directly, or copy the email to your clipboard to send manually through your email client.</p>
-                            </div>
-                          </div>
+                {/* Email Tutorial Trigger Button */}
+                {!selectedProfessorForEmail && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 0.2 }}
+                    className="mb-10 max-w-4xl mx-auto"
+                  >
+                    <div className="bg-gradient-to-br from-[#0CF2A0]/10 to-blue-500/10 border border-[#0CF2A0]/20 rounded-2xl p-6 backdrop-blur-sm">
+                      <div className="flex items-start gap-4">
+                        <div className="flex-shrink-0 w-8 h-8 bg-[#0CF2A0]/20 rounded-full flex items-center justify-center mt-1">
+                          <Info className="h-4 w-4 text-[#0CF2A0]" />
                         </div>
-                        <div className="mt-4 p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg">
-                          <p className="text-blue-300 text-sm font-medium mb-1">Pro Tip</p>
-                          <p className="text-blue-200 text-sm">Review and edit the generated email before sending to add your personal touch and ensure accuracy.</p>
+                        <div className="flex-1">
+                          <h3 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
+                            How to Use This Feature
+                          </h3>
+                          <p className="text-gray-300 text-base mb-6">
+                            Learn how to create and send personalized emails to professors with our step-by-step tutorial.
+                          </p>
+                          <motion.button
+                            onClick={() => setShowEmailTutorial(true)}
+                            className="bg-gradient-to-r from-[#0CF2A0] to-[#0CF2A0]/80 text-black px-6 py-3 rounded-xl font-semibold hover:from-[#0CF2A0]/90 hover:to-[#0CF2A0]/70 transition-all duration-300 flex items-center gap-3 shadow-lg"
+                            whileHover={{ scale: 1.05, y: -2 }}
+                            whileTap={{ scale: 0.95 }}
+                          >
+                            <Info className="h-5 w-5" />
+                            Start Tutorial
+                          </motion.button>
                         </div>
                       </div>
                     </div>
-                  </div>
-                </motion.div>
+                  </motion.div>
+                )}
 
                 {/* Enhanced Selected Professor Info Card */}
                 {selectedProfessorForEmail && (
@@ -3826,6 +3803,13 @@ INSTRUCTIONS:
         onSkip={handleTutorialSkip}
         tutorialKey="search-page"
         autoAdvance={true}
+      />
+
+      {/* Email Tutorial Overlay */}
+      <EmailTutorialOverlay
+        isVisible={showEmailTutorial}
+        onComplete={() => setShowEmailTutorial(false)}
+        onSkip={() => setShowEmailTutorial(false)}
       />
 
     </div>

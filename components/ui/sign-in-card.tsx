@@ -8,6 +8,7 @@ import { supabase } from '@/lib/supabase';
 import { cn } from "@/lib/utils"
 import { GradientButton } from '@/components/ui/gradient-button';
 import { CustomGoogleButton } from '@/components/ui/custom-google-button';
+import { cookies } from '@/lib/cookies';
 import Image from 'next/image';
 
 // Dynamic import no longer needed as we're using custom Google button
@@ -108,11 +109,21 @@ export function SignInCard() {
         provider: 'google',
         token: credentialResponse.credential,
       });
-      
+
       if (error) {
         throw error;
       }
-      
+
+      // Save session data to cookies for auto-login
+      if (data.session) {
+        cookies.setUserSession({
+          userId: data.session.user.id,
+          email: data.session.user.email || '',
+          provider: 'google',
+          expiresAt: Date.now() + (7 * 24 * 60 * 60 * 1000) // 7 days
+        });
+      }
+
       // Redirect to search page on successful login
       router.push('/search');
     } catch (error) {
@@ -156,11 +167,21 @@ export function SignInCard() {
         email,
         password,
       });
-      
+
       if (error) {
         throw error;
       }
-      
+
+      // Save session data to cookies for auto-login
+      if (data.session) {
+        cookies.setUserSession({
+          userId: data.session.user.id,
+          email: data.session.user.email || '',
+          provider: 'email',
+          expiresAt: Date.now() + (7 * 24 * 60 * 60 * 1000) // 7 days
+        });
+      }
+
       // Redirect to search page on successful login
       router.push('/search');
     } catch (error) {
