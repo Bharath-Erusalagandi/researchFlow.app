@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { GraduationCap, User, Mail, BookOpen, Award, ArrowUp, Square, Home, FileText, Search as SearchIcon, Settings, LogOut, AlertCircle, Check, Heart, Brain, PenTool, Send, Copy, Loader2, ExternalLink, Upload, Link as LinkIcon, Edit3, Clock, Trash2, ChevronRight, ChevronLeft, Shuffle, X, Info, AlertTriangle, XCircle } from 'lucide-react';
+import { GraduationCap, User, Mail, BookOpen, Award, ArrowUp, Square, Home, FileText, Search as SearchIcon, Settings, LogOut, AlertCircle, Check, Heart, Brain, PenTool, Send, Copy, Loader2, ExternalLink, Upload, Link as LinkIcon, Edit3, Clock, Trash2, ChevronRight, ChevronLeft, Shuffle, X, Info, AlertTriangle, XCircle, Users, BarChart3 } from 'lucide-react';
 import { IconSend, IconMail, IconLoader2 as TablerLoader2 } from '@tabler/icons-react';
 import { getTimeBasedGreeting } from '@/lib/utils';
 // Removed PromptInput components - now using AIInputWithLoading
@@ -17,6 +17,10 @@ import { AIInputWithLoading } from '@/components/ui/ai-input-with-loading';
 import { Progress } from '@/components/ui/progress';
 import { TutorialOverlay } from '@/components/ui/tutorial-overlay';
 import { EmailTutorialOverlay } from '@/components/ui/email-tutorial-overlay';
+import { SearchSuggestions } from '@/components/ui/search-suggestions';
+import { ProfessorComparison } from '@/components/ui/professor-comparison';
+import { VirtualizedList, useContainerHeight, useItemHeight } from '@/components/ui/virtualized-list';
+import { EmailAnalytics } from '@/components/ui/email-analytics';
 import { searchPageTutorialSteps, quickTutorialSteps, postSearchTutorialSteps } from '@/lib/tutorial-steps';
 import { cookies } from '@/lib/cookies';
 import withAuth from '../components/withAuth';
@@ -463,6 +467,78 @@ function SearchPage() {
   const mousePositionRef = useRef<{x: number | null, y: number | null}>({ x: null, y: null });
   const [aiSuggestion, setAISuggestion] = useState<string>("");
   const [savedProfessors, setSavedProfessors] = useState<string[]>([]);
+
+  // Search Suggestions State
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [recentSearches, setRecentSearches] = useState<string[]>([]);
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Professor Comparison State
+  const [comparisonProfessors, setComparisonProfessors] = useState<[Professor, Professor] | []>([]);
+  const [showComparison, setShowComparison] = useState(false);
+
+  // Virtual Scrolling State
+  const containerHeight = useContainerHeight(600);
+  const itemHeight = useItemHeight();
+  const shouldUseVirtualScrolling = filteredProfessors.length > 50; // Use virtual scrolling for large datasets
+
+  // Email Analytics State
+  const [showAnalytics, setShowAnalytics] = useState(false);
+
+  // Email Tracking Functions
+  const trackEmailSent = (professor: Professor, emailContent: string) => {
+    const emailEvent = {
+      id: Math.random().toString(36).substr(2, 9),
+      professorId: professor.id,
+      professorName: professor.name,
+      professorEmail: professor.email,
+      university: professor.university_name,
+      researchArea: professor.field_of_research,
+      emailContent: emailContent.substring(0, 200) + '...', // Store preview
+      sentAt: new Date().toISOString(),
+      status: 'sent',
+      userId: userName || 'anonymous'
+    };
+
+    // Store in localStorage (in production, this would be a database)
+    const existingEmails = JSON.parse(localStorage.getItem('emailTracking') || '[]');
+    existingEmails.push(emailEvent);
+    localStorage.setItem('emailTracking', JSON.stringify(existingEmails));
+
+    // Update professor-specific tracking
+    const professorStats = JSON.parse(localStorage.getItem('professorStats') || '{}');
+    if (!professorStats[professor.id]) {
+      professorStats[professor.id] = {
+        name: professor.name,
+        university: professor.university_name,
+        emailsSent: 0,
+        responsesReceived: 0,
+        lastContact: null
+      };
+    }
+    professorStats[professor.id].emailsSent++;
+    professorStats[professor.id].lastContact = new Date().toISOString();
+    localStorage.setItem('professorStats', JSON.stringify(professorStats));
+  };
+
+  const markEmailAsResponded = (emailId: string) => {
+    const existingEmails = JSON.parse(localStorage.getItem('emailTracking') || '[]');
+    const emailIndex = existingEmails.findIndex((email: any) => email.id === emailId);
+
+    if (emailIndex !== -1) {
+      existingEmails[emailIndex].status = 'responded';
+      existingEmails[emailIndex].respondedAt = new Date().toISOString();
+      localStorage.setItem('emailTracking', JSON.stringify(existingEmails));
+
+      // Update professor stats
+      const professorId = existingEmails[emailIndex].professorId;
+      const professorStats = JSON.parse(localStorage.getItem('professorStats') || '{}');
+      if (professorStats[professorId]) {
+        professorStats[professorId].responsesReceived++;
+        localStorage.setItem('professorStats', JSON.stringify(professorStats));
+      }
+    }
+  };
   
   // Search History State - Chat-like functionality
   type SearchSession = {
@@ -588,6 +664,14 @@ function SearchPage() {
     const savedBookmarkedProfs = JSON.parse(localStorage.getItem('savedProfessors') || '[]');
     const savedIds = savedBookmarkedProfs.map((prof: any) => prof.id?.toString() || '');
     setSavedProfessors(savedIds);
+
+    // Load recent searches for suggestions
+    const savedSearchHistory = JSON.parse(localStorage.getItem('researchConnect_searchHistory') || '[]');
+    const recentQueries = savedSearchHistory
+      .slice(-10) // Get last 10 searches
+      .map((session: any) => session.query)
+      .filter((query: string, index: number, arr: string[]) => arr.indexOf(query) === index); // Remove duplicates
+    setRecentSearches(recentQueries);
     
     // Load selected professor but DON'T force tab switch
     if (savedSelectedProfessor) {
@@ -963,6 +1047,108 @@ function SearchPage() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // Handle search suggestions
+  const handleSearchInputChange = (value: string) => {
+    setSearchQuery(value);
+
+    // Clear existing timeout
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    // Show suggestions if there's input
+    if (value.trim().length > 0) {
+      setShowSuggestions(true);
+    } else {
+      setShowSuggestions(false);
+    }
+  };
+
+  const handleSuggestionSelect = (suggestion: string) => {
+    setSearchQuery(suggestion);
+    setShowSuggestions(false);
+    handleSearch(suggestion);
+  };
+
+  const handleSearchInputFocus = () => {
+    if (searchQuery.trim() || recentSearches.length > 0) {
+      setShowSuggestions(true);
+    }
+  };
+
+  const handleSearchInputBlur = () => {
+    // Delay hiding suggestions to allow clicks
+    setTimeout(() => setShowSuggestions(false), 150);
+  };
+
+  // Professor Comparison Handlers
+  const addToComparison = (professor: Professor) => {
+    if (comparisonProfessors.length === 0) {
+      setComparisonProfessors([professor, professor]); // Temporary state
+      addNotification({
+        type: 'info',
+        title: 'Professor Added',
+        message: `${professor.name} added to comparison. Add another professor to compare.`,
+        icon: <Users className="h-5 w-5" />
+      });
+    } else if (comparisonProfessors.length === 1) {
+      setComparisonProfessors([comparisonProfessors[0], professor]);
+      setShowComparison(true);
+      addNotification({
+        type: 'success',
+        title: 'Comparison Ready',
+        message: `Comparing ${comparisonProfessors[0].name} and ${professor.name}`,
+        icon: <Users className="h-5 w-5" />
+      });
+    }
+  };
+
+  const removeFromComparison = (professorId: number) => {
+    if (comparisonProfessors.length > 0) {
+      setComparisonProfessors([]);
+      addNotification({
+        type: 'info',
+        title: 'Comparison Cleared',
+        message: 'Professor comparison has been cleared.',
+        icon: <Users className="h-5 w-5" />
+      });
+    }
+  };
+
+  const handleComparisonSelect = (professor: Professor) => {
+    // When selecting a professor from comparison modal
+    setSelectedProfessorForEmail(professor);
+    setShowComparison(false);
+    setActiveTab('email');
+
+    localStorage.setItem('selectedProfessorForEmail', JSON.stringify(professor));
+    addNotification({
+      type: 'success',
+      title: 'Professor Selected',
+      message: `${professor.name} has been selected for personalized email composition.`,
+      icon: <Mail className="h-5 w-5" />
+    });
+  };
+
+  // Helper function to render a professor card
+  const renderProfessorCard = (professor: Professor, index: number) => {
+    const isSaved = savedProfessors.includes(professor.id?.toString() || '');
+
+    return (
+      <ProfessorCard
+        key={professor.id}
+        professor={professor}
+        index={index}
+        isSaved={isSaved}
+        isProcessing={processingEmailForProfessor === (professor.id?.toString() || professor.name)}
+        onSave={handleSaveProfessor}
+        onPersonalizedEmail={handlePersonalizedEmail}
+        onCompare={addToComparison}
+        isInComparison={comparisonProfessors.length > 0 && comparisonProfessors.some(p => p.id === professor.id)}
+      />
+    );
   };
 
   // Function to load a previous search session
@@ -2160,6 +2346,9 @@ ${userFullName}`;
       const result = await response.json();
 
       if (result.success) {
+        // Track the email send event
+        trackEmailSent(selectedProfessorForEmail, emailToSend);
+
         addNotification({
           type: 'success',
           title: 'Email Sent Successfully!',
@@ -2773,17 +2962,30 @@ ${userFullName}`;
 
 
 
-                  <AIInputWithLoading
-                    value={searchQuery}
-                    onChange={setSearchQuery}
-                    onSubmit={handleSearch}
-                    disabled={isLoading}
-                    isLoading={isLoading}
-                    placeholder="Search research topics, professors, or universities..."
-                    className="flex-1"
-                    minHeight={60}
-                    maxHeight={120}
-                  />
+                  <div className="flex-1 relative">
+                    <AIInputWithLoading
+                      value={searchQuery}
+                      onChange={handleSearchInputChange}
+                      onSubmit={handleSearch}
+                      disabled={isLoading}
+                      isLoading={isLoading}
+                      placeholder="Search research topics, professors, or universities..."
+                      className="w-full"
+                      minHeight={60}
+                      maxHeight={120}
+                      onFocus={handleSearchInputFocus}
+                      onBlur={handleSearchInputBlur}
+                    />
+
+                    <SearchSuggestions
+                      isOpen={showSuggestions}
+                      query={searchQuery}
+                      onSelect={handleSuggestionSelect}
+                      onClose={() => setShowSuggestions(false)}
+                      recentSearches={recentSearches}
+                      className="w-full"
+                    />
+                  </div>
                 </motion.div>
                 
                 {/* Popular Topics section removed */}
@@ -2810,23 +3012,21 @@ ${userFullName}`;
                     {renderAISuggestion()}
                     
                     {/* Professor Cards */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 professor-cards-container" data-tutorial="professor-cards-container">
-                      {filteredProfessors.map((professor, index) => {
-                        const isSaved = savedProfessors.includes(professor.id?.toString() || '');
-                        
-                        return (
-                          <ProfessorCard
-                            key={professor.id}
-                            professor={professor}
-                            index={index}
-                            isSaved={isSaved}
-                            isProcessing={processingEmailForProfessor === (professor.id?.toString() || professor.name)}
-                            onSave={handleSaveProfessor}
-                            onPersonalizedEmail={handlePersonalizedEmail}
-                          />
-                        );
-                      })}
-                    </div>
+                    {shouldUseVirtualScrolling ? (
+                      <div className="professor-cards-container" data-tutorial="professor-cards-container">
+                        <VirtualizedList
+                          items={filteredProfessors}
+                          itemHeight={itemHeight}
+                          containerHeight={containerHeight}
+                          renderItem={renderProfessorCard}
+                          className="w-full"
+                        />
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 professor-cards-container" data-tutorial="professor-cards-container">
+                        {filteredProfessors.map((professor, index) => renderProfessorCard(professor, index))}
+                      </div>
+                    )}
                     
                     {/* More Professors Coming Soon Message */}
                     {hasSearched && (
@@ -2866,6 +3066,24 @@ ${userFullName}`;
                   className="mb-6"
                 >
                   <ShinyText text="AI-Powered Email Generation" className="bg-[#1a1a1a] border border-gray-700 text-[#0CF2A0] px-4 py-1 rounded-full text-xs sm:text-sm font-medium cursor-pointer hover:border-[#0CF2A0]/50 transition-colors" />
+                </motion.div>
+
+                {/* Analytics Button */}
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 }}
+                  className="flex justify-end mb-6"
+                >
+                  <motion.button
+                    onClick={() => setShowAnalytics(true)}
+                    className="flex items-center gap-2 bg-gradient-to-r from-purple-500/20 to-blue-500/20 border border-purple-500/30 text-purple-300 px-4 py-2 rounded-xl hover:from-purple-500/30 hover:to-blue-500/30 hover:border-purple-500/50 transition-all duration-300"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <BarChart3 className="w-4 h-4" />
+                    <span className="text-sm font-medium">Analytics</span>
+                  </motion.button>
                 </motion.div>
 
 
@@ -3810,6 +4028,20 @@ INSTRUCTIONS:
         isVisible={showEmailTutorial}
         onComplete={() => setShowEmailTutorial(false)}
         onSkip={() => setShowEmailTutorial(false)}
+      />
+
+      {/* Professor Comparison Modal */}
+      <ProfessorComparison
+        professors={comparisonProfessors}
+        isOpen={showComparison}
+        onClose={() => setShowComparison(false)}
+        onSelectProfessor={handleComparisonSelect}
+      />
+
+      {/* Email Analytics Modal */}
+      <EmailAnalytics
+        isOpen={showAnalytics}
+        onClose={() => setShowAnalytics(false)}
       />
 
     </div>
