@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { GraduationCap, User, Mail, BookOpen, Award, ArrowUp, Square, Home, FileText, Search as SearchIcon, Settings, LogOut, AlertCircle, Check, Heart, Brain, PenTool, Send, Copy, Loader2, ExternalLink, Upload, Link as LinkIcon, Edit3, Clock, Trash2, ChevronRight, ChevronLeft, Shuffle, X, Info, AlertTriangle, XCircle, Users, BarChart3 } from 'lucide-react';
+import { GraduationCap, User, Mail, BookOpen, Award, ArrowUp, Square, Home, FileText, Search as SearchIcon, Settings, LogOut, AlertCircle, Check, Heart, Brain, PenTool, Send, Copy, Loader2, ExternalLink, Upload, Link as LinkIcon, Edit3, Clock, Trash2, ChevronRight, ChevronLeft, Shuffle, X, Info, AlertTriangle, XCircle } from 'lucide-react';
 import { IconSend, IconMail, IconLoader2 as TablerLoader2 } from '@tabler/icons-react';
 import { getTimeBasedGreeting } from '@/lib/utils';
 // Removed PromptInput components - now using AIInputWithLoading
@@ -17,13 +17,12 @@ import { AIInputWithLoading } from '@/components/ui/ai-input-with-loading';
 import { Progress } from '@/components/ui/progress';
 import { TutorialOverlay } from '@/components/ui/tutorial-overlay';
 import { EmailTutorialOverlay } from '@/components/ui/email-tutorial-overlay';
-import { SearchSuggestions } from '@/components/ui/search-suggestions';
-import { ProfessorComparison } from '@/components/ui/professor-comparison';
-import { VirtualizedList, useContainerHeight, useItemHeight } from '@/components/ui/virtualized-list';
-import { EmailAnalytics } from '@/components/ui/email-analytics';
+import { Pagination } from '@/components/ui/pagination';
 import { searchPageTutorialSteps, quickTutorialSteps, postSearchTutorialSteps } from '@/lib/tutorial-steps';
 import { cookies } from '@/lib/cookies';
+import { useDebounce } from '../hooks/useDebounce';
 import withAuth from '../components/withAuth';
+import Head from 'next/head';
 
 
 
@@ -452,12 +451,61 @@ const ProgressBarForm = ({
 };
 
 function SearchPage() {
+  // Dynamic SEO content based on current state
+  const getPageTitle = () => {
+    if (selectedProfessorForEmail) {
+      return `${selectedProfessorForEmail.name} - Professor ${selectedProfessorForEmail.field_of_research.split(';')[0]} | Flow Research`;
+    }
+    return hasSearched ? `${searchTerm ? `"${searchTerm}"` : 'Professor'} Search Results | Flow Research` : 'Find Professors & Research Opportunities | Flow Research';
+  };
+
+  const getPageDescription = () => {
+    if (selectedProfessorForEmail) {
+      return `Connect with Professor ${selectedProfessorForEmail.name} from ${selectedProfessorForEmail.university_name}. Research focus: ${selectedProfessorForEmail.field_of_research}. Send personalized collaboration emails.`;
+    }
+    return hasSearched
+      ? `Found ${filteredProfessors.length} professors matching your research interests. Connect with academic experts and start research collaborations.`
+      : 'Discover professors and research opportunities. AI-powered personalized email generation to help students and researchers build academic connections.';
+  };
+
   const [activeTab, setActiveTab] = useState<TabType>('search');
   const [searchQuery, setSearchQuery] = useState("");
   const [lastSearchedTerm, setLastSearchedTerm] = useState(""); // Track the actual searched term
   const [filteredProfessors, setFilteredProfessors] = useState<Professor[]>([]);
   const [hasSearched, setHasSearched] = useState(false);
   const [userName, setUserName] = useState<string | null>(null);
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalProfessors, setTotalProfessors] = useState(0);
+  const [isLoadingPage, setIsLoadingPage] = useState(false);
+  const professorsPerPage = 12;
+
+  // Debounced search query
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
+
+  // Simple cache for search results
+  const searchCache = useRef<Map<string, { data: any; timestamp: number }>>(new Map());
+  const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
+  // Function to get cached result
+  const getCachedResult = (query: string, page: number) => {
+    const cacheKey = `${query}:${page}`;
+    const cached = searchCache.current.get(cacheKey);
+    if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+      return cached.data;
+    }
+    return null;
+  };
+
+  // Function to set cached result
+  const setCachedResult = (query: string, page: number, data: any) => {
+    const cacheKey = `${query}:${page}`;
+    searchCache.current.set(cacheKey, {
+      data,
+      timestamp: Date.now()
+    });
+  };
   const [greeting, setGreeting] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -467,78 +515,6 @@ function SearchPage() {
   const mousePositionRef = useRef<{x: number | null, y: number | null}>({ x: null, y: null });
   const [aiSuggestion, setAISuggestion] = useState<string>("");
   const [savedProfessors, setSavedProfessors] = useState<string[]>([]);
-
-  // Search Suggestions State
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const [recentSearches, setRecentSearches] = useState<string[]>([]);
-  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-  // Professor Comparison State
-  const [comparisonProfessors, setComparisonProfessors] = useState<[Professor, Professor] | []>([]);
-  const [showComparison, setShowComparison] = useState(false);
-
-  // Virtual Scrolling State
-  const containerHeight = useContainerHeight(600);
-  const itemHeight = useItemHeight();
-  const shouldUseVirtualScrolling = filteredProfessors.length > 50; // Use virtual scrolling for large datasets
-
-  // Email Analytics State
-  const [showAnalytics, setShowAnalytics] = useState(false);
-
-  // Email Tracking Functions
-  const trackEmailSent = (professor: Professor, emailContent: string) => {
-    const emailEvent = {
-      id: Math.random().toString(36).substr(2, 9),
-      professorId: professor.id,
-      professorName: professor.name,
-      professorEmail: professor.email,
-      university: professor.university_name,
-      researchArea: professor.field_of_research,
-      emailContent: emailContent.substring(0, 200) + '...', // Store preview
-      sentAt: new Date().toISOString(),
-      status: 'sent',
-      userId: userName || 'anonymous'
-    };
-
-    // Store in localStorage (in production, this would be a database)
-    const existingEmails = JSON.parse(localStorage.getItem('emailTracking') || '[]');
-    existingEmails.push(emailEvent);
-    localStorage.setItem('emailTracking', JSON.stringify(existingEmails));
-
-    // Update professor-specific tracking
-    const professorStats = JSON.parse(localStorage.getItem('professorStats') || '{}');
-    if (!professorStats[professor.id]) {
-      professorStats[professor.id] = {
-        name: professor.name,
-        university: professor.university_name,
-        emailsSent: 0,
-        responsesReceived: 0,
-        lastContact: null
-      };
-    }
-    professorStats[professor.id].emailsSent++;
-    professorStats[professor.id].lastContact = new Date().toISOString();
-    localStorage.setItem('professorStats', JSON.stringify(professorStats));
-  };
-
-  const markEmailAsResponded = (emailId: string) => {
-    const existingEmails = JSON.parse(localStorage.getItem('emailTracking') || '[]');
-    const emailIndex = existingEmails.findIndex((email: any) => email.id === emailId);
-
-    if (emailIndex !== -1) {
-      existingEmails[emailIndex].status = 'responded';
-      existingEmails[emailIndex].respondedAt = new Date().toISOString();
-      localStorage.setItem('emailTracking', JSON.stringify(existingEmails));
-
-      // Update professor stats
-      const professorId = existingEmails[emailIndex].professorId;
-      const professorStats = JSON.parse(localStorage.getItem('professorStats') || '{}');
-      if (professorStats[professorId]) {
-        professorStats[professorId].responsesReceived++;
-        localStorage.setItem('professorStats', JSON.stringify(professorStats));
-      }
-    }
-  };
   
   // Search History State - Chat-like functionality
   type SearchSession = {
@@ -664,14 +640,6 @@ function SearchPage() {
     const savedBookmarkedProfs = JSON.parse(localStorage.getItem('savedProfessors') || '[]');
     const savedIds = savedBookmarkedProfs.map((prof: any) => prof.id?.toString() || '');
     setSavedProfessors(savedIds);
-
-    // Load recent searches for suggestions
-    const savedSearchHistory = JSON.parse(localStorage.getItem('researchConnect_searchHistory') || '[]');
-    const recentQueries = savedSearchHistory
-      .slice(-10) // Get last 10 searches
-      .map((session: any) => session.query)
-      .filter((query: string, index: number, arr: string[]) => arr.indexOf(query) === index); // Remove duplicates
-    setRecentSearches(recentQueries);
     
     // Load selected professor but DON'T force tab switch
     if (savedSelectedProfessor) {
@@ -913,7 +881,7 @@ function SearchPage() {
 
 
 
-  const handleSearch = async (query?: string) => {
+  const handleSearch = async (query?: string, page: number = 1) => {
     const searchTerm = query || searchQuery;
     
     // If empty search, don't run the search
@@ -930,8 +898,33 @@ function SearchPage() {
     localStorage.setItem('researchConnect_lastSearchedTerm', searchTerm);
     
     try {
-      // Call our API endpoint
-      const response = await axios.get(`/api/professor-search?query=${encodeURIComponent(searchTerm)}`, {
+      // Check cache first
+      const cachedResult = getCachedResult(searchTerm, page);
+      if (cachedResult) {
+        // Use cached data
+        let professors = cachedResult.professors;
+        const totalCount = cachedResult.total || professors.length;
+        setTotalProfessors(totalCount);
+
+        // Process the cached professors data
+        professors = professors.map((prof: Professor, index: number) => ({
+          ...prof,
+          id: prof.id || (prof.name + prof.university_name + prof.field_of_research).split('').reduce((a, b) => a + b.charCodeAt(0), 0),
+          publications: Math.floor(Math.random() * 100) + 10,
+          citations: Math.floor(Math.random() * 5000) + 500,
+          title: `Professor of ${prof.field_of_research.split(';')[0]}`,
+          image: `https://source.unsplash.com/random/256x256/?professor&${prof.name}`,
+          researchAreas: prof.field_of_research.split(';').map(area => area.trim())
+        }));
+
+        setFilteredProfessors(professors);
+        setHasSearched(true);
+        setAISuggestion(cachedResult.aiSuggestion || '');
+        return;
+      }
+
+      // Call our API endpoint with pagination
+      const response = await axios.get(`/api/professor-search?query=${encodeURIComponent(searchTerm)}&page=${page}&limit=${professorsPerPage}`, {
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json'
@@ -944,8 +937,17 @@ function SearchPage() {
         throw new Error('Invalid response format from server');
       }
       
-      // Process the professors data
+      // Process the professors data and pagination info
       let professors = response.data.professors;
+      const totalCount = response.data.total || professors.length;
+      setTotalProfessors(totalCount);
+
+      // Cache the response data
+      setCachedResult(searchTerm, page, {
+        professors: response.data.professors,
+        total: totalCount,
+        aiSuggestion: response.data.aiSuggestion
+      });
       
       // Get the AI suggestion
       const suggestion = response.data.aiSuggestion;
@@ -1049,106 +1051,20 @@ function SearchPage() {
     }
   };
 
-  // Handle search suggestions
-  const handleSearchInputChange = (value: string) => {
-    setSearchQuery(value);
-
-    // Clear existing timeout
-    if (searchTimeoutRef.current) {
-      clearTimeout(searchTimeoutRef.current);
+  // Debounced search effect
+  useEffect(() => {
+    if (debouncedSearchQuery && debouncedSearchQuery !== lastSearchedTerm) {
+      setCurrentPage(1); // Reset to first page on new search
+      handleSearch(debouncedSearchQuery, 1);
     }
+  }, [debouncedSearchQuery, lastSearchedTerm]);
 
-    // Show suggestions if there's input
-    if (value.trim().length > 0) {
-      setShowSuggestions(true);
-    } else {
-      setShowSuggestions(false);
-    }
-  };
-
-  const handleSuggestionSelect = (suggestion: string) => {
-    setSearchQuery(suggestion);
-    setShowSuggestions(false);
-    handleSearch(suggestion);
-  };
-
-  const handleSearchInputFocus = () => {
-    if (searchQuery.trim() || recentSearches.length > 0) {
-      setShowSuggestions(true);
-    }
-  };
-
-  const handleSearchInputBlur = () => {
-    // Delay hiding suggestions to allow clicks
-    setTimeout(() => setShowSuggestions(false), 150);
-  };
-
-  // Professor Comparison Handlers
-  const addToComparison = (professor: Professor) => {
-    if (comparisonProfessors.length === 0) {
-      setComparisonProfessors([professor, professor]); // Temporary state
-      addNotification({
-        type: 'info',
-        title: 'Professor Added',
-        message: `${professor.name} added to comparison. Add another professor to compare.`,
-        icon: <Users className="h-5 w-5" />
-      });
-    } else if (comparisonProfessors.length === 1) {
-      setComparisonProfessors([comparisonProfessors[0], professor]);
-      setShowComparison(true);
-      addNotification({
-        type: 'success',
-        title: 'Comparison Ready',
-        message: `Comparing ${comparisonProfessors[0].name} and ${professor.name}`,
-        icon: <Users className="h-5 w-5" />
-      });
-    }
-  };
-
-  const removeFromComparison = (professorId: number) => {
-    if (comparisonProfessors.length > 0) {
-      setComparisonProfessors([]);
-      addNotification({
-        type: 'info',
-        title: 'Comparison Cleared',
-        message: 'Professor comparison has been cleared.',
-        icon: <Users className="h-5 w-5" />
-      });
-    }
-  };
-
-  const handleComparisonSelect = (professor: Professor) => {
-    // When selecting a professor from comparison modal
-    setSelectedProfessorForEmail(professor);
-    setShowComparison(false);
-    setActiveTab('email');
-
-    localStorage.setItem('selectedProfessorForEmail', JSON.stringify(professor));
-    addNotification({
-      type: 'success',
-      title: 'Professor Selected',
-      message: `${professor.name} has been selected for personalized email composition.`,
-      icon: <Mail className="h-5 w-5" />
-    });
-  };
-
-  // Helper function to render a professor card
-  const renderProfessorCard = (professor: Professor, index: number) => {
-    const isSaved = savedProfessors.includes(professor.id?.toString() || '');
-
-    return (
-      <ProfessorCard
-        key={professor.id}
-        professor={professor}
-        index={index}
-        isSaved={isSaved}
-        isProcessing={processingEmailForProfessor === (professor.id?.toString() || professor.name)}
-        onSave={handleSaveProfessor}
-        onPersonalizedEmail={handlePersonalizedEmail}
-        onCompare={addToComparison}
-        isInComparison={comparisonProfessors.length > 0 && comparisonProfessors.some(p => p.id === professor.id)}
-      />
-    );
+  // Page change handler
+  const handlePageChange = async (page: number) => {
+    setIsLoadingPage(true);
+    setCurrentPage(page);
+    await handleSearch(lastSearchedTerm, page);
+    setIsLoadingPage(false);
   };
 
   // Function to load a previous search session
@@ -2346,9 +2262,6 @@ ${userFullName}`;
       const result = await response.json();
 
       if (result.success) {
-        // Track the email send event
-        trackEmailSent(selectedProfessorForEmail, emailToSend);
-
         addNotification({
           type: 'success',
           title: 'Email Sent Successfully!',
@@ -2524,7 +2437,48 @@ ${userFullName}`;
   }, [isMobileMenuOpen]);
 
   return (
-    <div className="relative min-h-screen bg-[#111111] text-gray-300 flex flex-col overflow-x-hidden">
+    <>
+      <Head>
+        <title>{getPageTitle()}</title>
+        <meta name="description" content={getPageDescription()} />
+        <meta name="robots" content="index, follow" />
+        <link rel="canonical" href={`https://flow-research.com/search${activeTab === 'email' ? '?tab=email' : ''}`} />
+
+        {/* Open Graph */}
+        <meta property="og:title" content={getPageTitle()} />
+        <meta property="og:description" content={getPageDescription()} />
+        <meta property="og:url" content={`https://flow-research.com/search${activeTab === 'email' ? '?tab=email' : ''}`} />
+        <meta property="og:type" content="website" />
+
+        {/* Twitter */}
+        <meta property="twitter:title" content={getPageTitle()} />
+        <meta property="twitter:description" content={getPageDescription()} />
+
+        {/* Structured Data for Professors */}
+        {selectedProfessorForEmail && (
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{
+              __html: JSON.stringify({
+                "@context": "https://schema.org",
+                "@type": "Person",
+                "name": selectedProfessorForEmail.name,
+                "jobTitle": "Professor",
+                "worksFor": {
+                  "@type": "EducationalOrganization",
+                  "name": selectedProfessorForEmail.university_name
+                },
+                "knowsAbout": selectedProfessorForEmail.field_of_research.split(';'),
+                "email": selectedProfessorForEmail.email,
+                "url": selectedProfessorForEmail.official_url,
+                "description": `Professor ${selectedProfessorForEmail.name} specializes in ${selectedProfessorForEmail.field_of_research}`
+              })
+            }}
+          />
+        )}
+      </Head>
+
+      <div className="relative min-h-screen bg-[#111111] text-gray-300 flex flex-col overflow-x-hidden">
       {/* Interactive Background */}
       <canvas ref={canvasRef} className="absolute inset-0 z-0 pointer-events-none opacity-80" />
       <div className="absolute inset-0 z-1 pointer-events-none" style={{
@@ -2962,30 +2916,17 @@ ${userFullName}`;
 
 
 
-                  <div className="flex-1 relative">
-                    <AIInputWithLoading
-                      value={searchQuery}
-                      onChange={handleSearchInputChange}
-                      onSubmit={handleSearch}
-                      disabled={isLoading}
-                      isLoading={isLoading}
-                      placeholder="Search research topics, professors, or universities..."
-                      className="w-full"
-                      minHeight={60}
-                      maxHeight={120}
-                      onFocus={handleSearchInputFocus}
-                      onBlur={handleSearchInputBlur}
-                    />
-
-                    <SearchSuggestions
-                      isOpen={showSuggestions}
-                      query={searchQuery}
-                      onSelect={handleSuggestionSelect}
-                      onClose={() => setShowSuggestions(false)}
-                      recentSearches={recentSearches}
-                      className="w-full"
-                    />
-                  </div>
+                  <AIInputWithLoading
+                    value={searchQuery}
+                    onChange={setSearchQuery}
+                    onSubmit={handleSearch}
+                    disabled={isLoading}
+                    isLoading={isLoading}
+                    placeholder="Search research topics, professors, or universities..."
+                    className="flex-1"
+                    minHeight={60}
+                    maxHeight={120}
+                  />
                 </motion.div>
                 
                 {/* Popular Topics section removed */}
@@ -3012,22 +2953,60 @@ ${userFullName}`;
                     {renderAISuggestion()}
                     
                     {/* Professor Cards */}
-                    {shouldUseVirtualScrolling ? (
-                      <div className="professor-cards-container" data-tutorial="professor-cards-container">
-                        <VirtualizedList
-                          items={filteredProfessors}
-                          itemHeight={itemHeight}
-                          containerHeight={containerHeight}
-                          renderItem={renderProfessorCard}
-                          className="w-full"
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 professor-cards-container" data-tutorial="professor-cards-container">
+                      {filteredProfessors.map((professor, index) => {
+                        const isSaved = savedProfessors.includes(professor.id?.toString() || '');
+                        
+                        return (
+                          <ProfessorCard
+                            key={professor.id}
+                            professor={professor}
+                            index={index}
+                            isSaved={isSaved}
+                            isProcessing={processingEmailForProfessor === (professor.id?.toString() || professor.name)}
+                            onSave={handleSaveProfessor}
+                            onPersonalizedEmail={handlePersonalizedEmail}
+                          />
+                        );
+                      })}
+                    </div>
+
+                    {/* Pagination */}
+                    {hasSearched && totalProfessors > professorsPerPage && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5, delay: 0.3 }}
+                        className="mt-8 flex flex-col items-center gap-4"
+                      >
+                        {/* Loading indicator for page changes */}
+                        {isLoadingPage && (
+                          <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="flex items-center gap-2 text-[#0CF2A0] text-sm"
+                          >
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                            Loading professors...
+                          </motion.div>
+                        )}
+
+                        <Pagination
+                          currentPage={currentPage}
+                          totalPages={Math.ceil(totalProfessors / professorsPerPage)}
+                          onPageChange={handlePageChange}
+                          showPages={5}
+                          className="bg-[#1a1a1a]/50 border border-gray-800 rounded-xl p-4 backdrop-blur-sm"
                         />
-                      </div>
-                    ) : (
-                      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 professor-cards-container" data-tutorial="professor-cards-container">
-                        {filteredProfessors.map((professor, index) => renderProfessorCard(professor, index))}
-                      </div>
+
+                        {/* Results summary */}
+                        <div className="text-sm text-gray-400 text-center">
+                          Showing {((currentPage - 1) * professorsPerPage) + 1}-{Math.min(currentPage * professorsPerPage, totalProfessors)} of {totalProfessors} professors
+                        </div>
+                      </motion.div>
                     )}
-                    
+
                     {/* More Professors Coming Soon Message */}
                     {hasSearched && (
                       <motion.div 
@@ -3066,24 +3045,6 @@ ${userFullName}`;
                   className="mb-6"
                 >
                   <ShinyText text="AI-Powered Email Generation" className="bg-[#1a1a1a] border border-gray-700 text-[#0CF2A0] px-4 py-1 rounded-full text-xs sm:text-sm font-medium cursor-pointer hover:border-[#0CF2A0]/50 transition-colors" />
-                </motion.div>
-
-                {/* Analytics Button */}
-                <motion.div
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2 }}
-                  className="flex justify-end mb-6"
-                >
-                  <motion.button
-                    onClick={() => setShowAnalytics(true)}
-                    className="flex items-center gap-2 bg-gradient-to-r from-purple-500/20 to-blue-500/20 border border-purple-500/30 text-purple-300 px-4 py-2 rounded-xl hover:from-purple-500/30 hover:to-blue-500/30 hover:border-purple-500/50 transition-all duration-300"
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    <BarChart3 className="w-4 h-4" />
-                    <span className="text-sm font-medium">Analytics</span>
-                  </motion.button>
                 </motion.div>
 
 
@@ -4030,21 +3991,8 @@ INSTRUCTIONS:
         onSkip={() => setShowEmailTutorial(false)}
       />
 
-      {/* Professor Comparison Modal */}
-      <ProfessorComparison
-        professors={comparisonProfessors}
-        isOpen={showComparison}
-        onClose={() => setShowComparison(false)}
-        onSelectProfessor={handleComparisonSelect}
-      />
-
-      {/* Email Analytics Modal */}
-      <EmailAnalytics
-        isOpen={showAnalytics}
-        onClose={() => setShowAnalytics(false)}
-      />
-
     </div>
+    </>
   );
 }
 

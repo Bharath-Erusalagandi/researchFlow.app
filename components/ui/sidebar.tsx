@@ -128,10 +128,15 @@ export const MobileSidebar = ({
         {...props}
       >
         <div className="flex justify-end z-20 w-full">
-          <Menu
-            className="text-neutral-800 dark:text-neutral-200 cursor-pointer"
+          <button
             onClick={() => setOpen(!open)}
-          />
+            className="p-3 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors touch-manipulation min-h-[48px] min-w-[48px] flex items-center justify-center"
+            aria-label={open ? "Close menu" : "Open menu"}
+          >
+            <Menu
+              className="text-neutral-800 dark:text-neutral-200 h-6 w-6"
+            />
+          </button>
         </div>
         <AnimatePresence>
           {open && (
@@ -148,12 +153,13 @@ export const MobileSidebar = ({
                 className
               )}
             >
-              <div
-                className="absolute right-10 top-10 z-50 text-neutral-800 dark:text-neutral-200 cursor-pointer"
+              <button
                 onClick={() => setOpen(!open)}
+                className="absolute right-10 top-10 z-50 p-3 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors touch-manipulation min-h-[48px] min-w-[48px] flex items-center justify-center"
+                aria-label="Close menu"
               >
-                <X />
-              </div>
+                <X className="text-neutral-800 dark:text-neutral-200 h-6 w-6" />
+              </button>
               {children}
             </motion.div>
           )}
@@ -177,7 +183,9 @@ export const SidebarLink = ({
     <Link
       href={link.href}
       className={cn(
-        "flex items-center justify-start gap-3 group/sidebar py-2",
+        "flex items-center justify-start gap-3 group/sidebar py-3 px-2 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors touch-manipulation",
+        // Better mobile touch targets
+        "min-h-[48px] sm:py-2 sm:px-0 sm:min-h-[40px]",
         className
       )}
       {...props}

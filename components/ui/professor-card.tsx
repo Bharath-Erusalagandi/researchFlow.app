@@ -1,7 +1,8 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Mail, BookOpen, Award, GraduationCap, Brain, Building2, Loader2, Users } from 'lucide-react';
+import { Mail, BookOpen, Award, GraduationCap, Brain, Building2, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { OptimizedProfessorImage } from './optimized-professor-image';
 
 interface Professor {
   id?: number;
@@ -25,83 +26,83 @@ interface ProfessorCardProps {
   isProcessing?: boolean;
   onSave: (professor: Professor) => void;
   onPersonalizedEmail: (professor: Professor) => void;
-  onCompare?: (professor: Professor) => void;
-  isInComparison?: boolean;
 }
 
-export const ProfessorCard: React.FC<ProfessorCardProps> = ({
-  professor,
-  index,
-  isSaved,
+export const ProfessorCard: React.FC<ProfessorCardProps> = ({ 
+  professor, 
+  index, 
+  isSaved, 
   isProcessing = false,
-  onSave,
-  onPersonalizedEmail,
-  onCompare,
-  isInComparison = false
+  onSave, 
+  onPersonalizedEmail 
 }) => {
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      if (!isProcessing) {
+        onPersonalizedEmail(professor);
+      }
+    }
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ 
+      transition={{
         duration: 0.3,
         delay: index * 0.05
       }}
-      className="bg-[#1a1a1a] border border-gray-800 rounded-xl p-6 sm:p-8 lg:p-10 hover:border-[#0CF2A0]/50 transition-all duration-300 group min-h-[320px] flex flex-col w-full"
+      className="bg-[#1a1a1a] border border-gray-800 rounded-xl p-6 sm:p-8 lg:p-10 hover:border-[#0CF2A0]/50 focus-within:border-[#0CF2A0]/50 transition-all duration-300 group min-h-[320px] flex flex-col w-full touch-manipulation cursor-pointer"
+      style={{
+        // Ensure minimum touch target for mobile
+        minHeight: '320px'
+      }}
+      tabIndex={0}
+      role="button"
+      aria-label={`Professor ${professor.name} from ${professor.university_name}, specializes in ${professor.field_of_research}. Click to send personalized email.`}
+      onKeyDown={handleKeyDown}
+      onClick={() => !isProcessing && onPersonalizedEmail(professor)}
     >
-      {/* Header: Name and Action Buttons */}
+      {/* Header: Name and Save Button */}
       <div className="flex items-start justify-between mb-3 gap-4">
         <div className="flex-1 min-w-0">
           <h3 className="text-xl sm:text-2xl font-bold text-white group-hover:text-[#0CF2A0] transition-colors mb-2 pr-2 leading-tight">
             {professor.name}
           </h3>
         </div>
-
-        <div className="flex items-center gap-2 flex-shrink-0">
-          {/* Save Button */}
-          <button
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              if (!isSaved) {
-                onSave(professor);
-              }
-            }}
-            className={cn(
-              "px-3 py-2 sm:px-4 sm:py-2 rounded-lg text-sm font-medium transition-colors duration-200 touch-manipulation min-h-[40px] min-w-[60px] transform-gpu will-change-transform",
-              isSaved
-                ? 'bg-green-600/20 text-green-400 cursor-not-allowed'
-                : 'bg-gray-700/50 text-gray-300 hover:bg-[#0CF2A0]/20 hover:text-[#0CF2A0] active:scale-95'
-            )}
-            disabled={isSaved}
-            type="button"
-            data-tutorial="save-button"
-          >
-            {isSaved ? 'Saved' : 'Save'}
-          </button>
-
-          {/* Comparison Button */}
-          {onCompare && (
-            <button
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                onCompare(professor);
-              }}
-              className={cn(
-                "px-3 py-2 sm:px-4 sm:py-2 rounded-lg text-sm font-medium transition-colors duration-200 touch-manipulation min-h-[40px] min-w-[60px] transform-gpu will-change-transform",
-                isInComparison
-                  ? 'bg-[#0CF2A0]/20 text-[#0CF2A0] cursor-not-allowed'
-                  : 'bg-gray-700/50 text-gray-300 hover:bg-[#0CF2A0]/20 hover:text-[#0CF2A0] active:scale-95'
-              )}
-              disabled={isInComparison}
-              type="button"
-              title={isInComparison ? 'Already in comparison' : 'Add to comparison'}
-            >
-              <Users className="w-4 h-4" />
-            </button>
+        
+        <button
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            if (!isSaved) {
+              onSave(professor);
+            }
+          }}
+          onTouchEnd={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            if (!isSaved) {
+              onSave(professor);
+            }
+          }}
+          className={cn(
+            "px-4 py-3 sm:px-4 sm:py-2 rounded-lg text-sm font-medium transition-colors duration-200 flex-shrink-0 touch-manipulation",
+            // Improved touch targets - minimum 44px on mobile
+            "min-h-[48px] min-w-[80px] sm:min-h-[40px] sm:min-w-[60px]",
+            "transform-gpu will-change-transform active:scale-95",
+            isSaved
+              ? 'bg-green-600/20 text-green-400 cursor-not-allowed'
+              : 'bg-gray-700/50 text-gray-300 hover:bg-[#0CF2A0]/20 hover:text-[#0CF2A0] active:bg-[#0CF2A0]/30'
           )}
-        </div>
+          disabled={isSaved}
+          type="button"
+          data-tutorial="save-button"
+          aria-label={isSaved ? `Professor ${professor.name} already saved` : `Save professor ${professor.name}`}
+        >
+          {isSaved ? 'Saved' : 'Save'}
+        </button>
       </div>
 
       {/* University */}
