@@ -50,6 +50,30 @@ export class UserPreferencesService {
 
   async initializeUser(userId: string): Promise<UserPreferences> {
     try {
+      // Check if Supabase is properly configured
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+      const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+      
+      if (!supabaseUrl || !supabaseKey || 
+          supabaseUrl === 'https://placeholder.supabase.co' || 
+          supabaseKey === 'placeholder-anon-key') {
+        console.warn('Supabase not configured properly, skipping user preferences initialization');
+        // Return a mock user preferences object
+        const mockPrefs: UserPreferences = {
+          user_id: userId,
+          tutorials_completed: {},
+          preferred_search_filters: {},
+          search_history: [],
+          saved_professors: [],
+          email_preferences: {},
+          login_count: 1,
+          last_login_at: new Date().toISOString()
+        };
+        this.userPreferences = mockPrefs;
+        this.isInitialized = true;
+        return mockPrefs;
+      }
+      
       // Try to get existing preferences
       const { data: existingPrefs, error: fetchError } = await supabase
         .from('user_preferences')

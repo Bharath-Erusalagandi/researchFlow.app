@@ -8,7 +8,10 @@ import { userPrefsService } from '@/lib/userPreferences';
 // Check if Supabase environment variables are available
 const isMissingEnvVars = 
   typeof window !== 'undefined' && 
-  (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
+  (!process.env.NEXT_PUBLIC_SUPABASE_URL || 
+   !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+   process.env.NEXT_PUBLIC_SUPABASE_URL === 'https://placeholder.supabase.co' ||
+   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY === 'placeholder-anon-key');
 
 const withAuth = (WrappedComponent: React.ComponentType<any>) => {
   const AuthComponent = (props: any) => {
@@ -18,6 +21,7 @@ const withAuth = (WrappedComponent: React.ComponentType<any>) => {
     const [envWarning, setEnvWarning] = useState(false);
     const [isAutoLoggingIn, setIsAutoLoggingIn] = useState(false);
     const [showSmoothTransition, setShowSmoothTransition] = useState(false);
+    const [authCheckCount, setAuthCheckCount] = useState(0);
 
     // Auto-login function using cookie data
     const attemptAutoLogin = async () => {
@@ -41,9 +45,14 @@ const withAuth = (WrappedComponent: React.ComponentType<any>) => {
               expiresAt: Date.now() + (7 * 24 * 60 * 60 * 1000) // 7 days
             });
             
-            // Initialize user preferences
+            // Initialize user preferences with timeout
             try {
-              await userPrefsService.initializeUser(data.session.user.id);
+              const initPromise = userPrefsService.initializeUser(data.session.user.id);
+              const timeoutPromise = new Promise((_, reject) => 
+                setTimeout(() => reject(new Error('User preferences initialization timeout')), 2000)
+              );
+              
+              await Promise.race([initPromise, timeoutPromise]);
             } catch (error) {
               console.error('Failed to initialize user preferences during auto-login:', error);
             }
@@ -64,6 +73,16 @@ const withAuth = (WrappedComponent: React.ComponentType<any>) => {
     useEffect(() => {
       const checkAuth = async () => {
         try {
+          // Prevent infinite loops - max 3 attempts
+          if (authCheckCount >= 3) {
+            console.error('Authentication check failed after 3 attempts, allowing development access');
+            setIsAuthenticated(true);
+            setLoading(false);
+            return;
+          }
+          
+          setAuthCheckCount(prev => prev + 1);
+          
           // If environment variables are missing, show warning but allow access in development
           if (isMissingEnvVars) {
             if (process.env.NODE_ENV !== 'production') {
@@ -95,13 +114,20 @@ const withAuth = (WrappedComponent: React.ComponentType<any>) => {
               expiresAt: Date.now() + (7 * 24 * 60 * 60 * 1000) // 7 days
             });
             
-            // Initialize user preferences in database
+            // Initialize user preferences in database with timeout
             try {
-              await userPrefsService.initializeUser(session.user.id);
+              const initPromise = userPrefsService.initializeUser(session.user.id);
+              const timeoutPromise = new Promise((_, reject) => 
+                setTimeout(() => reject(new Error('User preferences initialization timeout')), 5000)
+              );
+              
+              await Promise.race([initPromise, timeoutPromise]);
               console.log('User preferences initialized successfully');
               
-              // Migrate any existing localStorage data
-              await userPrefsService.migrateFromLocalStorage();
+              // Migrate any existing localStorage data (don't await to avoid blocking)
+              userPrefsService.migrateFromLocalStorage().catch(err => 
+                console.warn('Migration failed:', err)
+              );
             } catch (error) {
               console.error('Failed to initialize user preferences:', error);
               // Continue anyway - don't block authentication
@@ -147,10 +173,19 @@ const withAuth = (WrappedComponent: React.ComponentType<any>) => {
                 expiresAt: Date.now() + (7 * 24 * 60 * 60 * 1000) // 7 days
               });
               
-              // Initialize user preferences
+              // Initialize user preferences with timeout
               try {
-                await userPrefsService.initializeUser(session.user.id);
-                await userPrefsService.migrateFromLocalStorage();
+                const initPromise = userPrefsService.initializeUser(session.user.id);
+                const timeoutPromise = new Promise((_, reject) => 
+                  setTimeout(() => reject(new Error('User preferences initialization timeout')), 3000)
+                );
+                
+                await Promise.race([initPromise, timeoutPromise]);
+                
+                // Don't await migration to avoid blocking
+                userPrefsService.migrateFromLocalStorage().catch(err => 
+                  console.warn('Migration failed:', err)
+                );
               } catch (error) {
                 console.error('Failed to initialize user preferences:', error);
               }
