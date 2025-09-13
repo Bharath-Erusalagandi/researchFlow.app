@@ -151,6 +151,7 @@ export const ProfessorCard: React.FC<ProfessorCardProps> = ({
             : "bg-[#0CF2A0]/20 text-[#0CF2A0] hover:bg-[#0CF2A0]/30 border-[#0CF2A0]/30"
         )}
         type="button"
+        data-tutorial="personalized-email-button"
       >
         {isProcessing ? (
           <>

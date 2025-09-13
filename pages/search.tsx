@@ -15,9 +15,9 @@ import { ProfessorCard } from '@/components/ui/professor-card';
 import { TextShimmer } from '@/components/ui/text-shimmer';
 import { AIInputWithLoading } from '@/components/ui/ai-input-with-loading';
 import { Progress } from '@/components/ui/progress';
-import { TutorialOverlay } from '@/components/ui/tutorial-overlay';
-import { EmailTutorialOverlay } from '@/components/ui/email-tutorial-overlay';
-import { searchPageTutorialSteps, quickTutorialSteps, postSearchTutorialSteps } from '@/lib/tutorial-steps';
+import { EnhancedTutorialOverlay } from '@/components/ui/enhanced-tutorial-overlay';
+import { EnhancedEmailTutorialOverlay } from '@/components/ui/enhanced-email-tutorial';
+import { enhancedSearchPageTutorialSteps, enhancedPostSearchTutorialSteps, quickStartTutorialSteps } from '@/lib/enhanced-tutorial-steps';
 import { cookies } from '@/lib/cookies';
 import { userPrefsService } from '@/lib/userPreferences';
 import withAuth from '../components/withAuth';
@@ -481,7 +481,7 @@ function SearchPage() {
   // Tutorial state
   const [showTutorial, setShowTutorial] = useState(false);
   const [tutorialType, setTutorialType] = useState<'full' | 'quick'>('full');
-  const [tutorialSteps, setTutorialSteps] = useState(searchPageTutorialSteps);
+  const [tutorialSteps, setTutorialSteps] = useState(enhancedSearchPageTutorialSteps);
 
   // Email tutorial state
   const [showEmailTutorial, setShowEmailTutorial] = useState(false);
@@ -982,7 +982,7 @@ function SearchPage() {
       if (showTutorial && professors && professors.length > 0) {
         // Replace the initial tutorial steps with the complete flow including post-search steps
         setTimeout(() => {
-          setTutorialSteps([...searchPageTutorialSteps, ...postSearchTutorialSteps]);
+          setTutorialSteps([...enhancedSearchPageTutorialSteps, ...enhancedPostSearchTutorialSteps]);
         }, 1500);
       }
     } catch (error: any) {
@@ -1120,7 +1120,7 @@ function SearchPage() {
   const startTutorial = (type: 'full' | 'quick' = 'full') => {
     setTutorialType(type);
     // Reset tutorial steps to initial state when starting tutorial
-    setTutorialSteps(searchPageTutorialSteps);
+    setTutorialSteps(type === 'quick' ? quickStartTutorialSteps : enhancedSearchPageTutorialSteps);
     setShowTutorial(true);
   };
 
@@ -3897,8 +3897,8 @@ INSTRUCTIONS:
       </main>
 
       {/* Tutorial Overlay */}
-      <TutorialOverlay
-        steps={tutorialType === 'full' ? tutorialSteps : quickTutorialSteps}
+      <EnhancedTutorialOverlay
+        steps={tutorialSteps}
         isVisible={showTutorial}
         onComplete={handleTutorialComplete}
         onSkip={handleTutorialSkip}
@@ -3907,7 +3907,7 @@ INSTRUCTIONS:
       />
 
       {/* Email Tutorial Overlay */}
-      <EmailTutorialOverlay
+      <EnhancedEmailTutorialOverlay
         isVisible={showEmailTutorial}
         onComplete={() => setShowEmailTutorial(false)}
         onSkip={() => setShowEmailTutorial(false)}
