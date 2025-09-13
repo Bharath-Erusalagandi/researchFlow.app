@@ -108,7 +108,9 @@ export class UserPreferencesService {
 
   async getTutorialStatus(tutorialKey: string): Promise<boolean> {
     if (!this.userPreferences) {
-      throw new Error('User preferences not initialized');
+      // Return false instead of throwing error for better UX
+      console.warn('User preferences not initialized, returning false for tutorial status');
+      return false;
     }
 
     return this.userPreferences.tutorials_completed[tutorialKey] || false;
@@ -144,10 +146,11 @@ export class UserPreferencesService {
 
   async hasSeenAnyTutorial(): Promise<boolean> {
     if (!this.userPreferences) {
+      console.warn('User preferences not initialized, returning false for hasSeenAnyTutorial');
       return false;
     }
 
-    return Object.keys(this.userPreferences.tutorials_completed).length > 0;
+    return Object.keys(this.userPreferences.tutorials_completed || {}).length > 0;
   }
 
   async addToSearchHistory(query: string, resultsCount: number): Promise<void> {
@@ -348,8 +351,17 @@ export class UserPreferencesService {
       if (savedProfessorsLocal) {
         try {
           const savedData = JSON.parse(savedProfessorsLocal);
-          // Process and save to database...
-          console.log('Migrated local saved professors:', savedData);
+          // Actually migrate the data to database
+          for (const prof of savedData) {
+            if (prof.id && prof.name) {
+              await this.saveProfessor({
+                id: prof.id.toString(),
+                name: prof.name,
+                university: prof.university || 'Unknown University'
+              });
+            }
+          }
+          console.log('Successfully migrated saved professors:', savedData.length);
         } catch (e) {
           console.warn('Could not parse saved professors from localStorage');
         }

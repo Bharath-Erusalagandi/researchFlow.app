@@ -626,12 +626,17 @@ function SearchPage() {
     setActiveTab(targetTab);
 
     // Check if this is a first-time user and show tutorial
-    const checkAndShowTutorial = async () => {
+    const checkAndShowTutorial = async (retryCount = 0) => {
       try {
         if (!userPrefsService.isUserInitialized()) {
-          // Wait for user preferences to be initialized
-          setTimeout(checkAndShowTutorial, 500);
-          return;
+          // Prevent infinite retries - max 10 attempts (5 seconds)
+          if (retryCount < 10) {
+            setTimeout(() => checkAndShowTutorial(retryCount + 1), 500);
+            return;
+          } else {
+            console.warn('User preferences initialization timeout, falling back to localStorage');
+            // Fall through to localStorage fallback
+          }
         }
         
         const hasSeenTutorial = await userPrefsService.getTutorialStatus('main_search_tutorial');
@@ -1135,6 +1140,7 @@ function SearchPage() {
       if (!isAlreadySaved) {
         if (userPrefsService.isUserInitialized()) {
           await userPrefsService.saveProfessor(professorData);
+          // Refresh saved professors list from updated database
           const savedProfs = userPrefsService.getSavedProfessors();
           const savedIds = savedProfs.map(prof => prof.id);
           setSavedProfessors(savedIds);
