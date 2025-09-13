@@ -3,11 +3,11 @@ import { createClient } from '@supabase/supabase-js';
 const isDevelopment = process.env.NODE_ENV === 'development';
 
 // Initialize the Supabase client
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co';
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-anon-key';
 
 // Log a warning if the environment variables are missing in development
-if (isDevelopment && (!supabaseUrl || !supabaseAnonKey)) {
+if (isDevelopment && (supabaseUrl === 'https://placeholder.supabase.co' || supabaseAnonKey === 'placeholder-anon-key')) {
   console.warn(
     'Supabase URL or anon key is missing. This will use mock data in development. To use a real Supabase instance, add your credentials to .env.local:\n' +
     'NEXT_PUBLIC_SUPABASE_URL=https://your-project-id.supabase.co\n' +

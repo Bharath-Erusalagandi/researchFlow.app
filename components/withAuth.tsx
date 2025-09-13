@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import { supabase } from '@/lib/supabase';
 import { cookies } from '@/lib/cookies';
 import { PageTransition } from '@/components/ui/page-transition';
+import { userPrefsService } from '@/lib/userPreferences';
 
 // Check if Supabase environment variables are available
 const isMissingEnvVars = 
@@ -39,6 +40,14 @@ const withAuth = (WrappedComponent: React.ComponentType<any>) => {
               provider: 'google',
               expiresAt: Date.now() + (7 * 24 * 60 * 60 * 1000) // 7 days
             });
+            
+            // Initialize user preferences
+            try {
+              await userPrefsService.initializeUser(data.session.user.id);
+            } catch (error) {
+              console.error('Failed to initialize user preferences during auto-login:', error);
+            }
+            
             return true;
           }
         }
@@ -85,6 +94,19 @@ const withAuth = (WrappedComponent: React.ComponentType<any>) => {
               provider: session.user.app_metadata?.provider || 'unknown',
               expiresAt: Date.now() + (7 * 24 * 60 * 60 * 1000) // 7 days
             });
+            
+            // Initialize user preferences in database
+            try {
+              await userPrefsService.initializeUser(session.user.id);
+              console.log('User preferences initialized successfully');
+              
+              // Migrate any existing localStorage data
+              await userPrefsService.migrateFromLocalStorage();
+            } catch (error) {
+              console.error('Failed to initialize user preferences:', error);
+              // Continue anyway - don't block authentication
+            }
+            
             setIsAuthenticated(true);
             setLoading(false);
             return;
@@ -115,7 +137,7 @@ const withAuth = (WrappedComponent: React.ComponentType<any>) => {
 
       if (!isMissingEnvVars) {
         const { data } = supabase.auth.onAuthStateChange(
-          (event, session) => {
+          async (event, session) => {
             if (event === 'SIGNED_IN' && session) {
               // Save session to cookies when user signs in
               cookies.setUserSession({
@@ -124,10 +146,20 @@ const withAuth = (WrappedComponent: React.ComponentType<any>) => {
                 provider: session.user.app_metadata?.provider || 'unknown',
                 expiresAt: Date.now() + (7 * 24 * 60 * 60 * 1000) // 7 days
               });
+              
+              // Initialize user preferences
+              try {
+                await userPrefsService.initializeUser(session.user.id);
+                await userPrefsService.migrateFromLocalStorage();
+              } catch (error) {
+                console.error('Failed to initialize user preferences:', error);
+              }
+              
               setIsAuthenticated(true);
             } else if (event === 'SIGNED_OUT') {
-              // Clear cookies when user signs out
+              // Clear cookies and user data when user signs out
               cookies.clearUserSession();
+              userPrefsService.clearUserData();
               setIsAuthenticated(false);
               router.push('/login');
             }

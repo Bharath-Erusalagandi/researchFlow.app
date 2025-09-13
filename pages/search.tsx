@@ -17,12 +17,10 @@ import { AIInputWithLoading } from '@/components/ui/ai-input-with-loading';
 import { Progress } from '@/components/ui/progress';
 import { TutorialOverlay } from '@/components/ui/tutorial-overlay';
 import { EmailTutorialOverlay } from '@/components/ui/email-tutorial-overlay';
-import { Pagination } from '@/components/ui/pagination';
 import { searchPageTutorialSteps, quickTutorialSteps, postSearchTutorialSteps } from '@/lib/tutorial-steps';
 import { cookies } from '@/lib/cookies';
-import { useDebounce } from '../hooks/useDebounce';
+import { userPrefsService } from '@/lib/userPreferences';
 import withAuth from '../components/withAuth';
-import Head from 'next/head';
 
 
 
@@ -451,61 +449,12 @@ const ProgressBarForm = ({
 };
 
 function SearchPage() {
-  // Dynamic SEO content based on current state
-  const getPageTitle = () => {
-    if (selectedProfessorForEmail) {
-      return `${selectedProfessorForEmail.name} - Professor ${selectedProfessorForEmail.field_of_research.split(';')[0]} | Flow Research`;
-    }
-    return hasSearched ? `${searchTerm ? `"${searchTerm}"` : 'Professor'} Search Results | Flow Research` : 'Find Professors & Research Opportunities | Flow Research';
-  };
-
-  const getPageDescription = () => {
-    if (selectedProfessorForEmail) {
-      return `Connect with Professor ${selectedProfessorForEmail.name} from ${selectedProfessorForEmail.university_name}. Research focus: ${selectedProfessorForEmail.field_of_research}. Send personalized collaboration emails.`;
-    }
-    return hasSearched
-      ? `Found ${filteredProfessors.length} professors matching your research interests. Connect with academic experts and start research collaborations.`
-      : 'Discover professors and research opportunities. AI-powered personalized email generation to help students and researchers build academic connections.';
-  };
-
   const [activeTab, setActiveTab] = useState<TabType>('search');
   const [searchQuery, setSearchQuery] = useState("");
   const [lastSearchedTerm, setLastSearchedTerm] = useState(""); // Track the actual searched term
   const [filteredProfessors, setFilteredProfessors] = useState<Professor[]>([]);
   const [hasSearched, setHasSearched] = useState(false);
   const [userName, setUserName] = useState<string | null>(null);
-
-  // Pagination state
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalProfessors, setTotalProfessors] = useState(0);
-  const [isLoadingPage, setIsLoadingPage] = useState(false);
-  const professorsPerPage = 12;
-
-  // Debounced search query
-  const debouncedSearchQuery = useDebounce(searchQuery, 300);
-
-  // Simple cache for search results
-  const searchCache = useRef<Map<string, { data: any; timestamp: number }>>(new Map());
-  const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
-
-  // Function to get cached result
-  const getCachedResult = (query: string, page: number) => {
-    const cacheKey = `${query}:${page}`;
-    const cached = searchCache.current.get(cacheKey);
-    if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
-      return cached.data;
-    }
-    return null;
-  };
-
-  // Function to set cached result
-  const setCachedResult = (query: string, page: number, data: any) => {
-    const cacheKey = `${query}:${page}`;
-    searchCache.current.set(cacheKey, {
-      data,
-      timestamp: Date.now()
-    });
-  };
   const [greeting, setGreeting] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -636,10 +585,29 @@ function SearchPage() {
     const savedSelectedProfessor = localStorage.getItem('selectedProfessorForEmail');
     const savedActiveTab = localStorage.getItem('researchConnect_activeTab');
     
-    // Load saved/bookmarked professors
-    const savedBookmarkedProfs = JSON.parse(localStorage.getItem('savedProfessors') || '[]');
-    const savedIds = savedBookmarkedProfs.map((prof: any) => prof.id?.toString() || '');
-    setSavedProfessors(savedIds);
+    // Load saved/bookmarked professors from database
+    const loadSavedProfessors = async () => {
+      try {
+        if (userPrefsService.isUserInitialized()) {
+          const savedProfs = userPrefsService.getSavedProfessors();
+          const savedIds = savedProfs.map(prof => prof.id);
+          setSavedProfessors(savedIds);
+        } else {
+          // Fallback to localStorage
+          const savedBookmarkedProfs = JSON.parse(localStorage.getItem('savedProfessors') || '[]');
+          const savedIds = savedBookmarkedProfs.map((prof: any) => prof.id?.toString() || '');
+          setSavedProfessors(savedIds);
+        }
+      } catch (error) {
+        console.error('Error loading saved professors:', error);
+        // Fallback to localStorage
+        const savedBookmarkedProfs = JSON.parse(localStorage.getItem('savedProfessors') || '[]');
+        const savedIds = savedBookmarkedProfs.map((prof: any) => prof.id?.toString() || '');
+        setSavedProfessors(savedIds);
+      }
+    };
+    
+    loadSavedProfessors();
     
     // Load selected professor but DON'T force tab switch
     if (savedSelectedProfessor) {
@@ -658,22 +626,42 @@ function SearchPage() {
     setActiveTab(targetTab);
 
     // Check if this is a first-time user and show tutorial
-    const hasSeenTutorial = localStorage.getItem('researchConnect_hasSeenTutorial');
-    const isFirstVisitEver = localStorage.getItem('researchConnect_firstVisit') === null;
-    const skipTutorial = urlParams.get('skip_tutorial') === 'true';
+    const checkAndShowTutorial = async () => {
+      try {
+        if (!userPrefsService.isUserInitialized()) {
+          // Wait for user preferences to be initialized
+          setTimeout(checkAndShowTutorial, 500);
+          return;
+        }
+        
+        const hasSeenTutorial = await userPrefsService.getTutorialStatus('main_search_tutorial');
+        const hasSeenAnyTutorial = await userPrefsService.hasSeenAnyTutorial();
+        const skipTutorial = urlParams.get('skip_tutorial') === 'true';
+        
+        // Only show tutorial for completely new users
+        if (!hasSeenTutorial && !hasSeenAnyTutorial && !skipTutorial) {
+          // Delay tutorial to let the page load completely
+          setTimeout(() => {
+            setShowTutorial(true);
+          }, 2000);
+        }
+      } catch (error) {
+        console.error('Error checking tutorial status:', error);
+        // Fallback to localStorage
+        const hasSeenTutorial = localStorage.getItem('researchConnect_hasSeenTutorial');
+        const isFirstVisitEver = localStorage.getItem('researchConnect_firstVisit') === null;
+        const skipTutorial = urlParams.get('skip_tutorial') === 'true';
+        
+        if (!hasSeenTutorial && isFirstVisitEver && !skipTutorial) {
+          localStorage.setItem('researchConnect_firstVisit', 'true');
+          setTimeout(() => {
+            setShowTutorial(true);
+          }, 2000);
+        }
+      }
+    };
     
-    // Only show tutorial on very first visit ever
-    if (!hasSeenTutorial && isFirstVisitEver && !skipTutorial) {
-      // Mark that user has visited
-      localStorage.setItem('researchConnect_firstVisit', 'true');
-      // Delay tutorial to let the page load completely
-      setTimeout(() => {
-        setShowTutorial(true);
-      }, 2000);
-    } else if (isFirstVisitEver) {
-      // Mark first visit even if tutorial is skipped
-      localStorage.setItem('researchConnect_firstVisit', 'true');
-    }
+    checkAndShowTutorial();
 
     // Form data is now loaded in a separate useEffect to avoid conflicts and ensure persistence
 
@@ -881,7 +869,7 @@ function SearchPage() {
 
 
 
-  const handleSearch = async (query?: string, page: number = 1) => {
+  const handleSearch = async (query?: string) => {
     const searchTerm = query || searchQuery;
     
     // If empty search, don't run the search
@@ -898,33 +886,8 @@ function SearchPage() {
     localStorage.setItem('researchConnect_lastSearchedTerm', searchTerm);
     
     try {
-      // Check cache first
-      const cachedResult = getCachedResult(searchTerm, page);
-      if (cachedResult) {
-        // Use cached data
-        let professors = cachedResult.professors;
-        const totalCount = cachedResult.total || professors.length;
-        setTotalProfessors(totalCount);
-
-        // Process the cached professors data
-        professors = professors.map((prof: Professor, index: number) => ({
-          ...prof,
-          id: prof.id || (prof.name + prof.university_name + prof.field_of_research).split('').reduce((a, b) => a + b.charCodeAt(0), 0),
-          publications: Math.floor(Math.random() * 100) + 10,
-          citations: Math.floor(Math.random() * 5000) + 500,
-          title: `Professor of ${prof.field_of_research.split(';')[0]}`,
-          image: `https://source.unsplash.com/random/256x256/?professor&${prof.name}`,
-          researchAreas: prof.field_of_research.split(';').map(area => area.trim())
-        }));
-
-        setFilteredProfessors(professors);
-        setHasSearched(true);
-        setAISuggestion(cachedResult.aiSuggestion || '');
-        return;
-      }
-
-      // Call our API endpoint with pagination
-      const response = await axios.get(`/api/professor-search?query=${encodeURIComponent(searchTerm)}&page=${page}&limit=${professorsPerPage}`, {
+      // Call our API endpoint
+      const response = await axios.get(`/api/professor-search?query=${encodeURIComponent(searchTerm)}`, {
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json'
@@ -937,17 +900,8 @@ function SearchPage() {
         throw new Error('Invalid response format from server');
       }
       
-      // Process the professors data and pagination info
+      // Process the professors data
       let professors = response.data.professors;
-      const totalCount = response.data.total || professors.length;
-      setTotalProfessors(totalCount);
-
-      // Cache the response data
-      setCachedResult(searchTerm, page, {
-        professors: response.data.professors,
-        total: totalCount,
-        aiSuggestion: response.data.aiSuggestion
-      });
       
       // Get the AI suggestion
       const suggestion = response.data.aiSuggestion;
@@ -992,6 +946,23 @@ function SearchPage() {
       });
       
       setCurrentSessionId(sessionId);
+
+      // Save to database as well
+      try {
+        if (userPrefsService.isUserInitialized()) {
+          await userPrefsService.addToSearchHistory(searchTerm, professors.length);
+          await userPrefsService.saveSearchSession({
+            session_id: sessionId,
+            query: searchTerm,
+            results_count: professors.length,
+            ai_suggestion: suggestion,
+            professors_found: professors
+          });
+        }
+      } catch (error) {
+        console.error('Error saving search to database:', error);
+        // Continue anyway - don't break the search flow
+      }
       
       // Update URL to include session ID
       const url = new URL(window.location.href);
@@ -1051,22 +1022,6 @@ function SearchPage() {
     }
   };
 
-  // Debounced search effect
-  useEffect(() => {
-    if (debouncedSearchQuery && debouncedSearchQuery !== lastSearchedTerm) {
-      setCurrentPage(1); // Reset to first page on new search
-      handleSearch(debouncedSearchQuery, 1);
-    }
-  }, [debouncedSearchQuery, lastSearchedTerm]);
-
-  // Page change handler
-  const handlePageChange = async (page: number) => {
-    setIsLoadingPage(true);
-    setCurrentPage(page);
-    await handleSearch(lastSearchedTerm, page);
-    setIsLoadingPage(false);
-  };
-
   // Function to load a previous search session
   const loadSearchSession = (session: SearchSession) => {
     setCurrentSessionId(session.id);
@@ -1118,9 +1073,16 @@ function SearchPage() {
   };
 
   // Tutorial control functions
-  const handleTutorialComplete = () => {
+  const handleTutorialComplete = async () => {
     setShowTutorial(false);
-    localStorage.setItem('researchConnect_hasSeenTutorial', 'true');
+    
+    try {
+      await userPrefsService.markTutorialCompleted('main_search_tutorial');
+    } catch (error) {
+      console.error('Error saving tutorial completion:', error);
+      // Fallback to localStorage
+      localStorage.setItem('researchConnect_hasSeenTutorial', 'true');
+    }
     
     addNotification({
       type: 'success',
@@ -1130,9 +1092,16 @@ function SearchPage() {
     });
   };
 
-  const handleTutorialSkip = () => {
+  const handleTutorialSkip = async () => {
     setShowTutorial(false);
-    localStorage.setItem('researchConnect_hasSeenTutorial', 'true');
+    
+    try {
+      await userPrefsService.markTutorialCompleted('main_search_tutorial');
+    } catch (error) {
+      console.error('Error saving tutorial skip:', error);
+      // Fallback to localStorage
+      localStorage.setItem('researchConnect_hasSeenTutorial', 'true');
+    }
     
     addNotification({
       type: 'info',
@@ -1150,39 +1119,63 @@ function SearchPage() {
     setShowTutorial(true);
   };
 
-  const handleSaveProfessor = (professor: Professor) => {
-    const savedProfs = JSON.parse(localStorage.getItem('savedProfessors') || '[]');
-    const professorData = {
-      id: professor.id,
-      name: professor.name,
-      email: professor.email,
-      department: professor.field_of_research.split(';')[0] || professor.field_of_research,
-      interests: professor.field_of_research,
-      savedAt: new Date().toISOString()
-    };
-    
-    // Check if already saved
-    const isAlreadySaved = savedProfs.some((p: any) => p.id === professor.id);
-    
-    if (!isAlreadySaved) {
-      savedProfs.push(professorData);
-      localStorage.setItem('savedProfessors', JSON.stringify(savedProfs));
-      setSavedProfessors([...savedProfessors, professor.id?.toString() || '']);
+  const handleSaveProfessor = async (professor: Professor) => {
+    try {
+      const professorData = {
+        id: professor.id?.toString() || `${professor.name}-${professor.university_name}`,
+        name: professor.name,
+        university: professor.university_name
+      };
       
-      // Show beautiful success notification
+      // Check if already saved
+      const isAlreadySaved = userPrefsService.isUserInitialized() 
+        ? userPrefsService.isProfessorSaved(professorData.id)
+        : savedProfessors.includes(professorData.id);
+      
+      if (!isAlreadySaved) {
+        if (userPrefsService.isUserInitialized()) {
+          await userPrefsService.saveProfessor(professorData);
+          const savedProfs = userPrefsService.getSavedProfessors();
+          const savedIds = savedProfs.map(prof => prof.id);
+          setSavedProfessors(savedIds);
+        } else {
+          // Fallback to localStorage
+          const savedProfs = JSON.parse(localStorage.getItem('savedProfessors') || '[]');
+          const fullProfessorData = {
+            ...professorData,
+            email: professor.email,
+            department: professor.field_of_research.split(';')[0] || professor.field_of_research,
+            interests: professor.field_of_research,
+            savedAt: new Date().toISOString()
+          };
+          savedProfs.push(fullProfessorData);
+          localStorage.setItem('savedProfessors', JSON.stringify(savedProfs));
+          setSavedProfessors([...savedProfessors, professorData.id]);
+        }
+        
+        // Show beautiful success notification
+        addNotification({
+          type: 'success',
+          title: 'Professor Saved!',
+          message: `${professor.name} has been added to your saved professors.`,
+          icon: <Heart className="h-5 w-5" />
+        });
+      } else {
+        // Show info notification for already saved
+        addNotification({
+          type: 'info',
+          title: 'Already Saved',
+          message: `${professor.name} is already in your saved professors.`,
+          icon: <Check className="h-5 w-5" />
+        });
+      }
+    } catch (error) {
+      console.error('Error saving professor:', error);
       addNotification({
-        type: 'success',
-        title: 'Professor Saved!',
-        message: `${professor.name} has been added to your saved professors.`,
-        icon: <Heart className="h-5 w-5" />
-      });
-    } else {
-      // Show info notification for already saved
-      addNotification({
-        type: 'info',
-        title: 'Already Saved',
-        message: `${professor.name} is already in your saved professors.`,
-        icon: <Check className="h-5 w-5" />
+        type: 'error',
+        title: 'Save Failed',
+        message: 'Could not save professor. Please try again.',
+        icon: <XCircle className="h-5 w-5" />
       });
     }
   };
@@ -2437,48 +2430,7 @@ ${userFullName}`;
   }, [isMobileMenuOpen]);
 
   return (
-    <>
-      <Head>
-        <title>{getPageTitle()}</title>
-        <meta name="description" content={getPageDescription()} />
-        <meta name="robots" content="index, follow" />
-        <link rel="canonical" href={`https://flow-research.com/search${activeTab === 'email' ? '?tab=email' : ''}`} />
-
-        {/* Open Graph */}
-        <meta property="og:title" content={getPageTitle()} />
-        <meta property="og:description" content={getPageDescription()} />
-        <meta property="og:url" content={`https://flow-research.com/search${activeTab === 'email' ? '?tab=email' : ''}`} />
-        <meta property="og:type" content="website" />
-
-        {/* Twitter */}
-        <meta property="twitter:title" content={getPageTitle()} />
-        <meta property="twitter:description" content={getPageDescription()} />
-
-        {/* Structured Data for Professors */}
-        {selectedProfessorForEmail && (
-          <script
-            type="application/ld+json"
-            dangerouslySetInnerHTML={{
-              __html: JSON.stringify({
-                "@context": "https://schema.org",
-                "@type": "Person",
-                "name": selectedProfessorForEmail.name,
-                "jobTitle": "Professor",
-                "worksFor": {
-                  "@type": "EducationalOrganization",
-                  "name": selectedProfessorForEmail.university_name
-                },
-                "knowsAbout": selectedProfessorForEmail.field_of_research.split(';'),
-                "email": selectedProfessorForEmail.email,
-                "url": selectedProfessorForEmail.official_url,
-                "description": `Professor ${selectedProfessorForEmail.name} specializes in ${selectedProfessorForEmail.field_of_research}`
-              })
-            }}
-          />
-        )}
-      </Head>
-
-      <div className="relative min-h-screen bg-[#111111] text-gray-300 flex flex-col overflow-x-hidden">
+    <div className="relative min-h-screen bg-[#111111] text-gray-300 flex flex-col overflow-x-hidden">
       {/* Interactive Background */}
       <canvas ref={canvasRef} className="absolute inset-0 z-0 pointer-events-none opacity-80" />
       <div className="absolute inset-0 z-1 pointer-events-none" style={{
@@ -2970,43 +2922,7 @@ ${userFullName}`;
                         );
                       })}
                     </div>
-
-                    {/* Pagination */}
-                    {hasSearched && totalProfessors > professorsPerPage && (
-                      <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.5, delay: 0.3 }}
-                        className="mt-8 flex flex-col items-center gap-4"
-                      >
-                        {/* Loading indicator for page changes */}
-                        {isLoadingPage && (
-                          <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            className="flex items-center gap-2 text-[#0CF2A0] text-sm"
-                          >
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                            Loading professors...
-                          </motion.div>
-                        )}
-
-                        <Pagination
-                          currentPage={currentPage}
-                          totalPages={Math.ceil(totalProfessors / professorsPerPage)}
-                          onPageChange={handlePageChange}
-                          showPages={5}
-                          className="bg-[#1a1a1a]/50 border border-gray-800 rounded-xl p-4 backdrop-blur-sm"
-                        />
-
-                        {/* Results summary */}
-                        <div className="text-sm text-gray-400 text-center">
-                          Showing {((currentPage - 1) * professorsPerPage) + 1}-{Math.min(currentPage * professorsPerPage, totalProfessors)} of {totalProfessors} professors
-                        </div>
-                      </motion.div>
-                    )}
-
+                    
                     {/* More Professors Coming Soon Message */}
                     {hasSearched && (
                       <motion.div 
@@ -3992,7 +3908,6 @@ INSTRUCTIONS:
       />
 
     </div>
-    </>
   );
 }
 
