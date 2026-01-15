@@ -1,5 +1,5 @@
 Project Overview
-Research Connect is a web application designed to facilitate meaningful connections between students and academic researchers. The platform streamlines the process of discovering    research opportunities and initiating professional communication. By leveraging artificial intelligence, Research Connect assists users in identifying relevant professors based on research interests and formulating precise, professionally structured outreach emails.
+Research Connect is a web application designed to facilitate meaningful connections between students and academic researchers. The platform streamlines the process of discovering    research opportunities and initiating professional communication. By leveraging artificial intelligence, Research Connect assists users in identifying relevant professors based on research interests. 
 
 
 Intelligent Search: Users can discover professors and research supervisors using natural language queries, filtering by field of study, university, and specific research topics.
